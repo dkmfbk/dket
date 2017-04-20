@@ -1,2 +1,2 @@
 # dket
-Deep Knowledge Extraction from Text
+**D**eep **K**nowledge **E**xtraction from **T**ext

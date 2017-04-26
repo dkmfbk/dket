@@ -28,10 +28,10 @@ def encode(words_idxs, formula_idxs):
     """Encode a list of word and formula terms into a tf.train.SequenceExample.
 
     Arguments:
-      words_idx: `list` of `int` representing the index values for the words
-        in the input sentence of an example.
-      formula_idx: `list` of `int` representing the index values for all the
-        terms of the output formula of an example.
+      words_idx: `list` of `int` or 1D numpy array representing the index values
+        for the words in the input sentence of an example.
+      formula_idx: `list` of `int` or 1D numpy array representing the index values
+        for all the terms of the output formula of an example.
 
     Returns:
       a `tf.train.SequenceExample` to be consumed by the dket architecture.

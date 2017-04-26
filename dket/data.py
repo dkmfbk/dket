@@ -100,19 +100,19 @@ def encode(words_idxs, formula_idxs):
     example = tf.train.SequenceExample(
         context=tf.train.Features(
             feature={
-                'sentence_length': tf.train.Feature(
+                SENTENECE_LENGTH_KEY: tf.train.Feature(
                     int64_list=tf.train.Int64List(value=[len(words_idxs)])),
-                'formula_length': tf.train.Feature(
+                FORMULA_LENGTH_KEY: tf.train.Feature(
                     int64_list=tf.train.Int64List(value=[len(formula_idxs)]))
             }),
         feature_lists=tf.train.FeatureLists(
             feature_list={
-                'words': tf.train.FeatureList(
+                WORDS_KEY: tf.train.FeatureList(
                     feature=[
                         tf.train.Feature(
                             int64_list=tf.train.Int64List(value=[item]))
                         for item in words_idxs]),
-                'formula': tf.train.FeatureList(
+                FORMULA_KEY: tf.train.FeatureList(
                     feature=[
                         tf.train.Feature(
                             int64_list=tf.train.Int64List(value=[item]))

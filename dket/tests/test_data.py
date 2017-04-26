@@ -7,7 +7,7 @@ from dket import data
 class TestEncode(tf.test.TestCase):
     """Test case for the `dket.data.encode` function."""
 
-    def test_base(self):
+    def test_encode(self):
         """Base test for the `dket.data.encode` function."""
 
         input_ = [1, 2, 3, 0]
@@ -37,6 +37,25 @@ class TestEncode(tf.test.TestCase):
             feature = term.int64_list.value
             self.assertEquals(1, len(feature))
             self.assertEquals(idx, feature[0])
+
+
+class TestDecode(tf.test.TestCase):
+    """Test case for the `dket.data.decode` function."""
+
+    def test_decode(self):
+        """Base test for the `dket.data.decode` function."""
+
+        words = [1, 2, 3, 0]
+        formula = [12, 23, 34, 45, 0]
+        example = data.encode(words, formula)
+        twords, tformula = data.decode(example)
+
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            awords, aformula = sess.run([twords, tformula])
+        self.assertEquals(words, awords.tolist())
+        self.assertEquals(formula, aformula.tolist())
+
 
 if __name__ == '__main__':
     tf.test.main()

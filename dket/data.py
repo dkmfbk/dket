@@ -121,3 +121,32 @@ def encode(words_idxs, formula_idxs):
         )
     )
     return example
+
+
+def decode(example):
+    """Decode a `tf.train.SequenceExample` protobuf message.
+
+    Arguments:
+      example: a `tf.train.SequenceExample` like the one returned
+        from the `encode()` method.
+
+    Returns:
+      a pair of 2-D ternsors, `words` of shape [sentence_length, 1] and
+        `formula` of shape [formula_length, 1].
+    """
+
+    context_features = {
+        SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
+        FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64)
+    }
+    sequence_features = {
+        WORDS_KEY: tf.FixedLenSequenceFeature([], tf.int64),
+        FORMULA_KEY: tf.FixedLenSequenceFeature([], tf.int64)
+    }
+    _, sequence = tf.parse_single_sequence_example(
+        serialized=example.SerializeToString(),
+        context_features=context_features,
+        sequence_features=sequence_features)
+    words = sequence[WORDS_KEY]
+    formula = sequence[FORMULA_KEY]
+    return words, formula

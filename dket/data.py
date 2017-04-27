@@ -3,17 +3,15 @@
 A `dket` example is made of essentially two sequence of symbols:
   - a sentence, i.e. a sequence of words, as input;
   - a formula, i.e. a sequence of terms, as output.
-Such examples should be persisted as `tf.train.SequenceExample` protobuf
-messages having two int64 scalar (context) fields:
+Such examples should be persisted as `tf.train.Example` protobuf
+message having two int64 scalar features:
   - `sentence_length`: the length of the input sentence;
   - `formula_length`: the length of the output formula;
-and has two feature lists:
+and has two int64 list features:
   - `words`: a list of single valued `int64_list` with the index
     values for the words of the input sentence;
   - `formula`: a list of single valued `int64_list` with the index
      values for the terms of the output formula.
-
-NOTA BENE: the persistence schema could rapidly evolve.
 """
 
 import tensorflow as tf
@@ -34,29 +32,40 @@ def encode(words_idxs, formula_idxs):
         for all the terms of the output formula of an example.
 
     Returns:
-      a `tf.train.SequenceExample` to be consumed by the dket architecture.
-        It has two int64 scalar (context) fields:
+      a `tf.train.Example` to be consumed by the dket architecture.
+        It has two int64 scalar features:
           - `sentence_length`: the length of the input sentence;
           - `formula_length`: the length of the output formula;
-        and has two feature lists:
-          - `words`: a list of single valued `int64_list` with the index
-            values for the words of the input sentence;
-          - `formula`: a list of single valued `int64_list` with the index
-            values for the terms of the output formula.
+        and has two int64 list features:
+          - `words`: a list with the index values for the words of the input sentence;
+          - `formula`: a list with the index values for the terms of the output formula.
 
     Example:
     >>> import tensorflow as tf
     >>> from dket import data
-    >>> input_ = [1, 2, 3, 0]
-    >>> output = [23, 34, 45, 0]
-    >>> print encode(input_, output)
+    >>> words_idxs = [1, 2, 3, 0]
+    >>> formula_idxs = [12, 23, 34, 45, 0]
+    >>> print data.encode(input_, output)
 
-    context {
+    features {
+        feature {
+            key: "formula"
+            value {
+                int64_list {
+                    value: 12
+                    value: 23
+                    value: 34
+                    value: 45
+                    value: 0
+                    }
+                }
+            }
+        }
         feature {
             key: "formula_length"
             value {
                 int64_list {
-                    value: 4
+                    value: 5
                 }
             }
         }
@@ -68,55 +77,34 @@ def encode(words_idxs, formula_idxs):
                 }
             }
         }
-    }
-    feature_lists {
-        feature_list {
-            key: "formula"
+        feature {
+            key: "words"
             value {
-                feature {
-                    int64_list {
-                        value: 23
-                    }
-                }
-                feature {
-                    int64_list {
-                        value: 34
-                    }
-                }
-                feature {
-                    int64_list {
-                        value: 45
-                    }
-                }
-                feature {
-                    int64_list {
-                        value: 0
+                int64_list {
+                    value: 1
+                    value: 2
+                    value: 3
+                    value: 0
                 }
             }
         }
     }
     """
-
-    example = tf.train.SequenceExample(
-        context=tf.train.Features(
+    example = tf.train.Example(
+        features=tf.train.Features(
             feature={
                 SENTENECE_LENGTH_KEY: tf.train.Feature(
-                    int64_list=tf.train.Int64List(value=[len(words_idxs)])),
+                    int64_list=tf.train.Int64List(
+                        value=[len(words_idxs)])),
                 FORMULA_LENGTH_KEY: tf.train.Feature(
-                    int64_list=tf.train.Int64List(value=[len(formula_idxs)]))
-            }),
-        feature_lists=tf.train.FeatureLists(
-            feature_list={
-                WORDS_KEY: tf.train.FeatureList(
-                    feature=[
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=[item]))
-                        for item in words_idxs]),
-                FORMULA_KEY: tf.train.FeatureList(
-                    feature=[
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=[item]))
-                        for item in formula_idxs])
+                    int64_list=tf.train.Int64List(
+                        value=[len(formula_idxs)])),
+                WORDS_KEY: tf.train.Feature(
+                    int64_list=tf.train.Int64List(
+                        value=words_idxs)),
+                FORMULA_KEY: tf.train.Feature(
+                    int64_list=tf.train.Int64List(
+                        value=formula_idxs)),
             }
         )
     )
@@ -131,22 +119,19 @@ def decode(example):
         from the `encode()` method.
 
     Returns:
-      a pair of 2-D ternsors, `words` of shape [sentence_length, 1] and
-        `formula` of shape [formula_length, 1].
+      a pair of 1D ternsors, `words` of shape [sentence_length] and
+        `formula` of shape [formula_length].
     """
 
-    context_features = {
+    features = {
         SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
-        FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64)
+        FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
+        WORDS_KEY: tf.VarLenFeature(tf.int64),
+        FORMULA_KEY: tf.VarLenFeature(tf.int64),
     }
-    sequence_features = {
-        WORDS_KEY: tf.FixedLenSequenceFeature([], tf.int64),
-        FORMULA_KEY: tf.FixedLenSequenceFeature([], tf.int64)
-    }
-    _, sequence = tf.parse_single_sequence_example(
+    parsed = tf.parse_single_example(
         serialized=example.SerializeToString(),
-        context_features=context_features,
-        sequence_features=sequence_features)
-    words = sequence[WORDS_KEY]
-    formula = sequence[FORMULA_KEY]
+        features=features)
+    words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
+    formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])
     return words, formula

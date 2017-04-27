@@ -10,30 +10,27 @@ class TestEncode(tf.test.TestCase):
     """Test case for the `dket.data.encode` function."""
 
     def _test_encode(self, input_, output, example):
-        context_features = example.context.feature
-        feature_lists = example.feature_lists.feature_list
+        fmap = example.features.feature
 
-        sentence_length = context_features[data.SENTENECE_LENGTH_KEY].int64_list.value
+        sentence_length = fmap[data.SENTENECE_LENGTH_KEY].int64_list.value
         self.assertEquals(1, len(sentence_length))
         self.assertEquals(len(input_), sentence_length[0])
+        sentence_length = sentence_length[0]
 
-        formula_length = context_features[data.FORMULA_LENGTH_KEY].int64_list.value
+        formula_length = fmap[data.FORMULA_LENGTH_KEY].int64_list.value
         self.assertEquals(1, len(formula_length))
         self.assertEquals(len(output), formula_length[0])
+        formula_length = formula_length[0]
 
-        words = feature_lists[data.WORDS_KEY].feature
+        words = fmap[data.WORDS_KEY].int64_list.value
         self.assertEquals(len(input_), len(words))
         for idx, word in zip(input_, words):
-            feature = word.int64_list.value
-            self.assertEquals(1, len(feature))
-            self.assertEquals(idx, feature[0])
+            self.assertEquals(idx, word)
 
-        formula = feature_lists[data.FORMULA_KEY].feature
+        formula = fmap[data.FORMULA_KEY].int64_list.value
         self.assertEquals(len(output), len(formula))
         for idx, term in zip(output, formula):
-            feature = term.int64_list.value
-            self.assertEquals(1, len(feature))
-            self.assertEquals(idx, feature[0])
+            self.assertEquals(idx, term)
 
     def test_encode(self):
         """Base test for the `dket.data.encode` function."""

@@ -44,7 +44,7 @@ def encode(words_idxs, formula_idxs):
           - `formula`: a list of single valued `int64_list` with the index
             values for the terms of the output formula.
 
-    Example:
+    Example:l'ascesa anche nella classifica marcatori di tutti i tempi del campionato di Serie B. Sono diventati 131 i gol di Cacia, ora al secondo posto in solitario a 4 reti di distanza dal primatista assoluto Stefa
     >>> import tensorflow as tf
     >>> from dket import data
     >>> input_ = [1, 2, 3, 0]

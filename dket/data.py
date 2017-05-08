@@ -22,6 +22,7 @@ FORMULA_LENGTH_KEY = 'formula_length'
 WORDS_KEY = 'words'
 FORMULA_KEY = 'formula'
 
+
 def encode(words_idxs, formula_idxs):
     """Encode a list of word and formula terms into a tf.train.SequenceExample.
 
@@ -111,18 +112,17 @@ def encode(words_idxs, formula_idxs):
     return example
 
 
-def decode(example):
-    """Decode a `tf.train.SequenceExample` protobuf message.
+def parse(serialized):
+    """Parse a string into tensors.
 
     Arguments:
-      example: a `tf.train.SequenceExample` like the one returned
-        from the `encode()` method.
+      example: a serialized `tf.train.SequenceExample` (like the one returned
+        from the `encode()` method).
 
     Returns:
       a pair of 1D ternsors, `words` of shape [sentence_length] and
         `formula` of shape [formula_length].
     """
-
     features = {
         SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
         FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
@@ -130,7 +130,7 @@ def decode(example):
         FORMULA_KEY: tf.VarLenFeature(tf.int64),
     }
     parsed = tf.parse_single_example(
-        serialized=example.SerializeToString(),
+        serialized=serialized,
         features=features)
     words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
     formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])

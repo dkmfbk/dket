@@ -1,12 +1,16 @@
 """Test suite for the `dket.data` module."""
 
+import os
+import tempfile
+import unittest
+
 import numpy as np
 import tensorflow as tf
 
 from dket import data
 
 
-class TestEncode(tf.test.TestCase):
+class TestEncode(unittest.TestCase):
     """Test case for the `dket.data.encode` function."""
 
     def _test_encode(self, input_, output, example):
@@ -40,7 +44,6 @@ class TestEncode(tf.test.TestCase):
         example = data.encode(input_, output)
         self._test_encode(input_, output, example)
 
-
     def test_encode_numpy(self):
         """Base test for the `dket.data.encode` function."""
         input_ = [1, 2, 3, 0]
@@ -51,7 +54,7 @@ class TestEncode(tf.test.TestCase):
         self._test_encode(input_, output, example)
 
 
-class TestDecode(tf.test.TestCase):
+class TestDecode(unittest.TestCase):
     """Test case for the `dket.data.decode` function."""
 
     def test_decode(self):
@@ -60,7 +63,8 @@ class TestDecode(tf.test.TestCase):
         words = [1, 2, 3, 0]
         formula = [12, 23, 34, 45, 0]
         example = data.encode(words, formula)
-        twords, tformula = data.decode(example)
+        serialized = example.SerializeToString()
+        twords, tformula = data.parse(serialized)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -69,5 +73,41 @@ class TestDecode(tf.test.TestCase):
         self.assertEquals(formula, aformula.tolist())
 
 
+
+class TestEncodeSaveReadDecode(unittest.TestCase):
+    """Test case the whole lyfecicle of an example."""
+
+    def test_encode_save_read_decode(self):
+        """Test method the whole lyfecicle of an example."""
+
+        # Create a temporary file.
+        _, fpath = tempfile.mkstemp()
+
+        # Encode an example from data.
+        words = [1, 2, 3, 0]
+        formula = [12, 23, 34, 45, 0]
+        example = data.encode(words, formula)
+
+        # Write the encoded example to the file.
+        with tf.python_io.TFRecordWriter(fpath) as writer:
+            writer.write(example.SerializeToString())
+
+        # Read (iterate) over the written data.
+        tensors_list = []
+        for record in tf.python_io.tf_record_iterator(fpath):
+            tensors = data.parse(record)
+            print tensors
+            tensors_list.append(tensors)
+        self.assertEquals(1, len(tensors_list))
+
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            actual_words, actual_formula = sess.run(tensors_list[0])
+            self.assertEquals(words, actual_words.tolist())
+            self.assertEquals(formula, actual_formula.tolist())
+
+        # Finally, remove the temporary file.
+        os.remove(fpath)
+
 if __name__ == '__main__':
-    tf.test.main()
+    unittest.main()

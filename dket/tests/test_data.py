@@ -1,15 +1,17 @@
 """Test suite for the `dket.data` module."""
 
+import unittest
+
 import numpy as np
 import tensorflow as tf
 
 from dket import data
 
 
-class TestEncode(tf.test.TestCase):
-    """Test case for the `dket.data.encode` function."""
+class TestEncodeDecode(unittest.TestCase):
+    """Test case for the `dket.data.encode` and `dket.data.decode` functions."""
 
-    def _test_encode(self, input_, output, example):
+    def _assertions(self, input_, output, example):
         fmap = example.features.feature
 
         sentence_length = fmap[data.SENTENECE_LENGTH_KEY].int64_list.value
@@ -32,35 +34,42 @@ class TestEncode(tf.test.TestCase):
         for idx, term in zip(output, formula):
             self.assertEquals(idx, term)
 
-    def test_encode(self):
-        """Base test for the `dket.data.encode` function."""
+    def test_encode_decode(self):
+        """Base test for the `dket.data.encode/.decode` functions."""
 
         input_ = [1, 2, 3, 0]
         output = [12, 23, 34, 45, 0]
         example = data.encode(input_, output)
-        self._test_encode(input_, output, example)
+        self._assertions(input_, output, example)
 
+        input_, output = data.decode(example)
+        self._assertions(input_, output, example)
 
-    def test_encode_numpy(self):
+    def test_encode_decode_numpy(self):
         """Base test for the `dket.data.encode` function."""
+
         input_ = [1, 2, 3, 0]
         output = [12, 23, 34, 45, 0]
         example = data.encode(
             np.asarray(input_, dtype=np.int64),
             np.asarray(output, dtype=np.int64))
-        self._test_encode(input_, output, example)
+        self._assertions(input_, output, example)
+
+        input_, output = data.decode(example)
+        self._assertions(input_, output, example)
 
 
-class TestDecode(tf.test.TestCase):
+class TestParse(unittest.TestCase):
     """Test case for the `dket.data.decode` function."""
 
-    def test_decode(self):
+    def test_parse(self):
         """Base test for the `dket.data.decode` function."""
 
         words = [1, 2, 3, 0]
         formula = [12, 23, 34, 45, 0]
         example = data.encode(words, formula)
-        twords, tformula = data.decode(example)
+        serialized = example.SerializeToString()
+        twords, tformula = data.parse(serialized)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -70,4 +79,4 @@ class TestDecode(tf.test.TestCase):
 
 
 if __name__ == '__main__':
-    tf.test.main()
+    unittest.main()

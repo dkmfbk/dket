@@ -24,7 +24,7 @@ FORMULA_KEY = 'formula'
 
 
 def encode(words_idxs, formula_idxs):
-    """Encode a list of word and formula terms into a tf.train.SequenceExample.
+    """Encode a list of word and formula terms into a `tf.train.Example`.
 
     Arguments:
       words_idx: `list` of `int` or 1D numpy array representing the index values
@@ -112,8 +112,33 @@ def encode(words_idxs, formula_idxs):
     return example
 
 
+def decode(example):
+    """Decodes a `tf.train.Example` into a pair of index lists
+
+    Arguments:
+      a `tf.train.Example` instance.
+
+    Returns:
+      a pair of `int` lists, `words` representing the index list of the words
+        of the input sentence  and `formula` representing the index list of the
+        terms of the output formula.
+    """
+    def _parse_int(feature):
+        return int(feature.int64_list.value[0])
+
+    def _parse_int_list(feature):
+        return [int(item) for item in feature.int64_list.value]
+
+    fmap = example.features.feature
+    _ = _parse_int(fmap[SENTENECE_LENGTH_KEY])
+    _ = _parse_int(fmap[FORMULA_LENGTH_KEY])
+    words = _parse_int_list(fmap[WORDS_KEY])
+    formula = _parse_int_list(fmap[FORMULA_KEY])
+    return words, formula
+
+
 def parse(serialized):
-    """Parse a string into tensors.
+    """Parse a serialized string into tensors.
 
     Arguments:
       example: a serialized `tf.train.SequenceExample` (like the one returned

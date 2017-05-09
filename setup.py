@@ -13,7 +13,6 @@ setup(name='dket',
       install_requires=[
           'appdirs==1.4.3',
           'funcsigs==1.0.2',
-          'mock==2.0.0',
           'numpy==1.12.1',
           'packaging==16.8',
           'pbr==2.1.0',

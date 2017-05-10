@@ -20,9 +20,9 @@ setup(name='dket',
           'pyparsing==2.2.0',
           'six==1.10.0',
           'tensorflow==1.1.0',
-          'liteflow',
+          'liteflow==0.1.0',
       ],
       dependency_links=[
-          'git+https://github.com/petrux/LiTeFlow.git@master#egg=liteflow-0'
+          'git+https://github.com/petrux/LiTeFlow.git@master#egg=liteflow-0.1.0'
       ],
       zip_safe=False)

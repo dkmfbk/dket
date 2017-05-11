@@ -13,7 +13,6 @@ setup(name='dket',
       install_requires=[
           'appdirs==1.4.3',
           'funcsigs==1.0.2',
-          'mock==2.0.0',
           'numpy==1.12.1',
           'packaging==16.8',
           'pbr==2.1.0',
@@ -21,9 +20,9 @@ setup(name='dket',
           'pyparsing==2.2.0',
           'six==1.10.0',
           'tensorflow==1.1.0',
-          'liteflow',
+          'liteflow==0.1.0',
       ],
       dependency_links=[
-          'git+https://github.com/petrux/LiTeFlow.git@master#egg=liteflow-0'
+          'git+https://github.com/petrux/LiTeFlow.git@master#egg=liteflow-0.1.0'
       ],
       zip_safe=False)

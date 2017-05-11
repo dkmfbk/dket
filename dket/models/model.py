@@ -42,13 +42,89 @@ class Loss(object):
                 scope=scope, loss_collection=collection))
 
 
+class Optimizer(object):
+    """Base implementation of the optimizer function."""
+
+    @staticmethod
+    def _no_summary(var):
+        pass
+
+    def __init__(self, optimizer, clip, colocate=False, summarize=ops.summarize):
+        """Initialize the new optimizer instance.
+        """
+        self._optimizer = optimizer
+        self._clip = clip
+        self._colocate = colocate
+        self._summarize = summarize or Optimizer._no_summary
+
+    @property
+    def optimizer(self):
+        """The wrapped `tf.train.Optimizer`."""
+        return self._optimizer
+
+    @property
+    def clip(self):
+        """The wrapped gradient clipping function (if any)."""
+        return self._clip
+
+    @property
+    def colocate(self):
+        """If `True`, try to colocate gradients and ops."""
+        return self._colocate
+
+    @property
+    def summarize(self):
+        """The summarization function invoked on gradients (and clipped)."""
+        return self._summarize
+
+    def minimize(self, loss, variables=None, global_step=None):
+        """Minimize the loss w.r.t. the variables.
+        """
+
+        variables = variables or tf.trainable_variables()
+
+        grads_and_vars = self._optimizer.compute_gradients(
+            loss, variables, colocate_gradients_with_ops=self._colocate)
+
+        # Remove the None gradiend which might have come from
+        # variables actually not influencing the loss value.
+        grads_and_vars = [(g, v) for g, v in grads_and_vars if g is not None]
+
+        for grad, _ in grads_and_vars:
+            self._summarize(grad)
+
+        if self._clip is not None:
+            for i, grad_and_var in enumerate(grads_and_vars):
+                grad, var = grad_and_var
+                clipped_grad = self._clip(grad)
+                self._summarize(clipped_grad)
+                grads_and_vars[i] = (clipped_grad, var)
+
+        return self.optimizer.apply_gradients(
+            grads_and_vars, global_step=global_step)
+
+    @staticmethod
+    def sgd(learning_rate, clip=None, colocate=True, summarize=ops.summarize):
+        """Create a Stochastic Gradient Descent optimizer.
+
+        Arguments:
+          aa
+
+        Returns:
+          bb
+        """
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        return Optimizer(optimizer, clip=clip, colocate=colocate, summarize=summarize)
+
+
+
 class BaseModel(object):
     """Base model implementation."""
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, hparams, loss, metrics, optimizer=None):
-        self._global_step = tf.train.create_global_step()
+        self._global_step = ops.get_or_create_global_step()
         self._hparams = self._set_hparams(hparams)
         self._loss = loss
         self._optimizer = optimizer

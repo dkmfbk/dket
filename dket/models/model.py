@@ -3,6 +3,7 @@
 
 import abc
 import functools
+import itertools
 
 import tensorflow as tf
 
@@ -117,6 +118,33 @@ class Optimizer(object):
         return Optimizer(optimizer, clip=clip, colocate=colocate, summarize=summarize)
 
 
+class Metrics(object):
+    """A function used to judge performances of the model."""
+
+    def __init__(self, metrics):
+        self._metrics = metrics
+
+    def __call__(self, truth, predicted):
+        """Wrapper for the `compute` method."""
+        return self.compute(truth, predicted)
+
+    def compute(self, truth, predicted):
+        """Compute a set of evaluation metrics on the results.
+        """
+        return itertools.chain(*[m(truth, predicted) for m in self._metrics])
+
+    @staticmethod
+    def batch_mean_accuracy():
+        """Compute the mean accuracy on a batch."""
+        def _accuracy(truth, predicted):
+            acc = tf.reduce_mean(
+                tf.cast(
+                    tf.equal(truth, predicted),
+                    tf.float32),
+                name='accuracy')
+            return [acc]
+        return Metrics([_accuracy])
+
 
 class BaseModel(object):
     """Base model implementation."""
@@ -132,6 +160,7 @@ class BaseModel(object):
         self._trainable = self._optimizer is not None
         self._input = None
         self._target = None
+        self._logits = None
         self._output = None
         self._loss_op = None
         self._train_op = None
@@ -198,6 +227,10 @@ class BaseModel(object):
     def target(self):
         """A tensor representing the target output of the model."""
         return self._target
+    @property
+    def logits(self):
+        """Unscaled log propabilities."""
+        return self._logits
 
     @property
     def output(self):

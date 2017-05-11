@@ -15,24 +15,24 @@ class TestEncodeDecode(unittest.TestCase):
         fmap = example.features.feature
 
         sentence_length = fmap[data.SENTENECE_LENGTH_KEY].int64_list.value
-        self.assertEquals(1, len(sentence_length))
-        self.assertEquals(len(input_), sentence_length[0])
+        self.assertEqual(1, len(sentence_length))
+        self.assertEqual(len(input_), sentence_length[0])
         sentence_length = sentence_length[0]
 
         formula_length = fmap[data.FORMULA_LENGTH_KEY].int64_list.value
-        self.assertEquals(1, len(formula_length))
-        self.assertEquals(len(output), formula_length[0])
+        self.assertEqual(1, len(formula_length))
+        self.assertEqual(len(output), formula_length[0])
         formula_length = formula_length[0]
 
         words = fmap[data.WORDS_KEY].int64_list.value
-        self.assertEquals(len(input_), len(words))
+        self.assertEqual(len(input_), len(words))
         for idx, word in zip(input_, words):
-            self.assertEquals(idx, word)
+            self.assertEqual(idx, word)
 
         formula = fmap[data.FORMULA_KEY].int64_list.value
-        self.assertEquals(len(output), len(formula))
+        self.assertEqual(len(output), len(formula))
         for idx, term in zip(output, formula):
-            self.assertEquals(idx, term)
+            self.assertEqual(idx, term)
 
     def test_encode_decode(self):
         """Base test for the `dket.data.encode/.decode` functions."""
@@ -74,8 +74,8 @@ class TestParse(unittest.TestCase):
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             awords, aformula = sess.run([twords, tformula])
-        self.assertEquals(words, awords.tolist())
-        self.assertEquals(formula, aformula.tolist())
+        self.assertEqual(words, awords.tolist())
+        self.assertEqual(formula, aformula.tolist())
 
 
 if __name__ == '__main__':

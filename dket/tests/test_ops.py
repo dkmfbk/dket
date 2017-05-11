@@ -1,6 +1,5 @@
 """Test module for `dket.ops` module."""
 
-import numpy as np
 import tensorflow as tf
 
 from dket import ops
@@ -57,3 +56,5 @@ class TestSoftmaxXentWithLogits(tf.test.TestCase):
             sess.run(tf.global_variables_initializer())
             actual = sess.run(loss)
         self.assertAllClose(expected, actual)
+
+    

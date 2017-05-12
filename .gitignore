@@ -1,3 +1,5 @@
 *.pyc
 .vscode
+.py2venv
+.py3venv
 .venv*

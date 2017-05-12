@@ -25,12 +25,12 @@ class Loss(object):
         """The wrapped function."""
         return self._func
 
-    def call(self, truth, predicted, weights=1.0):
-        """Call the inner loss function."""
+    def compute(self, truth, predicted, weights=1.0):
+        """Compute the loss invoking the inner function."""
         return self._func(truth, predicted, weights=weights)
 
     def __call__(self, truth, predicted, weights=1.0):
-        return self.call(truth, predicted, weights=weights)
+        return self.compute(truth, predicted, weights=weights)
 
     @staticmethod
     def softmax_cross_entropy(scope=None, collection=tf.GraphKeys.LOSSES):

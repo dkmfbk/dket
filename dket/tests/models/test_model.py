@@ -4,307 +4,361 @@ import mock
 
 import tensorflow as tf
 
-from dket import ops
 from dket.models import model
 
 
-class TestLoss(tf.test.TestCase):
-    """Test case for the loss function."""
+class _Model(model.BaseModel):
 
-    def _softmax_cross_entropy_rank_truth_larger(self):
-        loss = model.Loss.softmax_cross_entropy()
-        truth = tf.constant([[0, 0, 1], [0, 1, 0]], dtype=tf.int32)
-        logits = tf.constant([[0.1, 0.9], [0.9, 0.1]], dtype=tf.float32)
-        self.assertRaises(ValueError, loss, truth, logits)
+    def __init__(self, summary=True):
+        super(_Model, self).__init__()
+        self._summary = summary
 
-    def _softmax_cross_entropy_rank_truth_too_small(self):
-        loss = model.Loss.softmax_cross_entropy()
-        truth = tf.constant([[0, 0, 1], [0, 1, 0]], dtype=tf.int32)
-        logits = tf.constant([[0.1, 0.9, 0.5, 0.5], [0.9, 0.1, 0.5, 0.5]], dtype=tf.float32)
-        self.assertRaises(ValueError, loss, truth, logits)
+    def get_default_hparams(self):
+        return tf.contrib.training.HParams(dim_0=10, dim_1=3, dim_2=7)
 
-    def _softmax_cross_entropy_sparse(self):
-        truth = tf.constant([[[0, 0, 1, 0, 0],
-                              [0, 1, 0, 0, 0],
-                              [0, 0, 0, 0, 1]],
-                             [[1, 0, 0, 0, 0],
-                              [1, 0, 0, 0, 0],
-                              [1, 0, 0, 0, 0]]], dtype=tf.int32)
-        logits = tf.constant([[[0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0]],
-                              [[0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0]]])
-        loss_fn = model.Loss.softmax_cross_entropy()
-        loss_op = loss_fn(truth, logits)
-        expected = 2.14494224389
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            actual = sess.run(loss_op)
-        self.assertAllClose(expected, actual)
-
-    def _softmax_cross_entropy_dense(self):
-        truth = tf.constant([[2, 1, 4], [0, 0, 0]], dtype=tf.int32)
-        logits = tf.constant([[[0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0]],
-                              [[0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0],
-                               [0.1, 0.2, 0.5, 1.0, 2.0]]])
-        loss_fn = model.Loss.softmax_cross_entropy()
-        loss_op = loss_fn(truth, logits)
-        expected = 2.14494224389
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            actual = sess.run(loss_op)
-        self.assertAllClose(expected, actual)
-
-    def test_softmax_cross_entropy(self):
-        """Test the `Loss` instance created with the `softmax_cross_entropy` method."""
-        self._softmax_cross_entropy_rank_truth_larger()
-        self._softmax_cross_entropy_rank_truth_too_small()
-        self._softmax_cross_entropy_sparse()
-        self._softmax_cross_entropy_dense()
+    def _build_graph(self):
+        assert not self.built
+        shape = [self.hparams.dim_0, self.hparams.dim_1, self.hparams.dim_2]
+        self._logits = tf.random_normal(shape, name='Logits')
+        self._output = tf.identity(tf.nn.softmax(
+            self._logits), name='Probabilities')
+        if self._summary:
+            tf.summary.scalar('SimpleSummary', tf.constant(23))
 
 
-class TestOptimizer(tf.test.TestCase):
-    """Test case for the `dket.model.Optimizer` class."""
+class TestBaseModel(tf.test.TestCase):
+    """Test the functionality of the `dket.models.model.BaseModel` class."""
 
-    def test_default(self):
-        """Test for the `dket.model.Optimizer` class."""
+    def test_global_step_initialization(self):
+        """Global step is set right after the model creation."""
+        instance = _Model()
+        self.assertIsNotNone(instance.global_step)
+        self.assertFalse(instance.fed)
+        self.assertFalse(instance.built)
+        self.assertIsNone(instance.hparams)
+        self.assertIsNone(instance.loss)
+        self.assertIsNone(instance.optimizer)
+        self.assertIsNone(instance.metrics)
+        self.assertIsNone(instance.inputs)
+        self.assertIsNone(instance.target)
+        self.assertIsNone(instance.logits)
+        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.loss_op)
+        self.assertIsNone(instance.train_op)
+        self.assertIsNone(instance.summary_op)
+        self.assertIsNone(instance.metrics_ops)
 
-        # ARRANGE.
-        global_step = ops.get_or_create_global_step()
-        coll = [tf.GraphKeys.TRAINABLE_VARIABLES]
-        var_x = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='x')
-        var_y = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='y')
-        variables = [var_x, var_y]
-        grad_x = tf.div(var_x, 2, name='grad_x')
-        grad_y = tf.div(var_y, 2, name='grad_y')
-        clip_grad_x = tf.multiply(0.1, grad_x, 'clip_grad_x')
-        clip_grad_y = tf.multiply(0.5, grad_y, 'clip_grad_y')
-        loss_op = tf.no_op(name='Loss')
-        train_op = tf.no_op(name='Train')
+    def test_get_default_hparams(self):
+        """The method `get_default_hparams` should be invocable as the model is created."""
+        instance = _Model()
+        self.assertIsNotNone(instance.get_default_hparams())
+        self.assertIsNotNone(instance.global_step)
+        self.assertFalse(instance.fed)
+        self.assertFalse(instance.built)
+        self.assertIsNone(instance.hparams)
+        self.assertIsNone(instance.loss)
+        self.assertIsNone(instance.optimizer)
+        self.assertIsNone(instance.metrics)
+        self.assertIsNone(instance.inputs)
+        self.assertIsNone(instance.target)
+        self.assertIsNone(instance.logits)
+        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.loss_op)
+        self.assertIsNone(instance.train_op)
+        self.assertIsNone(instance.summary_op)
+        self.assertIsNone(instance.metrics_ops)
 
-        def _compute_gradients(*args, **kwargs):  # pylint: disable=I0011,W0613
-            return [(grad_x, var_x), (grad_y, var_y), (None, var_x)]
+    def test_feed(self):
+        """Feed the model with tensors."""
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+
+        instance.feed(inputs, target)
+        self.assertTrue(instance.fed)
+        self.assertEqual(inputs, instance.inputs)
+        self.assertEqual(target, instance.target)
+
+        self.assertFalse(instance.built)
+        self.assertIsNone(instance.hparams)
+        self.assertIsNone(instance.loss)
+        self.assertIsNone(instance.optimizer)
+        self.assertIsNone(instance.metrics)
+        self.assertIsNone(instance.logits)
+        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.loss_op)
+        self.assertIsNone(instance.train_op)
+        self.assertIsNone(instance.summary_op)
+        self.assertIsNone(instance.metrics_ops)
+
+        # If you try feeding the model twice, you
+        # will have a RuntimeError.
+        self.assertRaises(RuntimeError, instance.feed, inputs, target)
+
+    def test_feed_with_none_args(self):
+        """Test feeding the model with `None` inputs or target."""
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+
+        self.assertRaises(ValueError, instance.feed,
+                          inputs=None, target=target)
+        self.assertRaises(ValueError, instance.feed,
+                          inputs=inputs, target=None)
+
+    def test_build_trainable(self):
+        """Test the building of a trainable model."""
+
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
+
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
+
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=False)
+
         optimizer = mock.Mock()
-        optimizer.compute_gradients.side_effect = _compute_gradients
-        optimizer.apply_gradients.side_effect = [train_op]
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
-        clip_map = {
-            grad_x: clip_grad_x,
-            grad_y: clip_grad_y
-        }
-        def _clip(grad):
-            return clip_map.pop(grad)
-        clip = mock.Mock()
-        clip.side_effect = _clip
+        metrics = mock.Mock()
+        metrics_op_01 = tf.no_op('metrics_op_01')
+        metrics_op_02 = tf.no_op('metrics_op_02')
+        metrics_ops = [metrics_op_01, metrics_op_02]
+        metrics.side_effect = [metrics_ops]
 
-        summarize_map = {
-            grad_x: 1,
-            grad_y: 1,
-            clip_grad_x: 1,
-            clip_grad_y: 1
-        }
-        def _summarize(grad):
-            summarize_map.pop(grad)
-        summarize = mock.Mock()
-        summarize.side_effect = _summarize
+        instance.build(hparams, loss, optimizer, metrics)
 
-        # ACT.
-        opt = model.Optimizer(optimizer, clip, colocate=False, summarize=summarize)
-        result = opt.minimize(loss_op, variables=variables, global_step=global_step)
+        self.assertTrue(instance.built)
+        self.assertTrue(instance.trainable)
+        self.assertEqual(hparams.dim_0, instance.hparams.dim_0)
+        self.assertEqual(hparams.dim_1, instance.hparams.dim_1)
+        self.assertEqual(instance.get_default_hparams().dim_2,
+                         instance.hparams.dim_2)
+        self.assertFalse('extra' in instance.hparams.values())
+        self.assertIsNotNone(instance.logits)
+        self.assertIsNotNone(instance.output)
 
-        # ASSERT.
-        # The returned train_op is the expected one.
-        self.assertEqual(result, train_op)
+        loss.assert_called_once_with(instance.target, instance.output)
+        self.assertEqual(loss_op, instance.loss_op)
 
-        # The `compute_gradients` method has been invoked for the given
-        # loss op, with he given variables and with the proper value
-        # for the `colocate_gradients_with_ops` flag.
-        optimizer.compute_gradients.assert_called_once_with(
-            loss_op, variables, colocate_gradients_with_ops=opt.colocate)
+        optimizer.minimize.assert_called_once_with(
+            instance.loss_op, global_step=instance.global_step)
+        self.assertEqual(train_op, instance.train_op)
 
-        # All the (not None) gradients have been mapped to their
-        # clipped version -- i.e. the `clip_map` is empty.
-        self.assertEqual(0, len(clip_map))
+        metrics.assert_called_once_with(instance.target, instance.output)
+        self.assertEqual(metrics_ops, instance.metrics_ops)
 
-        # The `apply_gradients` method has been invoked with the proper
-        # list of tuple of clipped gradients and variables.
-        optimizer.apply_gradients.assert_called_once_with(
-            [(clip_grad_x, var_x), (clip_grad_y, var_y)],
-            global_step=global_step)
+        self.assertIsNotNone(instance.summary_op)
 
-        # The `summarize` function has been invoked for each of the
-        # gradients and for each of the clipped gradients -- i.e. the
-        # summarize_map dictionary is emtpy.
-        self.assertEqual(0, len(summarize_map))
+        self.assertRaises(RuntimeError, instance.build,
+                          hparams, loss, optimizer, metrics)
 
-    def test_optimizer_no_clip(self):
-        """Test for the `dket.model.Optimizer` class withouth gradient clipping."""
+    def test_build_not_trainable_loss(self):
+        """Test the building of a non-trainable model with loss."""
 
-        global_step = ops.get_or_create_global_step()
-        coll = [tf.GraphKeys.TRAINABLE_VARIABLES]
-        var_x = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='x')
-        var_y = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='y')
-        variables = [var_x, var_y]
-        grad_x = tf.div(var_x, 2, name='grad_x')
-        grad_y = tf.div(var_y, 2, name='grad_y')
-        loss_op = tf.no_op(name='Loss')
-        train_op = tf.no_op(name='Train')
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
 
-        def _compute_gradients(*args, **kwargs):  # pylint: disable=I0011,W0613
-            return [(grad_x, var_x), (grad_y, var_y), (None, var_x)]
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
+
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=False)
+
+        metrics = mock.Mock()
+        metrics_op_01 = tf.no_op('metrics_op_01')
+        metrics_op_02 = tf.no_op('metrics_op_02')
+        metrics_ops = [metrics_op_01, metrics_op_02]
+        metrics.side_effect = [metrics_ops]
+
+        instance.build(hparams, loss, optimizer=None, metrics=metrics)
+
+        self.assertFalse(instance.trainable)
+        self.assertIsNone(instance.optimizer)
+        self.assertIsNone(instance.train_op)
+
+    def test_build_not_trainable(self):
+        """Test the building of a non-trainable model without loss."""
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
+
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
+        instance.build(hparams, loss=None, optimizer=None, metrics=None)
+
+        self.assertFalse(instance.trainable)
+        self.assertIsNone(instance.loss)
+        self.assertIsNone(instance.loss_op)
+        self.assertIsNone(instance.optimizer)
+        self.assertIsNone(instance.train_op)
+        self.assertIsNone(instance.summary_op)
+
+    def test_loss_on_logits(self):
+        """Test the loss computed on logits instead of predictions."""
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
+
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
+
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=True)
+
         optimizer = mock.Mock()
-        optimizer.compute_gradients.side_effect = _compute_gradients
-        optimizer.apply_gradients.side_effect = [train_op]
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
-         # ACT.
-        opt = model.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
-        result = opt.minimize(loss_op, variables=variables, global_step=global_step)
+        instance.build(hparams, loss, optimizer)
 
-        # ASSERT.
-        # The returned train_op is the expected one.
-        self.assertEqual(result, train_op)
+        loss.assert_called_once_with(instance.target, instance.logits)
+        self.assertEqual(loss_op, instance.loss_op)
 
-        # The `compute_gradients` method has been invoked for the given
-        # loss op, with he given variables and with the proper value
-        # for the `colocate_gradients_with_ops` flag.
-        optimizer.compute_gradients.assert_called_once_with(
-            loss_op, variables, colocate_gradients_with_ops=opt.colocate)
+    def test_build_trainable_without_loss(self):  # pylint: disable=I0011,C0103
+        """Built a model with an optimizer but without a loss function."""
 
-        # The `apply_gradients` method has been invoked with the proper
-        # list of tuple of clipped gradients and variables.
-        optimizer.apply_gradients.assert_called_once_with(
-            [(grad_x, var_x), (grad_y, var_y)],
-            global_step=global_step)
+        instance = _Model()
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
 
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
-    def test_optimizer_no_global_step(self):
-        """Test Test for the `dket.model.Optimizer` withouth global_step."""
-
-        _ = ops.get_or_create_global_step()
-        coll = [tf.GraphKeys.TRAINABLE_VARIABLES]
-        var_x = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='x')
-        var_y = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='y')
-        variables = [var_x, var_y]
-        grad_x = tf.div(var_x, 2, name='grad_x')
-        grad_y = tf.div(var_y, 2, name='grad_y')
-        loss_op = tf.no_op(name='Loss')
-        train_op = tf.no_op(name='Train')
-
-        def _compute_gradients(*args, **kwargs):  # pylint: disable=I0011,W0613
-            return [(grad_x, var_x), (grad_y, var_y), (None, var_x)]
         optimizer = mock.Mock()
-        optimizer.compute_gradients.side_effect = _compute_gradients
-        optimizer.apply_gradients.side_effect = [train_op]
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
-         # ACT.
-        opt = model.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
-        result = opt.minimize(loss_op, variables=variables)
+        self.assertRaises(ValueError, instance.build,
+                          hparams, loss=None, optimizer=optimizer)
 
-        # ASSERT.
-        # The returned train_op is the expected one.
-        self.assertEqual(result, train_op)
+    def test_build_not_fed(self):
+        """Build a model which has not been fed."""
+        instance = _Model()
+        hparams = instance.get_default_hparams()
+        self.assertFalse(instance.fed)
+        self.assertRaises(RuntimeError, instance.build, hparams)
 
-        # The `compute_gradients` method has been invoked for the given
-        # loss op, with he given variables and with the proper value
-        # for the `colocate_gradients_with_ops` flag.
-        optimizer.compute_gradients.assert_called_once_with(
-            loss_op, variables, colocate_gradients_with_ops=opt.colocate)
+    def test_build_trainable_without_summaries(self):  # pylint: disable=I0011,C0103
+        """Test that a trainable model always has a summary_op."""
+        instance = _Model(summary=False)
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
 
-        # The `apply_gradients` method has been invoked with the proper
-        # list of tuple of clipped gradients and variables.
-        optimizer.apply_gradients.assert_called_once_with(
-            [(grad_x, var_x), (grad_y, var_y)], global_step=None)
+        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
-    def test_optimizer_no_variables(self):
-        """Test for the `dket.model.Optimizer` withouth explicit variable set."""
-
-        global_step = ops.get_or_create_global_step()
-        coll = [tf.GraphKeys.TRAINABLE_VARIABLES]
-        var_x = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='x')
-        var_y = tf.Variable(23, dtype=tf.float32, trainable=True, collections=coll, name='y')
-        variables = [var_x, var_y]
-        grad_x = tf.div(var_x, 2, name='grad_x')
-        grad_y = tf.div(var_y, 2, name='grad_y')
-        loss_op = tf.no_op(name='Loss')
-        train_op = tf.no_op(name='Train')
-
-        def _compute_gradients(*args, **kwargs):  # pylint: disable=I0011,W0613
-            return [(grad_x, var_x), (grad_y, var_y), (None, var_x)]
         optimizer = mock.Mock()
-        optimizer.compute_gradients.side_effect = _compute_gradients
-        optimizer.apply_gradients.side_effect = [train_op]
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
-         # ACT.
-        opt = model.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
-        result = opt.minimize(loss_op, variables=None, global_step=global_step)
+        instance.build(hparams, loss, optimizer)
+        self.assertIsNone(tf.summary.merge_all())
+        self.assertIsNotNone(instance.summary_op)
 
-        # ASSERT.
-        # The returned train_op is the expected one.
-        self.assertEqual(result, train_op)
+    def test_build_without_hparams(self):
+        """Test the building of a model without hparams."""
+        instance = _Model(summary=False)
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
 
-        # The `compute_gradients` method has been invoked for the given
-        # loss op, with he given variables and with the proper value
-        # for the `colocate_gradients_with_ops` flag.
-        optimizer.compute_gradients.assert_called_once_with(
-            loss_op, variables, colocate_gradients_with_ops=opt.colocate)
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
-        # The `apply_gradients` method has been invoked with the proper
-        # list of tuple of clipped gradients and variables.
-        optimizer.apply_gradients.assert_called_once_with(
-            [(grad_x, var_x), (grad_y, var_y)], global_step=global_step)
+        optimizer = mock.Mock()
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
+        self.assertRaises(ValueError, instance.build, None,
+                          loss=loss, optimizer=optimizer)
 
-class TestMetrics(tf.test.TestCase):
-    """Test case for the `dket.models.Metrics` class."""
+    def test_build_without_metrics(self):
+        """Test the building without metrics."""
+        instance = _Model(summary=False)
+        with tf.variable_scope('Inputs'):
+            inputs = {
+                'A': tf.constant(23, dtype=tf.int32),
+                'B': tf.constant(47, dtype=tf.int32)
+            }
+        with tf.variable_scope('Target'):
+            target = tf.constant(90, dtype=tf.int32)
+        instance.feed(inputs, target)
 
-    def test_default(self):
-        """Test the default behaviour of the `dket.models.Metrics` class."""
+        loss = mock.Mock()
+        loss_op = tf.no_op('loss_op')
+        loss.side_effect = [loss_op]
+        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
-        truth = tf.constant([0, 1, 2], dtype=tf.int32, name='truth')
-        preds = tf.constant([9, 23, 47], dtype=tf.int32, name='preds')
+        optimizer = mock.Mock()
+        train_op = tf.no_op('train_op')
+        optimizer.minimize.side_effect = [train_op]
 
-        metrics_a = mock.Mock()
-        metrics_a_res_01 = tf.no_op(name='A01')
-        metrics_a_res_02 = tf.no_op(name='A02')
-        metrics_a.side_effect = [[metrics_a_res_01, metrics_a_res_02]]
-
-        metrics_b = mock.Mock()
-        metrics_b_res_01 = tf.no_op(name='B01')
-        metrics_b_res_02 = tf.no_op(name='B02')
-        metrics_b.side_effect = [[metrics_b_res_01, metrics_b_res_02]]
-
-        expected = [metrics_a_res_01, metrics_a_res_02,
-                    metrics_b_res_01, metrics_b_res_02]
-        expected = sorted(expected, key=lambda item: item.name)
-
-        metrics = model.Metrics([metrics_a, metrics_b])
-        results = metrics.compute(truth, preds)
-        results = sorted(results, key=lambda item: item.name)
-
-        self.assertEqual(expected, results)
-        metrics_a.assert_called_once_with(truth, preds)
-        metrics_b.assert_called_once_with(truth, preds)
-
-    def test_accuracy(self):
-        """Test the instance created via the `batch_mean_accuracy` factory method."""
-
-        truth = tf.constant([0, 1, 2, 1, 0], dtype=tf.int32, name='truth')
-        preds = tf.constant([1, 1, 2, 3, 0], dtype=tf.int32, name='preds')
-        expected = 3.0 / 5.0
-
-        results = model.Metrics.batch_mean_accuracy().compute(truth, preds)
-        self.assertEqual(1, len(results))
-
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            actual = sess.run(results[0])
-            self.assertAllClose(expected, actual)
+        instance.build(instance.get_default_hparams(), loss, optimizer)
+        self.assertIsNone(instance.metrics)
+        self.assertIsNone(instance.metrics_ops)
 
 
 if __name__ == '__main__':

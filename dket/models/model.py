@@ -1,241 +1,238 @@
 """Model implementation for the `dket` system."""
 
-
 import abc
-import functools
-import itertools
 
 import tensorflow as tf
 
 from dket import ops
 
-class Loss(object):
-    """Base implementation of a loss function."""
-
-    def __init__(self, func, accept_logits=True):
-        """Initialize the Loss object."""
-        self._func = func
-        self._accept_logits = accept_logits
-
-    @property
-    def accept_logits(self):
-        """True if logits must be provided."""
-        return self._accept_logits
-
-    @property
-    def func(self):
-        """The wrapped function."""
-        return self._func
-
-    def call(self, truth, predicted, weights=1.0):
-        """Call the inner loss function."""
-        return self._func(truth, predicted, weights=weights)
-
-    def __call__(self, truth, predicted, weights=1.0):
-        return self.call(truth, predicted, weights=weights)
-
-    @staticmethod
-    def softmax_cross_entropy(scope=None, collection=tf.GraphKeys.LOSSES):
-        """Loss function implementing a sparse softmax cross entropy."""
-        return Loss(
-            functools.partial(
-                ops.softmax_xent_with_logits,
-                scope=scope, loss_collection=collection))
-
-
-class Optimizer(object):
-    """Base implementation of the optimizer function."""
-
-    @staticmethod
-    def _no_summary(var):
-        pass
-
-    def __init__(self, optimizer, clip, colocate=False, summarize=ops.summarize):
-        """Initialize the new optimizer instance.
-
-        Arguments:
-          clip: a function getting a `Tensor` in input representing a gradient and returning
-            a `Tensor` of the same shape of the input and compatible `DType`, representing a
-            clipped version of the gradient.
-          colocate: if `True`, try to colocate gradients and ops.
-          summarize: a function accepting a `Tensor` representing a gradient as input; this
-            function is just intended to generate summaries for the input `Tensor`. The
-            default one is `dket.ops.summarize`.
-        """
-        self._optimizer = optimizer
-        self._clip = clip
-        self._colocate = colocate
-        self._summarize = summarize or Optimizer._no_summary
-
-    @property
-    def optimizer(self):
-        """The wrapped `tf.train.Optimizer`."""
-        return self._optimizer
-
-    @property
-    def clip(self):
-        """The wrapped gradient clipping function (if any)."""
-        return self._clip
-
-    @property
-    def colocate(self):
-        """If `True`, try to colocate gradients and ops."""
-        return self._colocate
-
-    @property
-    def summarize(self):
-        """The summarization function invoked on gradients (and clipped)."""
-        return self._summarize
-
-    def minimize(self, loss, variables=None, global_step=None):
-        """Minimize the loss w.r.t. the variables.
-
-        Arguments:
-          loss: an `Op` representing the loss function to be minimized.
-          variables: a list of `tf.Variable` w.r.t. which to differentiate the loss;
-            if `None`, the variables in the `tf.GraphKeys.TRAINABLE_VARIABLES` will
-            be automatically used.
-          global_step: a `0-D` (i.e. scalar) `Tensor` that represents the global step of
-            the model; if provided, will be automatically incremented at each training step.
-
-        Returns:
-          an `Op` representing the training step; if the `global_step` argument has been
-          provided, this will be incremented at each training step.
-        """
-
-        variables = variables or tf.trainable_variables()
-
-        grads_and_vars = self._optimizer.compute_gradients(
-            loss, variables, colocate_gradients_with_ops=self._colocate)
-
-        # Remove the None gradiend which might have come from
-        # variables actually not influencing the loss value.
-        grads_and_vars = [(g, v) for g, v in grads_and_vars if g is not None]
-
-        for grad, _ in grads_and_vars:
-            self._summarize(grad)
-
-        if self._clip is not None:
-            for i, grad_and_var in enumerate(grads_and_vars):
-                grad, var = grad_and_var
-                clipped_grad = self._clip(grad)
-                self._summarize(clipped_grad)
-                grads_and_vars[i] = (clipped_grad, var)
-
-        return self.optimizer.apply_gradients(
-            grads_and_vars, global_step=global_step)
-
-    @staticmethod
-    def sgd(learning_rate, clip=None, colocate=True, summarize=ops.summarize):
-        """Create a Stochastic Gradient Descent optimizer.
-
-        Arguments:
-          learning_rate: a `float` or `0-D` (i.e. scalar) `Tensor`.
-          clip: a function getting a `Tensor` in input representing a gradient and returning
-            a `Tensor` of the same shape of the input and compatible `DType`, representing a
-            clipped version of the gradient.
-          colocate: if `True`, try to colocate gradients and ops.
-          summarize: a function accepting a `Tensor` representing a gradient as input; this
-            function is just intended to generate summaries for the input `Tensor`.
-
-        Returns:
-          a `dket.model.Optimizer` instance implementing the Gradient Descent algorithm.
-        """
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-        return Optimizer(optimizer, clip=clip, colocate=colocate, summarize=summarize)
-
-
-class Metrics(object):
-    """A function used to judge performances of the model."""
-
-    def __init__(self, metrics):
-        """Initialize a new instance.
-
-        Arguments:
-          metrics: a list of callable objects implementing the
-            same signature of the `Metric.compute` method.
-        """
-        self._metrics = metrics
-
-    def __call__(self, truth, predicted):
-        """Wrapper for the `compute` method."""
-        return self.compute(truth, predicted)
-
-    def compute(self, truth, predicted):
-        """Compute a set of evaluation metrics on the results.
-
-        Arguments:
-          truth: a `Tensor` representing the gold truth.
-          predicted:  a `Tensor` of same shape and dtype than `truth` representing
-            actual predictions.
-
-        Returns:
-          a `list` of `Op` objects representing the evaluation metrics for the model.
-        """
-        return list(itertools.chain(*[m(truth, predicted) for m in self._metrics]))
-
-    @staticmethod
-    def batch_mean_accuracy():
-        """Compute the mean accuracy on a batch.
-
-        Returns:
-          a `Metrics` instance that returns a list with one `Op` representing
-          the average accuracy of the prediction w.r.t. the gold truth. Both
-          the `truth` and `predicted` tensors are intended to be of type `tf.int32`
-          and to have the same shape and are intended to be sparse representation
-          of classification labels.
-        """
-        def _accuracy(truth, predicted):
-            acc = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(truth, predicted),
-                    tf.float32),
-                name='accuracy')
-            return [acc]
-        return Metrics([_accuracy])
-
 
 class BaseModel(object):
-    """Base model implementation."""
+    """Base model implementation.
+
+    This class implements a SINGLE TASK model where single task means one
+    target tensor, one output, one loss. The model can handle multiple inputs.
+    The model must be first fed with input(s) and target `Tensor`s and then
+    built, specifying its topology configuration, the loss function, the
+    optimization algorithm and evaluation metrics. If the optimization is not
+    specified, the model will not be trainable.
+
+    NOTA BENE for the implementors of concrete subclasses. What you need to do is
+    to subclass the `BaseModel` class and to define its two abstract methods.abc
+
+      * `_build_graph()` is the method which is in charge to build the graph. Implementing
+        this method you MUST set the `self._logits` and the `self._output` tensors. This
+        method is invoked as an abstract template from within the `.build()` method.
+      * `get_default_hparams()` is the model that is in charge to generate the default
+        `HParams` for the model. This method MUST be invokable at the very early stage
+        of the building phase, when maybe no property has been set so it should be
+        like a static method, totally independent from the state of the object.
+
+    Example:
+    ```python
+
+    class MyModel(BaseModel):
+
+        def _build_graph(self):
+            # Build your graph from self._inputs to self._outputs.
+            pass
+
+        def get_default_hparams(self):
+            # Build the default `HParams`.
+            pass
+
+    # Define the inputs and the target: can be placeholder
+    # or tenrors coming from a dequeue operation.
+    inputs = {
+        'A': tf.placeholder(...),
+        'B': tf.placeholder(...)
+    }
+    target = tf.placeholder(...)
+
+    # Define your `HParams` to be used in the model configuration:
+    hparams = tf.contrib.training.HParams(...)
+
+    # Define the loss function, which is a function accepting
+    # the target and the output tenso as argumetns. It is strongly
+    # suggested to use an instance of the `dket.loss.Loss` class.
+    loss = ...
+
+    # Define the optimizer. Same as for the loss, it could be better
+    # to use some instance of the `dket.oprimizer.Optimizer` class.
+    optimizer = ...
+
+    # Define some evaluation metrics. Same as for the loss, it could be better
+    # to use some instance of the `dket.metrics.Metrics` class.
+    metrics = ...
+
+    # Now you can build and feed the model:
+    instance = MyModel().feed(inputs, target).build(hparams, loss, optimizer, metrics)
+    ```
+    """
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, hparams, loss, metrics, optimizer=None):
+    def __init__(self):
         self._global_step = ops.get_or_create_global_step()
+        self._hparams = None
+        self._fed = False
+        self._inputs = None
+        self._target = None
+        self._logits = None
+        self._output = None
+        self._loss = None
+        self._loss_op = None
+        self._optimizer = None
+        self._train_op = None
+        self._trainable = False
+        self._summary_op = None
+        self._metrics = None
+        self._metrics_ops = None
+        self._built = False
+
+    def feed(self, inputs, target):
+        """Feed the model with input and target queues.
+
+        Arguments:
+          inputs: a `Tensor` or a dict of `str`, `Tensor` representing the model input(s).
+          target: a `Tensor` representing the model output.
+
+        Returns:
+          the very same instance of the model.
+        """
+
+        if self._fed:
+            raise RuntimeError(
+                'Cannot feed a model that has already been fed.')
+
+        if self._built:
+            raise RuntimeError(
+                'Cannot feed a model that has already been built.')
+
+        if inputs is None:
+            raise ValueError('`inputs` argument cannot be `None`')
+
+        if target is None:
+            raise ValueError('`target` argument cannot be `None`')
+
+        self._inputs = inputs
+        self._target = target
+        self._fed = True
+        return self
+
+    @property
+    def fed(self):
+        """`True` if the model has beed feed with queues."""
+        return self._fed
+
+    def build(self, hparams, loss=None, optimizer=None, metrics=None):
+        """Build the model instance.
+
+        This method is the backbon of the model creation and performs many operations,
+        leaving the graph creation to the asbtract template method `_build_graph()` which
+        MUST be implemented in subclasses and MUST complete leaving the `self._logits`
+        and `self._output` tensors defined. The method will set the `self.built` flag
+        value to `True`.
+
+        Arguments:
+          hparams: a `tf.contrib.training.HParams` representing the configuration for
+            the current model instance. Such settings will be merged with the default ones
+            so that all the entries in the default one will be overwritten and all the
+            entries that are not in the default one will be discarded.
+          loss: a function accepting the `self.target` and `self.output` tensors as arguments
+            and returning the loss op that will be placed in `self.loss_op` representing
+            the loss function of the model.
+          optimizer: a function accepting the `self.loss_op` tensor, an optional list
+            of trainable variables (or getting the graph tf.GraphKeys.TRAINABLE_VARIABLES if such
+            list is not provided) and the `global_step` as a named argument. If this argument
+            is `None`, the `self.trainable` flag is set to `False`.
+          metrics: a function accepting the `self.target` and `self.output` tensors as arguments
+            and returning a list of ops representing evaluation metrics for the model.
+
+        Returns:
+          the very same instance of the model.
+
+        Raises:
+          RuntimeError: is the model has not been fed (i.e. `self.fed` is `False`) or
+            if the method has already been invoked (i.e. `self.built` is `True`)
+          ValueError: if `hparams` is `None` or if `optimizer` is provided without `loss`.
+
+        Remarks:
+          for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
+          for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
+          class and, finally, for the `metrics` argument you can use an instance of the
+          `dket.metrics.Metrics` class.
+        """
+        if not self._fed:
+            raise RuntimeError('The model has not been fed yes.')
+
+        if self._built:
+            raise RuntimeError('The model has already been built.')
+
+        if loss is None and optimizer is not None:
+            raise ValueError(
+                'If `loss` is `None`, `optimizer` must be `None`.')
+
+        if hparams is None:
+            raise ValueError('`hparams` cannot be `None`.')
+
         self._hparams = self._set_hparams(hparams)
         self._loss = loss
         self._optimizer = optimizer
         self._metrics = metrics
         self._trainable = self._optimizer is not None
-        self._input = None
-        self._target = None
-        self._logits = None
-        self._output = None
-        self._loss_op = None
-        self._train_op = None
-        self._summary_op = None
-        self._metrics_ops = None
-        self._build_model()
+        self._build_graph()
+
+        if self._loss:
+            actual = self._logits if self._loss.accept_logits else self._output
+            self._loss_op = self._loss(self.target, actual)
+
+        if self._optimizer:
+            self._train_op = self._optimizer.minimize(
+                self._loss_op, global_step=self._global_step)
+
+        if self._metrics:
+            self._metrics_ops = self._metrics(self.target, self.output)
+
+        if self._trainable:
+            self._summary_op = tf.summary.merge_all()
+            if self._summary_op is None:
+                self._summary_op = tf.no_op('NoSummary')
+
+        self._built = True
+        return self
 
     @abc.abstractmethod
     def get_default_hparams(self):
-        """Returns the default `tf.contrib.training.HParams`"""
-        raise NotImplementedError('This method must be implemented in subclasses')
+        """Returns the default `tf.contrib.training.HParams`.
+
+        Remarks: this method will be called in a static-like scenario so
+        so nothing (property, fields, ecc.) from the instance state should
+        be used.
+        """
+        raise NotImplementedError(
+            'This method must be implemented in subclasses')
 
     def _set_hparams(self, hparams):
         actual = hparams.values()
         default = self.get_default_hparams().values()
         merged = tf.contrib.training.HParams()
-        for key, value in default.iteritems():
+        for key, value in default.items():
             if key in actual:
                 value = actual[key]
             merged.add_hparam(key, value)
         return merged
 
+    @property
+    def built(self):
+        """`True` if the model has been built."""
+        return self._built
+
     @abc.abstractmethod
-    def _build_model(self):
-        """Build the model."""
-        raise NotImplementedError('This method must be implemented in subclasses')
+    def _build_graph(self):
+        """Build the (inference) graph."""
+        raise NotImplementedError(
+            'This method must be implemented in subclasses')
 
     @property
     def global_step(self):
@@ -268,9 +265,9 @@ class BaseModel(object):
         return self._trainable
 
     @property
-    def input(self):
+    def inputs(self):
         """A tensor or a dictionary of tensors represenitng the model input(s)."""
-        return self._input
+        return self._inputs
 
     @property
     def target(self):
@@ -290,7 +287,7 @@ class BaseModel(object):
     @property
     def loss_op(self):
         """The loss op of the model."""
-        return self._loss
+        return self._loss_op
 
     @property
     def train_op(self):

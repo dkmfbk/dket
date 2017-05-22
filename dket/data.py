@@ -14,6 +14,8 @@ and has two int64 list features:
      values for the terms of the output formula.
 """
 
+import itertools
+
 import tensorflow as tf
 
 
@@ -145,8 +147,11 @@ def parse(serialized):
         from the `encode()` method).
 
     Returns:
-      a pair of 1D ternsors, `words` of shape [sentence_length] and
-        `formula` of shape [formula_length].
+      a tuple of 4 tensors:
+        `words`: 1D tensor of shape [sentence_length].
+        `sentence_length`: 0D tesnor (i.e. scalar) representing the sentence length.
+        `formula`: 1D tensor of shape [formula_length].
+        `formula_length`: a 0D tensor (i.e. scalar) representing the formula length
     """
     features = {
         SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
@@ -157,6 +162,20 @@ def parse(serialized):
     parsed = tf.parse_single_example(
         serialized=serialized,
         features=features)
+    sentence_length = parsed[SENTENECE_LENGTH_KEY]
+    formula_length = parsed[FORMULA_LENGTH_KEY]
     words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
     formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])
-    return words, formula
+    return words, sentence_length, formula, formula_length
+
+
+def read_from_files(file_patterns, shuffle=True, num_epochs=None):
+    """Read examples from a set of files."""
+    files = list(itertools.chain(*[tf.gfile.Glob(p) for p in file_patterns]))
+    print(files)
+    fqueue = tf.train.string_input_producer(
+        files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue')
+    reader = tf.TFRecordReader(name='TFRecordReader')
+    _, value = reader.read(fqueue, name='Read')
+    tensors = parse(value)
+    return tensors

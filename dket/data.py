@@ -14,6 +14,8 @@ and has two int64 list features:
      values for the terms of the output formula.
 """
 
+import itertools
+
 import tensorflow as tf
 
 
@@ -165,3 +167,15 @@ def parse(serialized):
     words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
     formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])
     return words, sentence_length, formula, formula_length
+
+
+def read_from_files(file_patterns, shuffle=True, num_epochs=None):
+    """Read examples from a set of files."""
+    files = list(itertools.chain(*[tf.gfile.Glob(p) for p in file_patterns]))
+    print(files)
+    fqueue = tf.train.string_input_producer(
+        files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue')
+    reader = tf.TFRecordReader(name='TFRecordReader')
+    _, value = reader.read(fqueue, name='Read')
+    tensors = parse(value)
+    return tensors

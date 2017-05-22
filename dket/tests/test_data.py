@@ -69,13 +69,15 @@ class TestParse(unittest.TestCase):
         formula = [12, 23, 34, 45, 0]
         example = data.encode(words, formula)
         serialized = example.SerializeToString()
-        twords, tformula = data.parse(serialized)
+        words_t, sent_len_t, formula_t, form_len_t = data.parse(serialized)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-            awords, aformula = sess.run([twords, tformula])
-        self.assertEqual(words, awords.tolist())
-        self.assertEqual(formula, aformula.tolist())
+            actual = sess.run([words_t, sent_len_t, formula_t, form_len_t])
+        self.assertEqual(words, actual[0].tolist())
+        self.assertEqual(len(words), np.asscalar(actual[1]))
+        self.assertEqual(formula, actual[2].tolist())
+        self.assertEqual(len(formula), np.asscalar(actual[3]))
 
 
 if __name__ == '__main__':

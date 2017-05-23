@@ -9,6 +9,8 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
+from liteflow import input as lin
+
 from dket import data
 
 
@@ -108,8 +110,8 @@ class TestReadFromFiles(unittest.TestCase):
 
     def _as_str(self, words, formula):
         return '-'.join([
-                ''.join([str(item) for item in words]),
-                ''.join([str(item) for item in formula])])
+            ''.join([str(item) for item in words]),
+            ''.join([str(item) for item in formula])])
 
     def test_read_from_files(self):
         """Rading from files."""
@@ -157,6 +159,32 @@ class TestReadFromFiles(unittest.TestCase):
         for exp, act in zip(expecteds, actuals):
             self.assertEqual(exp, act)
 
+    def test_smoke(self):
+        """Smoke test for a full pipeline."""
+        _, tname = tempfile.mkstemp()
+        num = 100
+        num_epochs = 2
+        self._write_examples(tname, [self._random_io_data() for _ in range(num)])
+        tensors = data.read_from_files([tname], shuffle=True, num_epochs=num_epochs)
+        batches = lin.shuffle_batch(tensors=tensors, batch_size=5)
+
+        count = 0
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(coord=coord)
+            try:
+                while True:
+                    actual = sess.run(batches)
+                    count += len(actual[0])
+            except tf.errors.OutOfRangeError as ex:
+                coord.request_stop(ex=ex)
+            finally:
+                coord.request_stop()
+                coord.join(threads)
+        self.assertEqual(num * num_epochs, count)
+        os.remove(tname)
 
 if __name__ == '__main__':
     unittest.main()

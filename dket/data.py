@@ -170,9 +170,25 @@ def parse(serialized):
 
 
 def read_from_files(file_patterns, shuffle=True, num_epochs=None):
-    """Read examples from a set of files."""
+    """Read examples from a set of files.
+
+    **Rrmarks:** this function creates queue runners and **local** variables.
+
+    Arguments:
+      file_patterns: an iterable of file patterns, matching data files.
+      shuffle: if `True`, files will be shuffled across different epochs.
+      num_epochs: `int`, the number of epochs, i.e. the amount of times the reading operations
+        will cycle across all the files before raising an OutOfRange error. If `None`, the
+        cycle will continue indefinetly.
+
+    Returns:
+      a tuple of 4 tensors:
+        `words`: 1D tensor of shape [sentence_length].
+        `sentence_length`: 0D tesnor (i.e. scalar) representing the sentence length.
+        `formula`: 1D tensor of shape [formula_length].
+        `formula_length`: a 0D tensor (i.e. scalar) representing the formula length
+    """
     files = list(itertools.chain(*[tf.gfile.Glob(p) for p in file_patterns]))
-    print(files)
     fqueue = tf.train.string_input_producer(
         files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue')
     reader = tf.TFRecordReader(name='TFRecordReader')

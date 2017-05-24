@@ -4,7 +4,7 @@ import mock
 
 import tensorflow as tf
 
-from dket import optimizer as O
+from dket import optimizers
 from dket import ops
 
 
@@ -54,7 +54,7 @@ class TestOptimizer(tf.test.TestCase):
         summarize.side_effect = _summarize
 
         # ACT.
-        opt = O.Optimizer(optimizer, clip, colocate=False, summarize=summarize)
+        opt = optimizers.Optimizer(optimizer, clip, colocate=False, summarize=summarize)
         result = opt.minimize(loss_op, variables=variables, global_step=global_step)
 
         # ASSERT.
@@ -102,7 +102,7 @@ class TestOptimizer(tf.test.TestCase):
         optimizer.apply_gradients.side_effect = [train_op]
 
          # ACT.
-        opt = O.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
+        opt = optimizers.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
         result = opt.minimize(loss_op, variables=variables, global_step=global_step)
 
         # ASSERT.
@@ -142,7 +142,7 @@ class TestOptimizer(tf.test.TestCase):
         optimizer.apply_gradients.side_effect = [train_op]
 
          # ACT.
-        opt = O.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
+        opt = optimizers.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
         result = opt.minimize(loss_op, variables=variables)
 
         # ASSERT.
@@ -181,7 +181,7 @@ class TestOptimizer(tf.test.TestCase):
         optimizer.apply_gradients.side_effect = [train_op]
 
          # ACT.
-        opt = O.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
+        opt = optimizers.Optimizer(optimizer, clip=None, colocate=False, summarize=None)
         result = opt.minimize(loss_op, variables=None, global_step=global_step)
 
         # ASSERT.

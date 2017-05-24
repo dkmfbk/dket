@@ -43,11 +43,11 @@ class BaseModel(object):
 
     # Define the inputs and the target: can be placeholder
     # or tenrors coming from a dequeue operation.
-    inputs = {
+    tensors = {
         'A': tf.placeholder(...),
-        'B': tf.placeholder(...)
+        'B': tf.placeholder(...),
+        'target': tf.placeholder(...)
     }
-    target = tf.placeholder(...)
 
     # Define your `HParams` to be used in the model configuration:
     hparams = tf.contrib.training.HParams(...)
@@ -66,7 +66,7 @@ class BaseModel(object):
     metrics = ...
 
     # Now you can build and feed the model:
-    instance = MyModel().feed(inputs, target).build(hparams, loss, optimizer, metrics)
+    instance = MyModel().feed(tensors).build(hparams, loss, optimizer, metrics)
     ```
     """
 
@@ -76,6 +76,7 @@ class BaseModel(object):
         self._global_step = ops.get_or_create_global_step()
         self._hparams = None
         self._fed = False
+        self._tensors = None
         self._inputs = None
         self._target = None
         self._logits = None
@@ -90,11 +91,16 @@ class BaseModel(object):
         self._metrics_ops = None
         self._built = False
 
-    def feed(self, inputs, target):
+    @abc.abstractmethod
+    def _feed_helper(self, tensors):
+        """Process the feed tensors and place inputs and target."""
+        raise NotImplementedError('To be implemented in subclasses.')
+
+    def feed(self, tensors):
         """Feed the model with input and target queues.
 
         Arguments:
-          inputs: a `Tensor` or a dict of `str`, `Tensor` representing the model input(s).
+          tensors: a `Tensor` or a dict of `str`, `Tensor` representing the model input(s).
           target: a `Tensor` representing the model output.
 
         Returns:
@@ -109,14 +115,10 @@ class BaseModel(object):
             raise RuntimeError(
                 'Cannot feed a model that has already been built.')
 
-        if inputs is None:
-            raise ValueError('`inputs` argument cannot be `None`')
+        if tensors is None:
+            raise ValueError('`tensors` argument cannot be `None`')
 
-        if target is None:
-            raise ValueError('`target` argument cannot be `None`')
-
-        self._inputs = inputs
-        self._target = target
+        self._feed_helper(tensors)
         self._fed = True
         return self
 
@@ -124,6 +126,11 @@ class BaseModel(object):
     def fed(self):
         """`True` if the model has beed feed with queues."""
         return self._fed
+
+    @property
+    def feeding(self):
+        """The feeding tensors."""
+        return self._tensors
 
     def build(self, hparams, loss=None, optimizer=None, metrics=None):
         """Build the model instance.
@@ -184,8 +191,7 @@ class BaseModel(object):
         self._build_graph()
 
         if self._loss:
-            actual = self._logits if self._loss.accept_logits else self._output
-            self._loss_op = self._loss(self.target, actual)
+            self._loss_op = self._loss(self.target, self._output)
 
         if self._optimizer:
             self._train_op = self._optimizer.minimize(

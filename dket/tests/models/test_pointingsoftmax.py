@@ -1,4 +1,5 @@
 """Test module for the `PointingSoftmaxModel`."""
+# TODO(petrux): make this test case a proper experiment. Not a priority, though.
 
 import os
 import random
@@ -17,18 +18,30 @@ class _MovingAvgRecord(object):
     def __init__(self, max_items_no=100, max_stats_no=100):
         self._max_items_no = max_items_no
         self._max_stats_no = max_stats_no
+        self._min_item = None
+        self._max_item = None
         self._items = []
+        self._min_stat = None
+        self._max_stat = None
         self._stats = []
 
     def _add_item(self, item):
         if len(self._items) == self._max_items_no:
             self._items = self._items[1:]
         self._items.append(item)
+        if self._min_item is None or item < self._min_item:
+            self._min_item = item
+        if self._max_item is None or item > self._max_item:
+            self._max_item = item
 
-    def _add_stats(self, stats):
+    def _add_stats(self, stat):
         if len(self._stats) == self._max_stats_no:
             self._stats = self._stats[1:]
-        self._stats.append(stats)
+        self._stats.append(stat)
+        if self._min_stat is None or stat < self._min_stat:
+            self._min_stat = stat
+        if self._max_stat is None or stat > self._max_stat:
+            self._max_stat = stat
 
     def add_item(self, item):
         """Add the item and compute the average."""
@@ -56,8 +69,11 @@ class _ToyTask(object):
     _MIN_LEN = 20
     _MAX_LEN = 30
     _FEEBACK_SIZE = _SHORTLIST_SIZE + 25  # half-way
-    _NUM_EXAMPLES = 10000
+    _NUM_EXAMPLES = 100000
     _LOG_EVRY = 100
+    _NUM_EPOCHS = 100
+    _LEARNING_RATE = 0.2
+    _BATCH_SIZE = 100
 
     def __init__(self):
         self._data_dir = None
@@ -94,7 +110,7 @@ class _ToyTask(object):
     def _build_model(self):
         # HParams
         hparams = tf.contrib.training.HParams(
-            batch_size=32,
+            batch_size=self._BATCH_SIZE,
             vocabulary_size=self._VOCABULARY_SIZE,
             embedding_size=32,
             attention_size=50,
@@ -105,8 +121,9 @@ class _ToyTask(object):
             parallel_iterations=None)
 
         # feeding
-        tensors = data.read_from_files([self._data_file], shuffle=True, num_epochs=5)
-        tensors = lin.shuffle_batch(tensors, batch_size=32)
+        tensors = data.read_from_files(
+            [self._data_file], shuffle=True, num_epochs=self._NUM_EPOCHS)
+        tensors = lin.shuffle_batch(tensors, batch_size=self._BATCH_SIZE)
         feeding = {
             PSM.WORDS_KEY: tf.cast(tensors[0], tf.int32),
             PSM.SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32),

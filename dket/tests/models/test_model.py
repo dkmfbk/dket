@@ -1,5 +1,6 @@
 """Test module for the `dket.models.model` module."""
 
+import copy
 import mock
 
 import tensorflow as tf
@@ -9,12 +10,20 @@ from dket.models import model
 
 class _Model(model.BaseModel):
 
+    _TARGET_KEY = 'TARGET'
+
     def __init__(self, summary=True):
         super(_Model, self).__init__()
         self._summary = summary
+        self._tensors = None
 
     def get_default_hparams(self):
         return tf.contrib.training.HParams(dim_0=10, dim_1=3, dim_2=7)
+
+    def _feed_helper(self, tensors):
+        self._tensors = copy.copy(tensors)
+        self._inputs = copy.copy(tensors)
+        self._target = self._inputs.pop(self._TARGET_KEY)
 
     def _build_graph(self):
         assert not self.built
@@ -74,15 +83,18 @@ class TestBaseModel(tf.test.TestCase):
         with tf.variable_scope('Inputs'):
             inputs = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
             }
-        with tf.variable_scope('Target'):
             target = tf.constant(90, dtype=tf.int32)
 
-        instance.feed(inputs, target)
+            tensors = copy.copy(inputs)
+            tensors['TARGET'] = target
+
+        instance.feed(tensors)
         self.assertTrue(instance.fed)
         self.assertEqual(inputs, instance.inputs)
         self.assertEqual(target, instance.target)
+        self.assertEqual(tensors, instance.feeding)
 
         self.assertFalse(instance.built)
         self.assertIsNone(instance.hparams)
@@ -98,36 +110,24 @@ class TestBaseModel(tf.test.TestCase):
 
         # If you try feeding the model twice, you
         # will have a RuntimeError.
-        self.assertRaises(RuntimeError, instance.feed, inputs, target)
+        self.assertRaises(RuntimeError, instance.feed, tensors)
 
     def test_feed_with_none_args(self):
         """Test feeding the model with `None` inputs or target."""
         instance = _Model()
-        with tf.variable_scope('Inputs'):
-            inputs = {
-                'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
-            }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-
-        self.assertRaises(ValueError, instance.feed,
-                          inputs=None, target=target)
-        self.assertRaises(ValueError, instance.feed,
-                          inputs=inputs, target=None)
+        self.assertRaises(ValueError, instance.feed, tensors=None)
 
     def test_build_trainable(self):
         """Test the building of a trainable model."""
 
         instance = _Model()
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
@@ -178,13 +178,12 @@ class TestBaseModel(tf.test.TestCase):
 
         instance = _Model()
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
@@ -209,13 +208,12 @@ class TestBaseModel(tf.test.TestCase):
         """Test the building of a non-trainable model without loss."""
         instance = _Model()
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32),
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
         instance.build(hparams, loss=None, optimizer=None, metrics=None)
@@ -231,13 +229,12 @@ class TestBaseModel(tf.test.TestCase):
         """Test the loss computed on logits instead of predictions."""
         instance = _Model()
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
@@ -260,13 +257,12 @@ class TestBaseModel(tf.test.TestCase):
 
         instance = _Model()
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
@@ -288,13 +284,12 @@ class TestBaseModel(tf.test.TestCase):
         """Test that a trainable model always has a summary_op."""
         instance = _Model(summary=False)
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
@@ -315,13 +310,12 @@ class TestBaseModel(tf.test.TestCase):
         """Test the building of a model without hparams."""
         instance = _Model(summary=False)
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         loss = mock.Mock()
         loss_op = tf.no_op('loss_op')
@@ -339,13 +333,12 @@ class TestBaseModel(tf.test.TestCase):
         """Test the building without metrics."""
         instance = _Model(summary=False)
         with tf.variable_scope('Inputs'):
-            inputs = {
+            tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32)
+                'B': tf.constant(47, dtype=tf.int32),
+                'TARGET': tf.constant(90, dtype=tf.int32)
             }
-        with tf.variable_scope('Target'):
-            target = tf.constant(90, dtype=tf.int32)
-        instance.feed(inputs, target)
+        instance.feed(tensors)
 
         loss = mock.Mock()
         loss_op = tf.no_op('loss_op')

@@ -2,9 +2,10 @@
 
 import mock
 
+import numpy as np
 import tensorflow as tf
 
-from dket import metrics as M
+from dket import metrics
 
 
 class TestMetrics(tf.test.TestCase):
@@ -13,8 +14,8 @@ class TestMetrics(tf.test.TestCase):
     def test_default(self):
         """Test the default behaviour of the `dket.metrics.Metrics` class."""
 
-        truth = tf.constant([0, 1, 2], dtype=tf.int32, name='truth')
-        preds = tf.constant([9, 23, 47], dtype=tf.int32, name='preds')
+        target = tf.constant([0, 1, 2], dtype=tf.int32, name='target')
+        output = tf.constant([9, 23, 47], dtype=tf.int32, name='output')
 
         metrics_a = mock.Mock()
         metrics_a_res_01 = tf.no_op(name='A01')
@@ -30,28 +31,56 @@ class TestMetrics(tf.test.TestCase):
                     metrics_b_res_01, metrics_b_res_02]
         expected = sorted(expected, key=lambda item: item.name)
 
-        metrics = M.Metrics([metrics_a, metrics_b])
-        results = metrics.compute(truth, preds)
+        metric = metrics.Metrics([metrics_a, metrics_b])
+        results = metric.compute(target, output)
         results = sorted(results, key=lambda item: item.name)
 
         self.assertEqual(expected, results)
-        metrics_a.assert_called_once_with(truth, preds)
-        metrics_b.assert_called_once_with(truth, preds)
+        metrics_a.assert_called_once_with(target, output, weights=None)
+        metrics_b.assert_called_once_with(target, output, weights=None)
 
-    def test_accuracy(self):
-        """Test the instance created via the `batch_mean_accuracy` factory method."""
 
-        truth = tf.constant([0, 1, 2, 1, 0], dtype=tf.int32, name='truth')
-        preds = tf.constant([1, 1, 2, 3, 0], dtype=tf.int32, name='preds')
-        expected = 3.0 / 5.0
+class TestMeanCategoricalAccuracy(tf.test.TestCase):
+    """Base test case for the `dket.ops.mean_categorical_accuracy` function."""
 
-        results = M.Metrics.batch_mean_accuracy().compute(truth, preds)
-        self.assertEqual(1, len(results))
-
+    def test_unweighted(self):
+        """Test the mean categorical accuracy on unweighted tensors."""
+        target = tf.constant([[2, 1, 0, 0]], dtype=tf.int32)
+        output = tf.constant(
+            [[[0.1, 0.1, 0.8],
+              [0.1, 0.1, 0.8],
+              [0.1, 0.8, 0.1],
+              [0.8, 0.1, 0.8]]],
+            dtype=tf.float32)
+        accuracy = metrics.mean_categorical_accuracy(target, output)
+        expected = 0.5
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-            actual = sess.run(results[0])
-            self.assertAllClose(expected, actual)
+            actual = sess.run(accuracy)
+        self.assertAllClose(expected, actual)
+
+    def test_weighted(self):
+        """Test the mean categorical accuracy on unweighted tensors."""
+        target = tf.constant([[2, 1, 0, 0]], dtype=tf.int32)
+        weights = tf.placeholder(dtype=tf.float32, shape=target.shape)
+        output = tf.constant(
+            [[[0.1, 0.1, 0.8],
+              [0.1, 0.1, 0.8],
+              [0.1, 0.8, 0.1],
+              [0.8, 0.1, 0.8]]],
+            dtype=tf.float32)
+        accuracy = metrics.mean_categorical_accuracy(target, output, weights=weights)
+
+        # pylint: disable=I0011,E1101
+        weights_and_expected = [
+            (np.asarray([[2, 1, 1, 0]], dtype=np.float32), 0.5000),
+            (np.asarray([[1, 1, 1, 0]], dtype=np.float32), 0.3333),
+        ]
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            for weights_np, expected in weights_and_expected:
+                actual = sess.run(accuracy, {weights: weights_np})
+                self.assertAllClose(expected, actual, atol=1e-4)
 
 
 if __name__ == '__main__':

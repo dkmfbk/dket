@@ -225,33 +225,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
-    def test_loss_on_logits(self):
-        """Test the loss computed on logits instead of predictions."""
-        instance = _Model()
-        with tf.variable_scope('Inputs'):
-            tensors = {
-                'A': tf.constant(23, dtype=tf.int32),
-                'B': tf.constant(47, dtype=tf.int32),
-                'TARGET': tf.constant(90, dtype=tf.int32)
-            }
-        instance.feed(tensors)
-
-        hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
-
-        loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=True)
-
-        optimizer = mock.Mock()
-        train_op = tf.no_op('train_op')
-        optimizer.minimize.side_effect = [train_op]
-
-        instance.build(hparams, loss, optimizer)
-
-        loss.assert_called_once_with(instance.target, instance.logits)
-        self.assertEqual(loss_op, instance.loss_op)
-
     def test_build_trainable_without_loss(self):  # pylint: disable=I0011,C0103
         """Built a model with an optimizer but without a loss function."""
 

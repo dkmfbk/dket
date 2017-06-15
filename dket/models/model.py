@@ -72,8 +72,9 @@ class BaseModel(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self):
-        self._global_step = ops.get_or_create_global_step()
+    def __init__(self, graph=None):
+        self._graph = graph or tf.get_default_graph()
+        self._global_step = ops.get_or_create_global_step(graph=self._graph)
         self._hparams = None
         self._fed = False
         self._tensors = None
@@ -90,6 +91,11 @@ class BaseModel(object):
         self._metrics = None
         self._metrics_ops = None
         self._built = False
+
+    @property
+    def graph(self):
+        """The graph in which the model has been created."""
+        return self._graph
 
     @abc.abstractmethod
     def _feed_helper(self, tensors):

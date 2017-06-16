@@ -175,5 +175,6 @@ class _ToyTask(object):
         self._cleanup()
 
 if __name__ == '__main__':
+    tf.logging.set_verbosity(9)
     logutils.config(level=logging.DEBUG, fpath='/tmp/test-pointingsoftmax.log', stderr=True)
     _ToyTask().run()

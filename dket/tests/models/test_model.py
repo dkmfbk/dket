@@ -8,12 +8,12 @@ import tensorflow as tf
 from dket.models import model
 
 
-class _Model(model.BaseModel):
+class _BaseModel(model.BaseModel):
 
     _TARGET_KEY = 'TARGET'
 
     def __init__(self, summary=True):
-        super(_Model, self).__init__()
+        super(_BaseModel, self).__init__()
         self._summary = summary
         self._tensors = None
 
@@ -40,7 +40,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_global_step_initialization(self):
         """Global step is set right after the model creation."""
-        instance = _Model()
+        instance = _BaseModel()
         self.assertIsNotNone(instance.global_step)
         self.assertFalse(instance.fed)
         self.assertFalse(instance.built)
@@ -59,7 +59,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_get_default_hparams(self):
         """The method `get_default_hparams` should be invocable as the model is created."""
-        instance = _Model()
+        instance = _BaseModel()
         self.assertIsNotNone(instance.get_default_hparams())
         self.assertIsNotNone(instance.global_step)
         self.assertFalse(instance.fed)
@@ -79,7 +79,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_feed(self):
         """Feed the model with tensors."""
-        instance = _Model()
+        instance = _BaseModel()
         with tf.variable_scope('Inputs'):
             inputs = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -114,13 +114,13 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_feed_with_none_args(self):
         """Test feeding the model with `None` inputs or target."""
-        instance = _Model()
+        instance = _BaseModel()
         self.assertRaises(ValueError, instance.feed, tensors=None)
 
     def test_build_trainable(self):
         """Test the building of a trainable model."""
 
-        instance = _Model()
+        instance = _BaseModel()
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -176,7 +176,7 @@ class TestBaseModel(tf.test.TestCase):
     def test_build_not_trainable_loss(self):
         """Test the building of a non-trainable model with loss."""
 
-        instance = _Model()
+        instance = _BaseModel()
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -206,7 +206,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_build_not_trainable(self):
         """Test the building of a non-trainable model without loss."""
-        instance = _Model()
+        instance = _BaseModel()
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -228,7 +228,7 @@ class TestBaseModel(tf.test.TestCase):
     def test_build_trainable_without_loss(self):  # pylint: disable=I0011,C0103
         """Built a model with an optimizer but without a loss function."""
 
-        instance = _Model()
+        instance = _BaseModel()
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -248,14 +248,14 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_build_not_fed(self):
         """Build a model which has not been fed."""
-        instance = _Model()
+        instance = _BaseModel()
         hparams = instance.get_default_hparams()
         self.assertFalse(instance.fed)
         self.assertRaises(RuntimeError, instance.build, hparams)
 
     def test_build_trainable_without_summaries(self):  # pylint: disable=I0011,C0103
         """Test that a trainable model always has a summary_op."""
-        instance = _Model(summary=False)
+        instance = _BaseModel(summary=False)
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -281,7 +281,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_build_without_hparams(self):
         """Test the building of a model without hparams."""
-        instance = _Model(summary=False)
+        instance = _BaseModel(summary=False)
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -304,7 +304,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_build_without_metrics(self):
         """Test the building without metrics."""
-        instance = _Model(summary=False)
+        instance = _BaseModel(summary=False)
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),

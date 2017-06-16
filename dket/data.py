@@ -19,7 +19,7 @@ import itertools
 import tensorflow as tf
 
 
-SENTENECE_LENGTH_KEY = 'sentence_length'
+SENTENCE_LENGTH_KEY = 'sentence_length'
 FORMULA_LENGTH_KEY = 'formula_length'
 WORDS_KEY = 'words'
 FORMULA_KEY = 'formula'
@@ -96,7 +96,7 @@ def encode(words_idxs, formula_idxs):
     example = tf.train.Example(
         features=tf.train.Features(
             feature={
-                SENTENECE_LENGTH_KEY: tf.train.Feature(
+                SENTENCE_LENGTH_KEY: tf.train.Feature(
                     int64_list=tf.train.Int64List(
                         value=[len(words_idxs)])),
                 FORMULA_LENGTH_KEY: tf.train.Feature(
@@ -132,7 +132,7 @@ def decode(example):
         return [int(item) for item in feature.int64_list.value]
 
     fmap = example.features.feature
-    _ = _parse_int(fmap[SENTENECE_LENGTH_KEY])
+    _ = _parse_int(fmap[SENTENCE_LENGTH_KEY])
     _ = _parse_int(fmap[FORMULA_LENGTH_KEY])
     words = _parse_int_list(fmap[WORDS_KEY])
     formula = _parse_int_list(fmap[FORMULA_KEY])
@@ -154,7 +154,7 @@ def parse(serialized):
         `formula_length`: a 0D tensor (i.e. scalar) representing the formula length
     """
     features = {
-        SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
+        SENTENCE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
         FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
         WORDS_KEY: tf.VarLenFeature(tf.int64),
         FORMULA_KEY: tf.VarLenFeature(tf.int64),
@@ -162,7 +162,7 @@ def parse(serialized):
     parsed = tf.parse_single_example(
         serialized=serialized,
         features=features)
-    sentence_length = parsed[SENTENECE_LENGTH_KEY]
+    sentence_length = parsed[SENTENCE_LENGTH_KEY]
     formula_length = parsed[FORMULA_LENGTH_KEY]
     words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
     formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])

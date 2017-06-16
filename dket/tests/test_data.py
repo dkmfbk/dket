@@ -20,7 +20,7 @@ class TestEncodeDecode(unittest.TestCase):
     def _assertions(self, input_, output, example):
         fmap = example.features.feature
 
-        sentence_length = fmap[data.SENTENECE_LENGTH_KEY].int64_list.value
+        sentence_length = fmap[data.SENTENCE_LENGTH_KEY].int64_list.value
         self.assertEqual(1, len(sentence_length))
         self.assertEqual(len(input_), sentence_length[0])
         sentence_length = sentence_length[0]

@@ -5,7 +5,7 @@ import logging
 HDEBUG = 9
 logging.addLevelName(HDEBUG, 'HDEBUG')
 
-FMT = '%(asctime)s\t%(name)s\t%(filename)s:%(lineno)s\t%(funcName)s\t%(levelname)s\t%(message)s'
+FMT = '%(asctime)s\t%(levelname)s\t%(funcName)s\t%(filename)s:%(lineno)s\t%(message)s'
 FORMATTER = logging.Formatter(FMT)
 
 # Default stream handler logging.

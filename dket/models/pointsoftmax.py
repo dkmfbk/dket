@@ -7,7 +7,7 @@ from liteflow import layers, utils
 from dket.models import model
 
 
-class PointingSoftmaxModel(model.BaseModel):
+class PointingSoftmaxModel(model.DketModel):
     """PointingSoftmax model implementation."""
 
     WORDS_KEY = 'WORDS'
@@ -23,9 +23,9 @@ class PointingSoftmaxModel(model.BaseModel):
         self._formula_length = None
         self._formula = None
 
-    def get_default_hparams(self):
+    @classmethod
+    def get_default_hparams(cls):
         hparams = tf.contrib.training.HParams(
-            batch_size=32,
             vocabulary_size=0,
             embedding_size=128,
             attention_size=128,
@@ -35,41 +35,6 @@ class PointingSoftmaxModel(model.BaseModel):
             feedback_size=0,
             parallel_iterations=10)
         return hparams
-
-    def _feed_helper(self, tensors):
-        if self.FORMULA_KEY not in tensors:
-            raise ValueError("""The tensor with key `""" + self.FORMULA_KEY +
-                             """` must be supplied as an input tensor.""")
-        self._formula = tensors[self.FORMULA_KEY]
-
-        self._inputs = {}
-        if self.WORDS_KEY not in tensors:
-            raise ValueError("""The tensor with key `""" + self.WORDS_KEY +
-                             """` must be supplied as an input tensor.""")
-        self._words = tensors[self.WORDS_KEY]
-
-        self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
-        if self._sentence_length is None:
-            tf.logging.info(
-                self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
-            batch = utils.get_dimension(self._words, 0)
-            length = utils.get_dimension(self._words, 1)
-            self._sentence_length = length * \
-                tf.ones(dtype=tf.float32, shape=[batch])
-
-        self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
-        if self._formula_length is None:
-            tf.logging.info(
-                self.FORMULA_KEY + ' tensor not provided, creating default one.')
-            batch = utils.get_dimension(self._target, 0)
-            length = utils.get_dimension(self._target, 1)
-            self._formula_length = length * \
-                tf.ones(dtype=tf.float32, shape=[batch])
-
-        self._inputs[self.WORDS_KEY] = self._words
-        self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
-        self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
-        self._target = tensors[self.FORMULA_KEY]
 
     def _build_graph(self):
         with self._graph.as_default():

@@ -7,8 +7,11 @@ import shutil
 
 import tensorflow as tf
 
+import liteflow
+
 from dket.runtime import logutils
 from dket.models import pointsoftmax
+from dket import data
 from dket import losses
 from dket import ops
 from dket import optimizers
@@ -20,12 +23,10 @@ BASE = os.path.dirname(os.path.realpath(__file__))
 
 # pylint: disable=C0301
 tf.app.flags.DEFINE_string('model-name', None, 'The model name.')
+tf.app.flags.DEFINE_integer('batch-size', 32, 'The batch size.')
 tf.app.flags.DEFINE_string('hparams', None, 'The hparams for the model instance. A comma-separated list of key=value pairs or a path to a file with one key=value pair per line.')
 tf.app.flags.DEFINE_string('data-dir', None, 'The directory where the data files are. If omitted, the local directory will be used.')
 tf.app.flags.DEFINE_string('data-files', None, 'A comma separated list of data file patterns (e.g. `file-*.txt`). If the --data-dir is provided, file patterns can be relative to that directory. If no value is provided, [DATA-DIR]/[MODE]*.* is the default.')
-# tf.app.flags.DEFINE_boolean('check-hparams', False, 'If set, tries to check the value of some hparams with respect to the experiment data files (e.g. dimension of vocabulary, ecc).')
-# tf.app.flags.DEFINE_string('vocabulary', 'vocabulary.idx', 'The input vocabulary .idx file. Default value is [DATA-DIR]/vocabulary.idx.')
-# tf.app.flags.DEFINE_string('shortlist', 'shortlist.idx', 'The output shortlist .idx file. Default value is [DATA-DIR]/shortlist.idx')
 
 tf.app.flags.DEFINE_string('mode', 'train', 'The execution mode: can be train, eval, test.')
 tf.app.flags.DEFINE_integer('epochs', None, 'The number of training epochs. If none, only the [STEPS] value will be considered.')
@@ -99,23 +100,17 @@ def _setup_logging():
     tf.logging.set_verbosity(9)
 
 
-def _get_model_factory():
-    return get_model_factory(FLAGS.model_name)
-
-
-def get_model_factory(model_name):
-    """Returns the model class for a given name."""
-    # TODO(petrux): public method for testing purposes. Could be skipped.
-    if not model_name:
+def _get_model_type():
+    if not FLAGS.model_name:
         message = 'the model name MUST be specified.'
         logging.critical(message)
         raise ValueError(message)
 
-    logging.debug('loading the model class for name: %s.', model_name)
-    if model_name == 'pointsoftmax':
+    logging.debug('loading the model class for name: %s.', FLAGS.model_name)
+    if FLAGS.model_name == 'pointsoftmax':
         return pointsoftmax.PointingSoftmaxModel
 
-    message = 'Invalid model name {}'.format(model_name)
+    message = 'Invalid model name {}'.format(FLAGS.model_name)
     logging.critical(message)
     raise ValueError(message)
 
@@ -162,7 +157,21 @@ def _get_hparams(dhparams):
     return hparams
 
 
+def _get_epochs_and_steps():
+    logging.debug('getting epochs and steps.')
+    epochs = FLAGS.epochs
+    steps = FLAGS.steps
+    if not epochs and not steps:
+        message = 'at least one of epochs or steps must be set.'
+        logging.critical(message)
+        raise ValueError(message)
+    logging.debug('epochs: %d', epochs)
+    logging.debug('steps: %d', steps)
+    return epochs, steps
+
+
 def _get_data_files():
+    logging.debug('getting data files.')
     data_dir = FLAGS.data_dir
     data_files = FLAGS.data_files
     if not data_dir and not data_files:
@@ -185,9 +194,37 @@ def _get_data_files():
     return data_abs_files
 
 
+def _get_feed_dict():
+    logging.debug('getting the feed dictionary.')
+    # TODO(petrux): shuffle only in training. This can be HUGE to implement since
+    # the liteflow component is made for shuffling and batching. So maybe a regular
+    # TF component should be used.
+    data_files = _get_data_files()
+    shuffle = _validate_mode() == _MODE_TRAIN
+    logging.debug('suffling.' if shuffle else 'not shuffling.')
+    epochs, _ = _get_epochs_and_steps()
+    logging.debug('epochs: %d', epochs)
+    logging.debug('reading from data.')
+    tensors = data.read_from_files(data_files, shuffle=shuffle, num_epochs=epochs)
+    logging.debug('got %d tensors.', len(tensors))
+    logging.debug('reading shuffled and batched and padded tensors.')
+    tensors = liteflow.input.shuffle_batch(tensors, FLAGS.batch_size)
+    logging.debug('got %d tensors.', len(tensors))
+    feed_dict = {
+        data.WORDS_KEY: tf.cast(tensors[0], tf.int32),
+        data.SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32),
+        data.FORMULA_KEY: tf.cast(tensors[2], tf.int32),
+        data.FORMULA_LENGTH_KEY: tf.cast(tensors[3], tf.int32)
+    }
+    for key, value in feed_dict.items():
+        logging.debug('%s: %s', key, str(value))
+    return feed_dict
+
+
 def _get_loss():
     logging.debug('getting the loss function')
     return losses.Loss.categorical_crossentropy()
+
 
 _SGD = 'sgd'
 _ADAM = 'adam'
@@ -235,20 +272,18 @@ def _build_model():
     logging.info('the device type to be used is %s', device)
 
     logging.info('getting the model factory.')
-    factory = _get_model_factory()
+    mtype = _get_model_type()
 
     with tf.Graph().as_default() as graph:
         with tf.device(device):
             logging.debug('instantiating the model')
-            model = factory(graph=graph)
+            model = mtype(graph=graph)
 
-            logging.debug('getting data files.')
-            data_files = _get_data_files()
-            logging.debug('getting input tensors.')
-            
+            logging.debug('getting the feed dictionary.')
+            feed_dict = _get_feed_dict()
 
             logging.debug('getting default hparams for the model.')
-            dhparams = model.get_default_hparams()
+            dhparams = mtype.get_default_hparams()
             hparams = _get_hparams(dhparams)
 
             logging.debug('getting the loss function.')
@@ -259,6 +294,13 @@ def _build_model():
 
             logging.debug('getting the metrics')
             metrics = _get_metrics()
+
+            logging.debug('feeding the model')
+            model = model.feed(feed_dict)
+
+            logging.debug('building the model.')
+            model = model.build(hparams, loss, optimizer, metrics)
+
 
 def main(_):
     """Main application entry point."""

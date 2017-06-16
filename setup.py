@@ -9,7 +9,7 @@ setup(name='dket',
       author='Giulio Petrucci (petrux)',
       author_email='giulio.petrucci@gmail.com',
       license='Apache License 2.0',
-      packages=find_packages(exclude=["dket.tests"]),
+      packages=find_packages(exclude=["tests"]),
       install_requires=[
           'appdirs==1.4.3',
           'funcsigs==1.0.2',

@@ -7,7 +7,7 @@ import shutil
 
 import tensorflow as tf
 
-import liteflow
+from liteflow import input as lin
 
 from dket.runtime import logutils
 from dket.models import pointsoftmax
@@ -160,13 +160,21 @@ def _get_hparams(dhparams):
 def _get_epochs_and_steps():
     logging.debug('getting epochs and steps.')
     epochs = FLAGS.epochs
+    if epochs is None:
+        logging.debug('epochs: None')
+    else:
+        logging.debug('epochs: %d', epochs)
+
     steps = FLAGS.steps
+    if steps is None:
+        logging.debug('steps: None')
+    else:
+        logging.debug('steps: %d', steps)
+
     if not epochs and not steps:
         message = 'at least one of epochs or steps must be set.'
         logging.critical(message)
         raise ValueError(message)
-    logging.debug('epochs: %d', epochs)
-    logging.debug('steps: %d', steps)
     return epochs, steps
 
 
@@ -203,12 +211,13 @@ def _get_feed_dict():
     shuffle = _validate_mode() == _MODE_TRAIN
     logging.debug('suffling.' if shuffle else 'not shuffling.')
     epochs, _ = _get_epochs_and_steps()
-    logging.debug('epochs: %d', epochs)
+    if epochs is not None:
+        logging.debug('epochs: %d', epochs)
     logging.debug('reading from data.')
     tensors = data.read_from_files(data_files, shuffle=shuffle, num_epochs=epochs)
     logging.debug('got %d tensors.', len(tensors))
     logging.debug('reading shuffled and batched and padded tensors.')
-    tensors = liteflow.input.shuffle_batch(tensors, FLAGS.batch_size)
+    tensors = lin.shuffle_batch(tensors, FLAGS.batch_size)
     logging.debug('got %d tensors.', len(tensors))
     feed_dict = {
         data.WORDS_KEY: tf.cast(tensors[0], tf.int32),

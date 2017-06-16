@@ -10,12 +10,6 @@ from dket.models import model
 class PointingSoftmaxModel(model.DketModel):
     """PointingSoftmax model implementation."""
 
-    WORDS_KEY = 'WORDS'
-    SENTENCE_LENGTH_KEY = 'SENTENCE_LENGTH'
-    FORMULA_KEY = 'FORMULA'
-    FORMULA_LENGTH_KEY = 'FORMULA_LENGTH'
-    TARGET_KEY = FORMULA_KEY
-
     def __init__(self, graph=None):
         super(PointingSoftmaxModel, self).__init__(graph=graph)
         self._words = None

@@ -9,9 +9,15 @@ from dket.common import _EPSILON
 class Loss(object):
     """Base implementation of a loss function."""
 
-    def __init__(self, func):
+    def __init__(self, name, func):
         """Initialize the Loss object."""
+        self._name = name
         self._func = func
+
+    @property
+    def name(self):
+        """The name to be used for summary."""
+        return self._name
 
     @property
     def func(self):
@@ -20,7 +26,9 @@ class Loss(object):
 
     def compute(self, truth, predicted, weights=1.0):
         """Compute the loss invoking the inner function."""
-        return self._func(truth, predicted, weights=weights)
+        tensor = self._func(truth, predicted, weights=weights)
+        tf.summary.scalar(self._name, tensor)
+        return tensor
 
     def __call__(self, truth, predicted, weights=1.0):
         return self.compute(truth, predicted, weights=weights)
@@ -28,9 +36,11 @@ class Loss(object):
     @staticmethod
     def categorical_crossentropy(scope=None, loss_collection=tf.GraphKeys.LOSSES):
         """Loss function implementing a categorical cross entropy."""
-        return Loss(func=functools.partial(
-            categorical_crossentropy,
-            scope=scope, loss_collection=loss_collection))
+        return Loss(
+            'categorical_crossentropy',
+            func=functools.partial(
+                categorical_crossentropy,
+                scope=scope, loss_collection=loss_collection))
 
 
 def categorical_crossentropy(target, output, weights=1.0,

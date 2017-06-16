@@ -162,8 +162,9 @@ class BaseModel(object):
             of trainable variables (or getting the graph tf.GraphKeys.TRAINABLE_VARIABLES if such
             list is not provided) and the `global_step` as a named argument. If this argument
             is `None`, the `self.trainable` flag is set to `False`.
-          metrics: a function accepting the `self.target` and `self.output` tensors as arguments
-            and returning a list of ops representing evaluation metrics for the model.
+          metrics: a `dict` where the key is a string and the value is a function accepting
+            the `self.target` and `self.output` tensors as arguments and returning an ops
+            representing evaluation metrics for the model (or a `Metric` instance).
 
         Returns:
           the very same instance of the model.
@@ -176,7 +177,7 @@ class BaseModel(object):
         Remarks:
           for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
           for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
-          class and, finally, for the `metrics` argument you can use an instance of the
+          class and, finally, for the `metrics` argument you can use instances of the
           `dket.metrics.Metrics` class.
         """
         if not self._fed:
@@ -207,7 +208,9 @@ class BaseModel(object):
                 self._loss_op, global_step=self._global_step)
 
         if self._metrics:
-            self._metrics_ops = self._metrics(self.target, self.output)
+            self._metrics_ops = {}
+            for key, value in self._metrics.items():
+                self._metrics_ops[key] = value(self.target, self.output)
 
         if self._trainable:
             self._summary_op = tf.summary.merge_all()
@@ -271,11 +274,6 @@ class BaseModel(object):
         return self._optimizer
 
     @property
-    def metrics(self):
-        """The metrics object for the model."""
-        return self._metrics
-
-    @property
     def trainable(self):
         """`True` if the model is trainable."""
         return self._trainable
@@ -316,8 +314,13 @@ class BaseModel(object):
         return self._summary_op
 
     @property
+    def metrics(self):
+        """A dictionary of functions used for the evaluation."""
+        return self._metrics
+
+    @property
     def metrics_ops(self):
-        """A list of ops for evaluation."""
+        """A dictionary of key,ops for evaluation."""
         return self._metrics_ops
 
 

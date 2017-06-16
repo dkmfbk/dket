@@ -140,11 +140,22 @@ class TestBaseModel(tf.test.TestCase):
         train_op = tf.no_op('train_op')
         optimizer.minimize.side_effect = [train_op]
 
-        metrics = mock.Mock()
+        metrics_01 = mock.Mock()
         metrics_op_01 = tf.no_op('metrics_op_01')
+        metrics_01.side_effect = [metrics_op_01]
+
+        metrics_02 = mock.Mock()
         metrics_op_02 = tf.no_op('metrics_op_02')
-        metrics_ops = [metrics_op_01, metrics_op_02]
-        metrics.side_effect = [metrics_ops]
+        metrics_02.side_effect = [metrics_op_02]
+
+        metrics = {
+            'metrics_01': metrics_01,
+            'metrics_02': metrics_02
+        }
+        metrics_ops = {
+            'metrics_01': metrics_op_01,
+            'metrics_02': metrics_op_02
+        }
 
         instance.build(hparams, loss, optimizer, metrics)
 
@@ -165,7 +176,8 @@ class TestBaseModel(tf.test.TestCase):
             instance.loss_op, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
-        metrics.assert_called_once_with(instance.target, instance.output)
+        metrics_01.assert_called_once_with(instance.target, instance.output)
+        metrics_02.assert_called_once_with(instance.target, instance.output)
         self.assertEqual(metrics_ops, instance.metrics_ops)
 
         self.assertIsNotNone(instance.summary_op)
@@ -192,11 +204,23 @@ class TestBaseModel(tf.test.TestCase):
         loss.side_effect = [loss_op]
         type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
-        metrics = mock.Mock()
+        metrics_01 = mock.Mock()
         metrics_op_01 = tf.no_op('metrics_op_01')
+        metrics_01.side_effect = [metrics_op_01]
+
+        metrics_02 = mock.Mock()
         metrics_op_02 = tf.no_op('metrics_op_02')
-        metrics_ops = [metrics_op_01, metrics_op_02]
-        metrics.side_effect = [metrics_ops]
+        metrics_02.side_effect = [metrics_op_02]
+
+        metrics = {
+            'metrics_01': metrics_01,
+            'metrics_02': metrics_02
+        }
+
+        metrics_ops = {
+            'metrics_01': metrics_op_01,
+            'metrics_02': metrics_op_02
+        }
 
         instance.build(hparams, loss, optimizer=None, metrics=metrics)
 

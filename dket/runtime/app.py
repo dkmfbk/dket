@@ -270,9 +270,12 @@ def _get_optimizer():
         raise ValueError(message)
 
 
-def _get_metrics():
+def _get_metrics_dict():
     logging.debug('getting evaluation metrics.')
-    return metrics.Metrics.mean_categorical_accuracy()
+    metric = metrics.Metrics.mean_categorical_accuracy()
+    return {
+        metric.name: metric
+    }
 
 
 def _build_model():
@@ -302,13 +305,13 @@ def _build_model():
             optimizer = _get_optimizer()
 
             logging.debug('getting the metrics')
-            metrics = _get_metrics()
+            metrics_dict = _get_metrics_dict()
 
             logging.debug('feeding the model')
             model = model.feed(feed_dict)
 
             logging.debug('building the model.')
-            model = model.build(hparams, loss, optimizer, metrics)
+            model = model.build(hparams, loss, optimizer, metrics_dict)
 
 
 def main(_):

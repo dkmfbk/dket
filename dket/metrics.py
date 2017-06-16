@@ -1,21 +1,27 @@
 """Metrics for `dket` model evaluation."""
 
-import itertools
-
 import tensorflow as tf
 
 
 class Metrics(object):
     """A function used to judge performances of the model."""
 
-    def __init__(self, metrics):
+    def __init__(self, name, func):
         """Initialize a new instance.
 
         Arguments:
-          metrics: a list of callable objects implementing the
-            same signature of the `Metric.compute` method.
+          name: a `str` with the name for the current metric, to be used for
+            the scalar summary.
+          func: a function that calculates the actual metrics. The signature
+            of this function must be the same of the the `compute` method.
         """
-        self._metrics = metrics
+        self._name = name
+        self._func = func
+
+    @property
+    def name(self):
+        """The given name for the metric."""
+        return self._name
 
     def __call__(self, target, output, weights=None):
         """Wrapper for the `compute` method."""
@@ -34,22 +40,23 @@ class Metrics(object):
           weights: coefficients for the loss. This must be scalar or of same rank as `labels`.
 
         Returns:
-          a `list` of `Op` objects representing the evaluation metrics for the model.
+          a tensor objects representing the evaluation metrics for the model.
         """
-        ops = [metric(target, output, weights=weights) for metric in self._metrics]
-        return list(itertools.chain(*ops))
+        tensor = self._func(target, output, weights=weights)
+        tf.summary.scalar(self._name, tensor)
+        return tensor
 
     @staticmethod
     def mean_categorical_accuracy():
         """Compute the mean categorical accuracy on a batch.
 
         Returns:
-          a `Metrics` instance that returns a list with one `Op` representing
+          a `Metrics` instance that returns a tensor representing
           the average accuracy of the predicted output w.r.t. the target.
         """
         def _func(target, output, weights=None):
-            return [mean_categorical_accuracy(target, output, weights=weights)]
-        return Metrics([_func])
+            return mean_categorical_accuracy(target, output, weights=weights)
+        return Metrics('mean_categorical_accuracy', _func)
 
 
 def mean_categorical_accuracy(target, output, weights=None):

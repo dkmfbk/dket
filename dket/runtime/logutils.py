@@ -8,12 +8,6 @@ logging.addLevelName(HDEBUG, 'HDEBUG')
 FMT = '%(asctime)s\t%(levelname)s\t%(funcName)s\t%(filename)s:%(lineno)s\t%(message)s'
 FORMATTER = logging.Formatter(FMT)
 
-# Default stream handler logging.
-STREAM_HANDLER = logging.StreamHandler()
-STREAM_HANDLER.setLevel(logging.WARNING)
-STREAM_HANDLER.setFormatter(FORMATTER)
-logging.getLogger().addHandler(STREAM_HANDLER)
-
 
 def parse_level(level):
     """Parse a string into a log level."""
@@ -47,12 +41,19 @@ def config(level=logging.DEBUG, fpath='.log', stderr=False):
 
     level = _validate(level)
 
-    logging.getLogger().setLevel(level)
+    logger = logging.getLogger()
+    logger.handlers.clear()
+    logger.setLevel(level)
+
     fhand = logging.FileHandler(fpath, mode='a')
     fhand.setLevel(level)
     fhand.setFormatter(FORMATTER)
-    logging.getLogger().addHandler(fhand)
+    logger.addHandler(fhand)
 
-    # If required, fix the stream handler log level.
+    # Default stream handler logging.
+    shand = logging.StreamHandler()
+    shand.setLevel(logging.WARNING)
     if stderr and level is not logging.WARNING:
-        STREAM_HANDLER.setLevel(level)
+        shand.setLevel(level)
+    shand.setFormatter(FORMATTER)
+    logger.addHandler(shand)

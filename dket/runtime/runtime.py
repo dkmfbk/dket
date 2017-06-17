@@ -1,7 +1,9 @@
 """Runtime utilities."""
 
 import logging
+import time
 import os
+from datetime import datetime
 
 import tensorflow as tf
 
@@ -67,7 +69,7 @@ class TrainLoop(object):
                 logging.info('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
-                logging.info('training loop complete.')
+        logging.info('training loop complete.')
 
     def step(self, sess):
         """The next training step.
@@ -90,7 +92,7 @@ class TrainLoop(object):
         ]
         step, _, loss, summary, metrics = sess.run(fetches)
         self._writer.add_summary(summary, global_step=step)
-        save_step = self._checkpoint_every == 0 or ((step + 1) % self._checkpoint_every == 0)
+        save_step = self._checkpoint_every == 0 or (step % self._checkpoint_every == 0)
         if save_step:
             logging.debug('saving checkpoint at step %d', step)
             checkpoint = self._saver.save(sess, self._checkpoint_name, global_step=step)
@@ -119,6 +121,8 @@ class TrainLoop(object):
 class EvalLoop(object):
     """Evaluation loop."""
 
+    _TS_FMT = '%Y-%m-%d %H:%M:%S.%3d'
+
     def __init__(self, model, log_dir, checkpoint_dir,
                  eval_check_every_secs=300, eval_check_until_secs=3600):
         self._model = _validate_not_none(model, 'model')
@@ -129,8 +133,53 @@ class EvalLoop(object):
         self._eval_check_until_secs = _validate_not_none(
             eval_check_until_secs, 'eval_check_until_secs')
         self._latest_gstep = -1
+        self._latest_checkpoint = None
+        self._latest_timestamp = time.time()
+        self._total_idle_time = 0
+        self._loop_flag = False
+
+    def _tsfmt(self, timestamp):
+        return datetime.fromtimestamp(timestamp).strftime(self._TS_FMT)
+
+    def _sleep(self):
+        logging.debug('sleeping for %d seconds', self._eval_check_every_secs)
+        time.sleep(self._eval_check_every_secs)
+        logging.log(HDEBUG, 'waking up.')
+        now = time.time()
+        self._total_idle_time = now - self._latest_timestamp
+        logging.debug('now it is %s, last timestamp was %s',
+                      self._tsfmt(now), self._tsfmt(self._latest_timestamp))
+        logging.debug('total idle time: %f (on maximum %d)',
+                      self._total_idle_time, self._eval_check_until_secs)
+        if self._total_idle_time < self._eval_check_until_secs:
+            return True
+        logging.warning('total idle timeout: %f', self._total_idle_time)
+        return False
+
+    def _reset(self):
+        self._total_idle_time = 0.0
+        self._latest_timestamp = time.time()
+        logging.debug('resetting idle time to 0.0 and timestamp to %s',
+                      self._tsfmt(self._latest_timestamp))
+
+    def _eval(self, checkpoint):
+        logging.info('evaluating the checkpoint: %s', checkpoint)
+        self._latest_checkpoint =  checkpoint
 
     def start(self):
         """Run the evaluation loop."""
-        logging.info('eval loop!')
-        print(tf.train.latest_checkpoint(self._checkpoint_dir))
+        logging.info('starting the eval loop.')
+        self._loop_flag = True
+        while self._loop_flag:
+            checkpoint = tf.train.latest_checkpoint(self._checkpoint_dir)
+            if checkpoint and checkpoint != self._latest_checkpoint:
+                self._eval(checkpoint)
+                self._reset()
+            else:
+                if checkpoint is None:
+                    logging.warning('No checkpoint yet.')
+                else:
+                    logging.warning('Not evaluating: checkpoint %s', checkpoint)
+                self._loop_flag = self._sleep()
+                logging.debug('still looping? %s', str(self._loop_flag))
+        logging.info('eval loop complete.')

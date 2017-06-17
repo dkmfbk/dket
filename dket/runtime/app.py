@@ -294,7 +294,9 @@ def _get_loop(model):
         return runtime.EvalLoop(
             model=model,
             log_dir=_get_log_dir(),
-            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN))
+            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
+            eval_check_every_secs=FLAGS.eval_check_every_sec,
+            eval_check_until_secs=FLAGS.eval_check_until_sec)
     raise ValueError('Invalid mode: ' + mode)
 
 

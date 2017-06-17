@@ -10,6 +10,7 @@ import tensorflow as tf
 from liteflow import input as lin
 
 from dket.runtime import logutils
+from dket.runtime import runtime
 from dket.models import pointsoftmax
 from dket import data
 from dket import losses
@@ -31,9 +32,10 @@ tf.app.flags.DEFINE_string('data-files', None, 'A comma separated list of data f
 tf.app.flags.DEFINE_string('mode', 'train', 'The execution mode: can be train, eval, test.')
 tf.app.flags.DEFINE_integer('epochs', None, 'The number of training epochs. If none, only the [STEPS] value will be considered.')
 tf.app.flags.DEFINE_integer('steps', None, 'The number of training steps. If none, only the [EPOCHS] value will be considered.')
-tf.app.flags.DEFINE_integer('train_save_every_steps', 100, 'Number of training steps after which the model state is saved. This flag is considered only in --mode=train.')
-tf.app.flags.DEFINE_integer('eval_check_every_sec', 300, 'Time interval in seconds. If --mode=eval, the [LOG-DIR] is periodically checked to see if there is a new checkpoint to evaluate.')
-tf.app.flags.DEFINE_integer('eval_check_untill_sec', 3600, 'Time interval in seconds. If --mode=eval, the maximum amount of time to wait for a new model checkpoint to appear in [LOG-DIR] before ending the evaluation process.')
+tf.app.flags.DEFINE_integer('checkpoint-every-steps', 100, 'Number of training steps after which the model state is saved. This flag is considered only in --mode=train.')
+tf.app.flags.DEFINE_integer('eval-check-every-sec', 300, 'Time interval in seconds. If --mode=eval/test, the [LOG-DIR] is periodically checked to see if there is a new checkpoint to evaluate.')
+tf.app.flags.DEFINE_integer('eval-check-until-sec', 3600, 'Time interval in seconds. If --mode=eval/test, the maximum amount of time to wait for a new model checkpoint to appear in [LOG-DIR] before ending the evaluation process.')
+tf.app.flags.DEFINE_integer('eval-max-global-step', None, 'The maximum global step checkpoint to evaluate. Works only if --mode=eval/test.')
 
 tf.app.flags.DEFINE_float('lr', 0.1, 'The initial value for the learning rate.')
 tf.app.flags.DEFINE_float('lr-decay-rate', None, 'The decay rate for the learning rate.')
@@ -277,6 +279,24 @@ def _get_metrics_dict():
         metric.name: metric
     }
 
+def _get_loop(model):
+    mode = _validate_mode()
+    if mode == _MODE_TRAIN:
+        _, steps = _get_epochs_and_steps()
+        loop = runtime.TrainLoop(
+            model=model,
+            log_dir=_get_log_dir(),
+            steps=steps,
+            checkpoint_every=FLAGS.checkpoint_every_steps)
+        return loop
+    if mode == _MODE_EVAL or mode == _MODE_TEST:
+        # eval loop.
+        return runtime.EvalLoop(
+            model=model,
+            log_dir=_get_log_dir(),
+            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN))
+    raise ValueError('Invalid mode: ' + mode)
+
 
 def _build_model():
     logging.info('getting the device type to be used.')
@@ -313,6 +333,11 @@ def _build_model():
             logging.debug('building the model.')
             model = model.build(hparams, loss, optimizer, metrics_dict)
 
+            logging.debug('getting the runtime loop.')
+            loop = _get_loop(model)
+            logging.debug('starting the runtime loop.')
+            loop.start()
+            logging.debug('runtime loop complete.')
 
 def main(_):
     """Main application entry point."""

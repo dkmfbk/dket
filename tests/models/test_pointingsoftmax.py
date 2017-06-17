@@ -135,9 +135,8 @@ class _ToyTask(object):
         cce = losses.Loss.categorical_crossentropy()
         sgd = optimizers.Optimizer.sgd(0.1)
         acc = metrics.Metrics.mean_categorical_accuracy()
-
         # building
-        self._model = PSM().feed(feeding).build(hparams, cce, sgd, acc)
+        self._model = PSM().feed(feeding).build(hparams, cce, sgd, {'acc': acc})
 
     def _train(self):
         with tf.Session() as sess:
@@ -150,7 +149,7 @@ class _ToyTask(object):
                     _, loss, acc, step = sess.run([
                         self._model.train_op,
                         self._model.loss_op,
-                        self._model.metrics_ops[0],
+                        self._model.metrics_ops['acc'],
                         self._model.global_step])
                     self._losses.add_item(loss)
                     self._accs.add_item(acc)

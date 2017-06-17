@@ -47,7 +47,7 @@ def config(level=logging.DEBUG, fpath='.log', stderr=False):
 
     level = _validate(level)
 
-    logging.getLogger().setLevel(0)
+    logging.getLogger().setLevel(level)
     fhand = logging.FileHandler(fpath, mode='a')
     fhand.setLevel(level)
     fhand.setFormatter(FORMATTER)

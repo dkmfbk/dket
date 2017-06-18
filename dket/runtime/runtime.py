@@ -164,7 +164,7 @@ class EvalLoop(object):
 
     def _eval(self, checkpoint):
         logging.info('evaluating the checkpoint: %s', checkpoint)
-        self._latest_checkpoint =  checkpoint
+        self._latest_checkpoint = checkpoint
 
     def start(self):
         """Run the evaluation loop."""

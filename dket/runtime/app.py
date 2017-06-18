@@ -169,7 +169,8 @@ def _get_epochs_and_steps():
 
     steps = FLAGS.steps
     if steps is None:
-        logging.debug('steps: None')
+        logging.debug('steps: None -- setting to 0')
+        steps = 0
     else:
         logging.debug('steps: %d', steps)
 
@@ -281,8 +282,8 @@ def _get_metrics_dict():
 
 def _get_loop(model):
     mode = _validate_mode()
+    _, steps = _get_epochs_and_steps()
     if mode == _MODE_TRAIN:
-        _, steps = _get_epochs_and_steps()
         loop = runtime.TrainLoop(
             model=model,
             log_dir=_get_log_dir(),
@@ -295,6 +296,7 @@ def _get_loop(model):
             model=model,
             log_dir=_get_log_dir(),
             checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
+            steps=steps,
             eval_check_every_secs=FLAGS.eval_check_every_sec,
             eval_check_until_secs=FLAGS.eval_check_until_sec)
     raise ValueError('Invalid mode: ' + mode)

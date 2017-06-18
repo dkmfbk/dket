@@ -123,11 +123,12 @@ class EvalLoop(object):
 
     _TS_FMT = '%Y-%m-%d %H:%M:%S.%3d'
 
-    def __init__(self, model, log_dir, checkpoint_dir,
+    def __init__(self, model, log_dir, checkpoint_dir, steps=0,
                  eval_check_every_secs=300, eval_check_until_secs=3600):
         self._model = _validate_not_none(model, 'model')
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
         self._checkpoint_dir = _validate_not_none(checkpoint_dir, 'checkpoint_dir')
+        self._steps = _validate_not_none(steps, 'steps')
         self._eval_check_every_secs = _validate_not_none(
             eval_check_every_secs, 'eval_check_every_secs')
         self._eval_check_until_secs = _validate_not_none(
@@ -136,7 +137,22 @@ class EvalLoop(object):
         self._latest_checkpoint = None
         self._latest_timestamp = time.time()
         self._total_idle_time = 0
-        self._loop_flag = False
+        self._main_loop_flag = False
+        self._eval_loop_flag = False
+        self._accumulate = {}
+        logging.debug('building metrics accumulators.')
+        for key in self._model.metrics_ops.keys():
+            logging.log(HDEBUG, 'adding accumulator for %s', key)
+            self._accumulate[key] = []
+        logging.debug('building loss accumulator.')
+        self._losses = []
+        self._eval_step = 0
+        logging.debug('initializing the saver.')
+        self._saver = tf.train.Saver()
+        logging.debug('initializing the file writer and flushing the graph definition.')
+        self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
+        self._writer.flush()
+        logging.debug('finished initialization.')
 
     def _tsfmt(self, timestamp):
         return datetime.fromtimestamp(timestamp).strftime(self._TS_FMT)
@@ -161,16 +177,87 @@ class EvalLoop(object):
         self._latest_timestamp = time.time()
         logging.debug('resetting idle time to 0.0 and timestamp to %s',
                       self._tsfmt(self._latest_timestamp))
+        logging.debug('resetting eval step.')
+        self._eval_step = 0
+        logging.debug('resetting loss accumulator.')
+        self._losses.clear()
+        logging.debug('resetting metrics accumulator.')
+        for _, value in self._accumulate.items():
+            value.clear()
 
     def _eval(self, checkpoint):
         logging.info('evaluating the checkpoint: %s', checkpoint)
         self._latest_checkpoint = checkpoint
+        self._eval_loop_flag = True
+        config = tf.ConfigProto(
+            log_device_placement=False,
+            allow_soft_placement=True)
+        with tf.Session(config=config) as sess:
+            logging.debug('initializing global and local variables')
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+
+            logging.info('restoring session.')
+            self._saver.restore(sess, checkpoint)
+
+            logging.debug('initializing coordinator and starting queue runners.')
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(coord=coord)
+            try:
+                logging.info('starting the train loop.')
+                while self._eval_loop_flag:
+                    self._eval_loop_flag = self._step(sess)
+            except tf.errors.OutOfRangeError as ex:
+                logging.debug('a tf.errors.OutOfRangeError is stopping the loop.')
+                coord.request_stop(ex=ex)
+            finally:
+                logging.info('stopping the loop.')
+                coord.request_stop()
+                coord.join(threads)
+                self._summarize()
+        logging.info('evaluation loop complete.')
+
+    def _avg(self, items):
+        sum = 0.0
+        for item in items:
+            sum += item * 1.0
+        return sum / len(items)
+
+    def _summarize(self):
+        values = []
+        logging.debug('saving average loss.')
+        loss = self._avg(self._losses)
+        values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
+        for key, value in self._accumulate.items():
+            values.append(tf.summary.Summary.Value(tag=key, simple_value=self._avg(value)))
+        summary = tf.summary.Summary(value=values)
+        self._writer.add_summary(summary)
+        self._writer.flush()
+
+    def _step(self, sess):
+        fetches = [
+            self._model.global_step,
+            self._model.loss_op,
+            self._model.metrics_ops,
+        ]
+        global_step, loss, metrics = sess.run(fetches)
+        print('GLOBAL_STEP: ' + str(global_step))
+        self._eval_step += 1
+        if logging.getLogger().getEffectiveLevel() <= HDEBUG:
+            logging.log(HDEBUG, self._log_line(
+                '', self._eval_step, global_step, loss, metrics, ''))
+        logging.debug('updating accumulators.')
+        self._losses.append(loss)
+        for key, value in metrics.items():
+            self._accumulate[key].append(value)
+        cont = self._steps == 0 or self._eval_step < self._step
+        return cont
 
     def start(self):
         """Run the evaluation loop."""
         logging.info('starting the eval loop.')
-        self._loop_flag = True
-        while self._loop_flag:
+        self._main_loop_flag = True
+        while self._main_loop_flag:
             checkpoint = tf.train.latest_checkpoint(self._checkpoint_dir)
             if checkpoint and checkpoint != self._latest_checkpoint:
                 self._eval(checkpoint)
@@ -180,6 +267,19 @@ class EvalLoop(object):
                     logging.warning('No checkpoint yet.')
                 else:
                     logging.warning('Not evaluating: checkpoint %s', checkpoint)
-                self._loop_flag = self._sleep()
-                logging.debug('still looping? %s', str(self._loop_flag))
+                self._main_loop_flag = self._sleep()
+                logging.debug('still looping? %s', str(self._main_loop_flag))
         logging.info('eval loop complete.')
+
+    def _log_line(self, pre, step, global_step, loss, metrics, post):
+        components = []
+        if pre:
+            components.append(pre)
+        components.append('step: {}@{}'.format(step, global_step))
+        components.append('loss: {}'.format(loss))
+        for key, value in metrics.items():
+            components.append('{}: {}'.format(key, value))
+        if post:
+            components.append(post)
+        return ', '.join(components)
+        

@@ -40,6 +40,7 @@ class TrainLoop(object):
         self._writer.flush()
         logging.debug('finished initialization.')
 
+
     def start(self):
         """Start the train loop."""
         logging.info('starting train loop.')
@@ -189,6 +190,7 @@ class EvalLoop(object):
         logging.info('evaluating the checkpoint: %s', checkpoint)
         self._latest_checkpoint = checkpoint
         self._eval_loop_flag = True
+        global_step = -1
         config = tf.ConfigProto(
             log_device_placement=False,
             allow_soft_placement=True)
@@ -206,7 +208,7 @@ class EvalLoop(object):
             try:
                 logging.info('starting the train loop.')
                 while self._eval_loop_flag:
-                    self._eval_loop_flag = self._step(sess)
+                    global_step, self._eval_loop_flag = self._step(sess)
             except tf.errors.OutOfRangeError as ex:
                 logging.debug('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
@@ -214,7 +216,7 @@ class EvalLoop(object):
                 logging.info('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
-                self._summarize()
+                self._summarize(global_step)
         logging.info('evaluation loop complete.')
 
     def _avg(self, items):
@@ -223,7 +225,7 @@ class EvalLoop(object):
             sum += item * 1.0
         return sum / len(items)
 
-    def _summarize(self):
+    def _summarize(self, global_step):
         values = []
         logging.debug('saving average loss.')
         loss = self._avg(self._losses)
@@ -231,7 +233,7 @@ class EvalLoop(object):
         for key, value in self._accumulate.items():
             values.append(tf.summary.Summary.Value(tag=key, simple_value=self._avg(value)))
         summary = tf.summary.Summary(value=values)
-        self._writer.add_summary(summary)
+        self._writer.add_summary(summary, global_step=global_step)
         self._writer.flush()
 
     def _step(self, sess):
@@ -241,7 +243,6 @@ class EvalLoop(object):
             self._model.metrics_ops,
         ]
         global_step, loss, metrics = sess.run(fetches)
-        print('GLOBAL_STEP: ' + str(global_step))
         self._eval_step += 1
         if logging.getLogger().getEffectiveLevel() <= HDEBUG:
             logging.log(HDEBUG, self._log_line(
@@ -251,7 +252,7 @@ class EvalLoop(object):
         for key, value in metrics.items():
             self._accumulate[key].append(value)
         cont = self._steps == 0 or self._eval_step < self._step
-        return cont
+        return global_step, cont
 
     def start(self):
         """Run the evaluation loop."""

@@ -20,8 +20,9 @@ def get_or_create_global_step(graph=None):
     graph = graph or tf.get_default_graph()
     global_step = get_global_step(graph=graph)
     if global_step is None:
-        global_step = tf.Variable(0, trainable=False, dtype=tf.int64, name='global_step')
-        graph.add_to_collection(tf.GraphKeys.GLOBAL_STEP, global_step)
+        with graph.as_default():
+            global_step = tf.Variable(0, trainable=False, dtype=tf.int64, name='global_step')
+            graph.add_to_collection(tf.GraphKeys.GLOBAL_STEP, global_step)
     return global_step
 
 
@@ -56,7 +57,7 @@ def summarize(var, scope=None):
 
     Attaches many summaries to a `Tensor`. Such summaries are:
     * a scalar summary with the mean
-    * a scalar summary with the standard deviation
+    * a scalar summary with the standard deviation  
     * a scalar summary with the maximum
     * a scalar summary with the minimum
     * an histogram summary

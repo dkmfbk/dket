@@ -1,6 +1,7 @@
 """Test module for the `PointingSoftmaxModel`."""
 # TODO(petrux): make this test case a proper experiment. Not a priority, though.
 
+import logging
 import os
 import random
 import shutil
@@ -11,7 +12,7 @@ from liteflow import input as lin
 
 from dket import data, losses, metrics, optimizers
 from dket.models.pointsoftmax import PointingSoftmaxModel as PSM
-
+from dket.runtime import logutils
 
 class _MovingAvgRecord(object):
 
@@ -70,7 +71,7 @@ class _ToyTask(object):
     _MAX_LEN = 30
     _FEEBACK_SIZE = _SHORTLIST_SIZE + 25  # half-way
     _NUM_EXAMPLES = 100000
-    _LOG_EVRY = 100
+    _LOG_EVRY = 1  # 100
     _NUM_EPOCHS = 100
     _LEARNING_RATE = 0.2
     _BATCH_SIZE = 100
@@ -134,9 +135,8 @@ class _ToyTask(object):
         cce = losses.Loss.categorical_crossentropy()
         sgd = optimizers.Optimizer.sgd(0.1)
         acc = metrics.Metrics.mean_categorical_accuracy()
-
         # building
-        self._model = PSM().feed(feeding).build(hparams, cce, sgd, acc)
+        self._model = PSM().feed(feeding).build(hparams, cce, sgd, {'acc': acc})
 
     def _train(self):
         with tf.Session() as sess:
@@ -149,12 +149,12 @@ class _ToyTask(object):
                     _, loss, acc, step = sess.run([
                         self._model.train_op,
                         self._model.loss_op,
-                        self._model.metrics_ops[0],
+                        self._model.metrics_ops['acc'],
                         self._model.global_step])
                     self._losses.add_item(loss)
                     self._accs.add_item(acc)
                     if step % self._LOG_EVRY == 0:
-                        tf.logging.info(
+                        logging.info(
                             'step: %d - avg. accuracy: %f - avg. loss: %f',
                             step, self._accs.latest(), self._losses.latest())
             except tf.errors.OutOfRangeError as ex:
@@ -174,4 +174,6 @@ class _ToyTask(object):
         self._cleanup()
 
 if __name__ == '__main__':
+    tf.logging.set_verbosity(9)
+    logutils.config(level=logging.DEBUG, fpath='/tmp/test-pointingsoftmax.log', stderr=True)
     _ToyTask().run()

@@ -4,6 +4,9 @@ import abc
 
 import tensorflow as tf
 
+from liteflow import utils
+
+from dket import data
 from dket import ops
 
 
@@ -23,10 +26,9 @@ class BaseModel(object):
       * `_build_graph()` is the method which is in charge to build the graph. Implementing
         this method you MUST set the `self._logits` and the `self._output` tensors. This
         method is invoked as an abstract template from within the `.build()` method.
-      * `get_default_hparams()` is the model that is in charge to generate the default
-        `HParams` for the model. This method MUST be invokable at the very early stage
-        of the building phase, when maybe no property has been set so it should be
-        like a static method, totally independent from the state of the object.
+      * `get_default_hparams()` is the classs method that is in charge to generate the default
+        `HParams` for the model. Note that it is a classmethod and must be implemented
+        in concrete subclasses with the @classmethod decorator.
 
     Example:
     ```python
@@ -37,7 +39,8 @@ class BaseModel(object):
             # Build your graph from self._inputs to self._outputs.
             pass
 
-        def get_default_hparams(self):
+        @classmethod
+        def get_default_hparams(cls):
             # Build the default `HParams`.
             pass
 
@@ -72,8 +75,9 @@ class BaseModel(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self):
-        self._global_step = ops.get_or_create_global_step()
+    def __init__(self, graph=None):
+        self._graph = graph or tf.get_default_graph()
+        self._global_step = ops.get_or_create_global_step(graph=self._graph)
         self._hparams = None
         self._fed = False
         self._tensors = None
@@ -90,6 +94,11 @@ class BaseModel(object):
         self._metrics = None
         self._metrics_ops = None
         self._built = False
+
+    @property
+    def graph(self):
+        """The graph in which the model has been created."""
+        return self._graph
 
     @abc.abstractmethod
     def _feed_helper(self, tensors):
@@ -153,8 +162,9 @@ class BaseModel(object):
             of trainable variables (or getting the graph tf.GraphKeys.TRAINABLE_VARIABLES if such
             list is not provided) and the `global_step` as a named argument. If this argument
             is `None`, the `self.trainable` flag is set to `False`.
-          metrics: a function accepting the `self.target` and `self.output` tensors as arguments
-            and returning a list of ops representing evaluation metrics for the model.
+          metrics: a `dict` where the key is a string and the value is a function accepting
+            the `self.target` and `self.output` tensors as arguments and returning an ops
+            representing evaluation metrics for the model (or a `Metric` instance).
 
         Returns:
           the very same instance of the model.
@@ -167,7 +177,7 @@ class BaseModel(object):
         Remarks:
           for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
           for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
-          class and, finally, for the `metrics` argument you can use an instance of the
+          class and, finally, for the `metrics` argument you can use instances of the
           `dket.metrics.Metrics` class.
         """
         if not self._fed:
@@ -198,7 +208,9 @@ class BaseModel(object):
                 self._loss_op, global_step=self._global_step)
 
         if self._metrics:
-            self._metrics_ops = self._metrics(self.target, self.output)
+            self._metrics_ops = {}
+            for key, value in self._metrics.items():
+                self._metrics_ops[key] = value(self.target, self.output)
 
         if self._trainable:
             self._summary_op = tf.summary.merge_all()
@@ -208,8 +220,9 @@ class BaseModel(object):
         self._built = True
         return self
 
+    @classmethod
     @abc.abstractmethod
-    def get_default_hparams(self):
+    def get_default_hparams(cls):
         """Returns the default `tf.contrib.training.HParams`.
 
         Remarks: this method will be called in a static-like scenario so
@@ -261,11 +274,6 @@ class BaseModel(object):
         return self._optimizer
 
     @property
-    def metrics(self):
-        """The metrics object for the model."""
-        return self._metrics
-
-    @property
     def trainable(self):
         """`True` if the model is trainable."""
         return self._trainable
@@ -306,6 +314,74 @@ class BaseModel(object):
         return self._summary_op
 
     @property
+    def metrics(self):
+        """A dictionary of functions used for the evaluation."""
+        return self._metrics
+
+    @property
     def metrics_ops(self):
-        """A list of ops for evaluation."""
+        """A dictionary of key,ops for evaluation."""
         return self._metrics_ops
+
+
+class DketModel(BaseModel):
+    """Base dket model."""
+
+    __metaclass__ = abc.ABCMeta
+
+    WORDS_KEY = data.WORDS_KEY
+    SENTENCE_LENGTH_KEY = data.SENTENCE_LENGTH_KEY
+    FORMULA_KEY = data.FORMULA_KEY
+    FORMULA_LENGTH_KEY = data.FORMULA_LENGTH_KEY
+    TARGET_KEY = FORMULA_KEY
+
+    def __init__(self, graph=None):
+        super(DketModel, self).__init__(graph=graph)
+        self._words = None
+        self._sentence_length = None
+        self._formula_length = None
+        self._formula = None
+
+    def _feed_helper(self, tensors):
+        if self.FORMULA_KEY not in tensors:
+            raise ValueError("""The tensor with key `""" + self.FORMULA_KEY +
+                             """` must be supplied as an input tensor.""")
+        self._formula = tensors[self.FORMULA_KEY]
+
+        self._inputs = {}
+        if self.WORDS_KEY not in tensors:
+            raise ValueError("""The tensor with key `""" + self.WORDS_KEY +
+                             """` must be supplied as an input tensor.""")
+        self._words = tensors[self.WORDS_KEY]
+
+        self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
+        if self._sentence_length is None:
+            tf.logging.info(
+                self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
+            batch = utils.get_dimension(self._words, 0)
+            length = utils.get_dimension(self._words, 1)
+            self._sentence_length = length * \
+                tf.ones(dtype=tf.float32, shape=[batch])
+
+        self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
+        if self._formula_length is None:
+            tf.logging.info(
+                self.FORMULA_KEY + ' tensor not provided, creating default one.')
+            batch = utils.get_dimension(self._target, 0)
+            length = utils.get_dimension(self._target, 1)
+            self._formula_length = length * \
+                tf.ones(dtype=tf.float32, shape=[batch])
+
+        self._inputs[self.WORDS_KEY] = self._words
+        self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
+        self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
+        self._target = tensors[self.FORMULA_KEY]
+
+    @classmethod
+    @abc.abstractmethod
+    def get_default_hparams(cls):
+        pass
+
+    @abc.abstractmethod
+    def _build_graph(self):
+        pass

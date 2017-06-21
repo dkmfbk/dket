@@ -7,6 +7,6 @@ if [ -d .py3venv ]; then
 else
     virtualenv .py3venv --python=python3
     source .py3venv/bin/activate
-    pip install -r venvrequirements.txt        
+    pip install -r venvrequirements.txt --process-dependency-links
     deactivate
 fi

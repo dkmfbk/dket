@@ -3,11 +3,11 @@
 
 import logging
 import os
-import shutil
 
 import tensorflow as tf
 
 from liteflow import input as lin
+from liteflow import metrics
 
 from dket.runtime import logutils
 from dket.runtime import runtime
@@ -16,7 +16,6 @@ from dket import data
 from dket import losses
 from dket import ops
 from dket import optimizers
-from dket import metrics
 from logutils import HDEBUG
 
 
@@ -275,9 +274,15 @@ def _get_optimizer():
 
 def _get_metrics_dict():
     logging.debug('getting evaluation metrics.')
-    metric = metrics.Metrics.mean_categorical_accuracy()
+    logging.debug('creating (per token) accuracy metric.')
+    acc = metrics.StreamingMetric(
+        metrics.accuracy, name='Accuracy')
+    logging.debug('creating per sentence accuracy metric.')
+    psa = metrics.StreamingMetric(
+        metrics.per_sentence_accuracy, name='PerSentenceAccuracy')
     return {
-        metric.name: metric
+        acc.name: acc,
+        psa.name: psa
     }
 
 def _get_loop(model):
@@ -291,7 +296,6 @@ def _get_loop(model):
             checkpoint_every=FLAGS.checkpoint_every_steps)
         return loop
     if mode == _MODE_EVAL or mode == _MODE_TEST:
-        # eval loop.
         return runtime.EvalLoop(
             model=model,
             log_dir=_get_log_dir(),

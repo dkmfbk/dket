@@ -64,9 +64,13 @@ class BaseModel(object):
     # to use some instance of the `dket.oprimizer.Optimizer` class.
     optimizer = ...
 
-    # Define some evaluation metrics. Same as for the loss, it could be better
-    # to use some instance of the `dket.metrics.Metrics` class.
-    metrics = ...
+    # Define some evaluation metrics. Since they have to be used both
+    # in training (batch-by-batch) and in evaluation (epoch-by-epoch)
+    # they must be able to track both the batch values and the streaming
+    # average, so you need to use `liteflow.metrics.StreamingMetric`.
+    metrics = {
+        'my_metric': liteflow.metrics.StreamingMetrics(...)
+    }
 
     # Now you can build and feed the model:
     instance = MyModel().feed(tensors).build(hparams, loss, optimizer, metrics)
@@ -92,7 +96,6 @@ class BaseModel(object):
         self._trainable = False
         self._summary_op = None
         self._metrics = None
-        self._metrics_ops = None
         self._built = False
 
     @property
@@ -162,9 +165,8 @@ class BaseModel(object):
             of trainable variables (or getting the graph tf.GraphKeys.TRAINABLE_VARIABLES if such
             list is not provided) and the `global_step` as a named argument. If this argument
             is `None`, the `self.trainable` flag is set to `False`.
-          metrics: a `dict` where the key is a string and the value is a function accepting
-            the `self.target` and `self.output` tensors as arguments and returning an ops
-            representing evaluation metrics for the model (or a `Metric` instance).
+          metrics: a `dict` where the key is a string and the value is an instance
+            of `liteflow.metrics.StreamingMetric`.
 
         Returns:
           the very same instance of the model.
@@ -177,8 +179,7 @@ class BaseModel(object):
         Remarks:
           for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
           for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
-          class and, finally, for the `metrics` argument you can use instances of the
-          `dket.metrics.Metrics` class.
+          class.
         """
         if not self._fed:
             raise RuntimeError('The model has not been fed yes.')
@@ -208,9 +209,8 @@ class BaseModel(object):
                 self._loss_op, global_step=self._global_step)
 
         if self._metrics:
-            self._metrics_ops = {}
-            for key, value in self._metrics.items():
-                self._metrics_ops[key] = value(self.target, self.output)
+            for _, metric in self._metrics.items():
+                metric.compute(self.target, self.output)
 
         if self._trainable:
             self._summary_op = tf.summary.merge_all()
@@ -315,13 +315,8 @@ class BaseModel(object):
 
     @property
     def metrics(self):
-        """A dictionary of functions used for the evaluation."""
+        """A dictionary of liteflow.metrics.StreamingMetric used for the evaluation."""
         return self._metrics
-
-    @property
-    def metrics_ops(self):
-        """A dictionary of key,ops for evaluation."""
-        return self._metrics_ops
 
 
 class DketModel(BaseModel):

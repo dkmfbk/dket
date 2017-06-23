@@ -1,12 +1,13 @@
 """Test module for the `dket.models.model` module."""
 
+# pylint: disable=E1129
+
 import copy
 import mock
 
 import tensorflow as tf
 
 from dket.models import model
-
 
 class _BaseModel(model.BaseModel):
 
@@ -55,7 +56,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
-        self.assertIsNone(instance.metrics_ops)
 
     def test_get_default_hparams(self):
         """The method `get_default_hparams` should be invocable as the model is created."""
@@ -75,7 +75,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
-        self.assertIsNone(instance.metrics_ops)
 
     def test_feed(self):
         """Feed the model with tensors."""
@@ -106,7 +105,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
-        self.assertIsNone(instance.metrics_ops)
 
         # If you try feeding the model twice, you
         # will have a RuntimeError.
@@ -141,20 +139,11 @@ class TestBaseModel(tf.test.TestCase):
         optimizer.minimize.side_effect = [train_op]
 
         metrics_01 = mock.Mock()
-        metrics_op_01 = tf.no_op('metrics_op_01')
-        metrics_01.side_effect = [metrics_op_01]
-
         metrics_02 = mock.Mock()
-        metrics_op_02 = tf.no_op('metrics_op_02')
-        metrics_02.side_effect = [metrics_op_02]
 
         metrics = {
             'metrics_01': metrics_01,
             'metrics_02': metrics_02
-        }
-        metrics_ops = {
-            'metrics_01': metrics_op_01,
-            'metrics_02': metrics_op_02
         }
 
         instance.build(hparams, loss, optimizer, metrics)
@@ -176,9 +165,8 @@ class TestBaseModel(tf.test.TestCase):
             instance.loss_op, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
-        metrics_01.assert_called_once_with(instance.target, instance.output)
-        metrics_02.assert_called_once_with(instance.target, instance.output)
-        self.assertEqual(metrics_ops, instance.metrics_ops)
+        metrics_01.compute.assert_called_once_with(instance.target, instance.output)
+        metrics_02.compute.assert_called_once_with(instance.target, instance.output)
 
         self.assertIsNotNone(instance.summary_op)
 
@@ -205,21 +193,11 @@ class TestBaseModel(tf.test.TestCase):
         type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
         metrics_01 = mock.Mock()
-        metrics_op_01 = tf.no_op('metrics_op_01')
-        metrics_01.side_effect = [metrics_op_01]
-
         metrics_02 = mock.Mock()
-        metrics_op_02 = tf.no_op('metrics_op_02')
-        metrics_02.side_effect = [metrics_op_02]
 
         metrics = {
             'metrics_01': metrics_01,
             'metrics_02': metrics_02
-        }
-
-        metrics_ops = {
-            'metrics_01': metrics_op_01,
-            'metrics_02': metrics_op_02
         }
 
         instance.build(hparams, loss, optimizer=None, metrics=metrics)
@@ -348,7 +326,6 @@ class TestBaseModel(tf.test.TestCase):
 
         instance.build(instance.get_default_hparams(), loss, optimizer)
         self.assertIsNone(instance.metrics)
-        self.assertIsNone(instance.metrics_ops)
 
 
 if __name__ == '__main__':

@@ -84,12 +84,17 @@ class TrainLoop(object):
         Raises:
           tf.errors.OutOfRangeError: if the input queues has finished their job.
         """
+        logging.debug('getting the per-batch metrics.')
+        metrics_t = {}
+        for key, value in self._model.metrics.items():
+            metrics_t[key] = value.batch_value
+
         fetches = [
             self._model.global_step,
             self._model.train_op,
             self._model.loss_op,
             self._model.summary_op,
-            self._model.metrics_ops,  # it's a dictionary!
+            metrics_t,  # it's a dictionary.
         ]
         step, _, loss, summary, metrics = sess.run(fetches)
         self._writer.add_summary(summary, global_step=step)
@@ -140,11 +145,6 @@ class EvalLoop(object):
         self._total_idle_time = 0
         self._main_loop_flag = False
         self._eval_loop_flag = False
-        self._accumulate = {}
-        logging.debug('building metrics accumulators.')
-        for key in self._model.metrics_ops.keys():
-            logging.log(HDEBUG, 'adding accumulator for %s', key)
-            self._accumulate[key] = []
         logging.debug('building loss accumulator.')
         self._losses = []
         self._eval_step = 0
@@ -183,8 +183,6 @@ class EvalLoop(object):
         logging.debug('resetting loss accumulator.')
         self._losses.clear()
         logging.debug('resetting metrics accumulator.')
-        for _, value in self._accumulate.items():
-            value.clear()
 
     def _eval(self, checkpoint):
         logging.info('evaluating the checkpoint: %s', checkpoint)
@@ -216,7 +214,7 @@ class EvalLoop(object):
                 logging.info('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
-                self._summarize(global_step)
+                self._summarize(sess)
         logging.info('evaluation loop complete.')
 
     def _avg(self, items):
@@ -225,32 +223,48 @@ class EvalLoop(object):
             sum += item * 1.0
         return sum / len(items)
 
-    def _summarize(self, global_step):
+    def _summarize(self, sess):
         values = []
         logging.debug('saving average loss.')
         loss = self._avg(self._losses)
         values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
-        for key, value in self._accumulate.items():
-            values.append(tf.summary.Summary.Value(tag=key, simple_value=self._avg(value)))
+
+        logging.debug('getting average metrics values.')
+        metrics_avg_t = {}
+        for key, metric in self._model.metrics.items():
+            metrics_avg_t[key] = metric.value
+
+        fetches = [self._model.global_step, metrics_avg_t]
+        global_step, metrics_avg = sess.run(fetches)
+        for key, value in metrics_avg.items():
+            values.append(tf.summary.Summary.Value(tag=key, simple_value=value))
+
+        logging.debug('writing the summaries.')
         summary = tf.summary.Summary(value=values)
         self._writer.add_summary(summary, global_step=global_step)
         self._writer.flush()
 
+        logging.info(
+            self._log_line(
+                'evaluation:', self._eval_step, global_step, loss, metrics_avg, ''))
+
     def _step(self, sess):
+        logging.debug('getting streaming average metrics update_ops.')
+        metrics_update_ops = {}
+        for key, metric in self._model.metrics.items():
+            metrics_update_ops[key] = metric.update_op
         fetches = [
             self._model.global_step,
             self._model.loss_op,
-            self._model.metrics_ops,
+            metrics_update_ops  # it's a dictionary!
         ]
         global_step, loss, metrics = sess.run(fetches)
         self._eval_step += 1
         if logging.getLogger().getEffectiveLevel() <= HDEBUG:
             logging.log(HDEBUG, self._log_line(
                 '', self._eval_step, global_step, loss, metrics, ''))
-        logging.debug('updating accumulators.')
+        logging.debug('updating loss accumulator.')
         self._losses.append(loss)
-        for key, value in metrics.items():
-            self._accumulate[key].append(value)
         cont = self._steps == 0 or self._eval_step < self._step
         return global_step, cont
 

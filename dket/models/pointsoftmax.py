@@ -1,5 +1,4 @@
 """Pointing Softmax model implementation."""
-# TODO(petrux): dump tf.logging and switch everything to regular python logging.
 
 import tensorflow as tf
 from liteflow import layers, utils
@@ -12,10 +11,6 @@ class PointingSoftmaxModel(model.DketModel):
 
     def __init__(self, graph=None):
         super(PointingSoftmaxModel, self).__init__(graph=graph)
-        self._words = None
-        self._sentence_length = None
-        self._formula_length = None
-        self._formula = None
 
     @classmethod
     def get_default_hparams(cls):

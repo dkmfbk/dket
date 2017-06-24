@@ -25,13 +25,15 @@ class _BaseModel(model.BaseModel):
         self._tensors = copy.copy(tensors)
         self._inputs = copy.copy(tensors)
         self._target = self._inputs.pop(self._TARGET_KEY)
+        self._output_mask = None
 
     def _build_graph(self):
         assert not self.built
         shape = [self.hparams.dim_0, self.hparams.dim_1, self.hparams.dim_2]
         self._logits = tf.random_normal(shape, name='Logits')
-        self._output = tf.identity(tf.nn.softmax(
-            self._logits), name='Probabilities')
+        self._output = tf.identity(
+            tf.nn.softmax(self._logits),
+            name='Probabilities')
         if self._summary:
             tf.summary.scalar('SimpleSummary', tf.constant(23))
 
@@ -158,15 +160,18 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNotNone(instance.logits)
         self.assertIsNotNone(instance.output)
 
-        loss.assert_called_once_with(instance.target, instance.output)
+        loss.assert_called_once_with(
+            instance.target, instance.output, weights=None)
         self.assertEqual(loss_op, instance.loss_op)
 
         optimizer.minimize.assert_called_once_with(
             instance.loss_op, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
-        metrics_01.compute.assert_called_once_with(instance.target, instance.output)
-        metrics_02.compute.assert_called_once_with(instance.target, instance.output)
+        metrics_01.compute.assert_called_once_with(
+            instance.target, instance.output, weights=None)
+        metrics_02.compute.assert_called_once_with(
+            instance.target, instance.output, weights=None)
 
         self.assertIsNotNone(instance.summary_op)
 

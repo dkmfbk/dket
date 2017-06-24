@@ -89,6 +89,7 @@ class BaseModel(object):
         self._target = None
         self._logits = None
         self._output = None
+        self._output_mask = None
         self._loss = None
         self._loss_op = None
         self._optimizer = None
@@ -202,7 +203,9 @@ class BaseModel(object):
         self._build_graph()
 
         if self._loss:
-            self._loss_op = self._loss(self.target, self._output)
+            self._loss_op = self._loss(
+                self._target, self._output,
+                weights=self._output_mask)
 
         if self._optimizer:
             self._train_op = self._optimizer.minimize(
@@ -210,7 +213,9 @@ class BaseModel(object):
 
         if self._metrics:
             for _, metric in self._metrics.items():
-                metric.compute(self.target, self.output)
+                metric.compute(
+                    self.target, self.output,
+                    weights=self._output_mask)
 
         if self._trainable:
             self._summary_op = tf.summary.merge_all()
@@ -289,6 +294,12 @@ class BaseModel(object):
         return self._target
 
     @property
+    def output_mask(self):
+        """A tensor representing the output mask (or `None`)."""
+        return self._output_mask
+
+    # TODO(petrux): check usage and possibly REMOVE.
+    @property
     def logits(self):
         """Unscaled log propabilities."""
         return self._logits
@@ -366,11 +377,15 @@ class DketModel(BaseModel):
             length = utils.get_dimension(self._target, 1)
             self._formula_length = length * \
                 tf.ones(dtype=tf.float32, shape=[batch])
+        else:
+            self._output_mask = tf.sequence_mask(
+                self._formula_length, dtype=tf.float32, name='output_mask')
 
         self._inputs[self.WORDS_KEY] = self._words
         self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
         self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
         self._target = tensors[self.FORMULA_KEY]
+
 
     @classmethod
     @abc.abstractmethod

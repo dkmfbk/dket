@@ -20,8 +20,18 @@ def _validate_not_none(arg, name):
     return arg
 
 
+_TIMESTAMP_FMT = '%Y-%m-%d %H:%M:%S.%3d'
+
+def _timestamp_fmt(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime(_TIMESTAMP_FMT)
+
+
+_MAX_CHECKPOINTS_TO_KEEP = 20
+_ALLOW_SOFT_DEV_PLACEMENT = True
+
+
 class TrainLoop(object):
-    """Train loop"""
+    """Train loop."""
 
     def __init__(self, model, log_dir, steps=0, checkpoint_every=0):
         logging.debug('initializing TrainLoop instance.')
@@ -29,25 +39,33 @@ class TrainLoop(object):
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
         self._steps = _validate_not_none(steps, 'steps')
         self._checkpoint_every = _validate_not_none(checkpoint_every, 'checkpoint_every')
-        logging.log(HDEBUG, 'setting loop flag to `False`')
-        self._loop_flag = False
         self._checkpoint_name = os.path.join(self._log_dir, 'CHECKPOINT')
-        logging.debug('the checkpoint name will be: %s', self._checkpoint_name)
-        with self._model.graph.as_default():
-            logging.debug('initializing saver.')
-            self._saver = tf.train.Saver()
-        logging.debug('initializing the file writer and flushing the graph definition.')
-        self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
-        self._writer.flush()
-        logging.debug('finished initialization.')
+        logging.info('TrainLoop initialized. Checkpoint at %s.', self._checkpoint_name)
 
+        self._next_step = False
+        self._saver = None
+        self._writer = None
+        self._fetches = None
+        self._last_checkpoint_ts = None
 
     def start(self):
         """Start the train loop."""
-        logging.debug('initializing the train session.')
-        config = tf.ConfigProto(
-            log_device_placement=False,
-            allow_soft_placement=True)
+        logging.deug('started running the train loop.')
+        with self._model.graph.as_default() as graph:
+            logging.debug('initializing session saver.')
+            logging.debug('max number of checkpoint to keep: %d.', _MAX_CHECKPOINTS_TO_KEEP)
+            self._saver = tf.train.Saver(max_to_keep=_MAX_CHECKPOINTS_TO_KEEP)
+            logging.debug('initializing summary writer to path %s.', self._log_dir)
+            self._writer = tf.summary.FileWriter(self._log_dir, graph=graph)
+            logging.debug('flushing writer.')
+            self._writer.flush()
+
+        logging.debug('setting up session configuration')
+        logging.debug('allow softt device placement: %s', str(_ALLOW_SOFT_DEV_PLACEMENT))
+        config = tf.ConfigProto(allow_soft_placement=_ALLOW_SOFT_DEV_PLACEMENT)
+
+        # Here starts the actual train loop.
+        logging.debug('starting session.')
         with tf.Session(config=config, graph=self._model.graph) as sess:
             logging.debug('initializing local and global variables.')
             sess.run(tf.global_variables_initializer())
@@ -59,21 +77,38 @@ class TrainLoop(object):
 
             try:
                 logging.info('starting the train loop.')
-                self._loop_flag = True
-                while self._loop_flag:
-                    step, self._loop_flag = self.step(sess)
+                self._last_checkpoint_ts = time.time()
+                logging.debug('checkpoint start at %s', _timestamp_fmt(self._last_checkpoint_ts))
+                self._next_step = True
+                while self._next_step:
+                    step, self._next_step = self._step(sess)
             except tf.errors.OutOfRangeError as ex:
                 logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
                 logging.debug('saving latest checkpoint')
-                self._saver.save(sess, self._checkpoint_name, global_step=step)
+                checkpoint, delta = self._save_checkpoint(sess, self._checkpoint_name, step)
+                logging.info('saved last checkpoint %s, checkpoint time: %f.', checkpoint, delta)
             finally:
                 logging.debug('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
+
+        logging.info('cleaning up.')
+        logging.debug('deallocatiing saver.')
+        self._saver = None
+        logging.debug('flushing and deallocating file writer.')
+        self._writer.flush()
+        self._writer = None
+        logging.debug('deallocating the checkpoint timestep.')
+        self._last_checkpoint_ts = None
+        logging.debug('deallocating fetches.')
+        self._fetches = None
+        self._next_step = False
+        logging.debug('has next step? %s.', str(self._next_step))
         logging.info('training loop complete.')
 
-    def step(self, sess):
+
+    def _step(self, sess):
         """The next training step.
 
         Returns:
@@ -85,44 +120,61 @@ class TrainLoop(object):
         Raises:
           tf.errors.OutOfRangeError: if the input queues has finished their job.
         """
-        logging.debug('getting the per-batch metrics.')
-        metrics_t = {}
-        for key, value in self._model.metrics.items():
-            metrics_t[key] = value.batch_value
+        if not self._fetches:
+            logging.info('initializing fetches.')
+            logging.debug('getting the per-batch metrics.')
+            metrics_t = {}
+            for key, value in self._model.metrics.items():
+                metrics_t[key] = value.batch_value
+            self._fetches = [
+                self._model.global_step,
+                self._model.train_op,
+                self._model.loss.batch_value,
+                self._model.summary_op,
+                metrics_t,  # it's a dictionary.
+            ]
 
-        fetches = [
-            self._model.global_step,
-            self._model.train_op,
-            self._model.loss.batch_value,
-            self._model.summary_op,
-            metrics_t,  # it's a dictionary.
-        ]
-        step, _, loss, summary, metrics = sess.run(fetches)
+        logging.log(HDEBUG, 'running the session step.')
+        step, _, loss, summary, metrics = sess.run(self._fetches)
+        logging.log(HDEBUG, 'writing summaries.')
         self._writer.add_summary(summary, global_step=step)
+        self._writer.flush()
+
         save_step = self._checkpoint_every == 0 or (step % self._checkpoint_every == 0)
+        logging.log(HDEBUG, 'is a checkpoint step? %s.', 'yes' if save_step else 'no')
         if save_step:
-            logging.debug('saving checkpoint at step %d', step)
-            checkpoint = self._saver.save(sess, self._checkpoint_name, global_step=step)
-            message = self._log_line(
-                '', step, loss, metrics,
-                'saved checkpoint: {}'.format(checkpoint))
+            checkpoint, delta = self._save_checkpoint(sess, self._checkpoint_name, step)
+            message = ', '.join(
+                [self._summary_msg(step, loss, metrics),
+                 self._checkpoint_msg(checkpoint, delta)])
             logging.info(message)
         elif logging.getLogger().getEffectiveLevel() <= HDEBUG:
-            logging.log(HDEBUG, self._log_line('', step, loss, metrics, ''))
-        cont = self._steps == 0 or step < self._steps
-        return step, cont
+            logging.log(HDEBUG, self._summary_msg(step, loss, metrics))
 
-    def _log_line(self, pre, step, loss, metrics, post):
-        components = []
-        if pre:
-            components.append(pre)
-        components.append('global step: {}'.format(step))
-        components.append('loss: {}'.format(loss))
-        for key, value in metrics.items():
-            components.append('{}: {}'.format(key, value))
-        if post:
-            components.append(post)
-        return ', '.join(components)
+        next_step = self._steps == 0 or step < self._steps
+        logging.log(HDEBUG, 'next step: %s', str(next_step))
+        return step, next_step
+
+    def _save_checkpoint(self, sess, name, global_step):
+        logging.debug('checkpoint at step %d', global_step)
+        delta = time.time() - self._last_checkpoint_ts
+        logging.debug('%f seconds elapsed from last checkpoint.', delta)
+        checkpoint = self._saver.save(sess, name, global_step=global_step)
+        logging.debug('checkpoint saved at %s', checkpoint)
+        self._last_checkpoint_ts = time.time()
+        logging.log(HDEBUG, 'new latest checkpoint timestep: %s',
+                    _timestamp_fmt(self._last_checkpoint_ts))
+        return checkpoint, delta
+
+    def _summary_msg(self, step, loss, metrics):
+        return ', '.join(
+            ['global step: {}'.format(step), 'loss: {:.2f}'.format(loss)] +
+            ['{}: {:.2f}'.format(key, value) for key, value in metrics.items()])
+
+    def _checkpoint_msg(self, checkpoint, delta):
+        return ', '.join(
+            ['checkpoint at {}'.format(checkpoint),
+             'time elapsed {:.2f} sec'.format(delta)])
 
 
 class EvalLoop(object):
@@ -149,7 +201,7 @@ class EvalLoop(object):
         self._eval_step = 0
         with self._model.graph.as_default():
             logging.debug('initializing the saver.')
-            self._saver = tf.train.Saver()
+            self._saver = tf.train.Saver(max_to_keep=_MAX_CHECKPOINTS_TO_KEEP)
         logging.debug('initializing the file writer and flushing the graph definition.')
         self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
         self._writer.flush()

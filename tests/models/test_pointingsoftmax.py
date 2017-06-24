@@ -154,7 +154,7 @@ class _ToyTask(object):
                     self._losses.add_item(loss)
                     self._accs.add_item(acc)
                     if step % self._LOG_EVRY == 0:
-                        logging.info(
+                        logging.debug(
                             'step: %d - avg. accuracy: %f - avg. loss: %f',
                             step, self._accs.latest(), self._losses.latest())
             except tf.errors.OutOfRangeError as ex:

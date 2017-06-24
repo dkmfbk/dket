@@ -1,6 +1,7 @@
 """Model implementation for the `dket` system."""
 
 import abc
+import logging
 
 import tensorflow as tf
 
@@ -356,8 +357,7 @@ class DketModel(BaseModel):
 
         self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
         if self._sentence_length is None:
-            tf.logging.info(
-                self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._words, 0)
             length = utils.get_dimension(self._words, 1)
             self._sentence_length = length * \
@@ -365,8 +365,7 @@ class DketModel(BaseModel):
 
         self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
         if self._formula_length is None:
-            tf.logging.info(
-                self.FORMULA_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.FORMULA_KEY + ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._target, 0)
             length = utils.get_dimension(self._target, 1)
             self._formula_length = length * \

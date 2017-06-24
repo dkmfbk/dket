@@ -33,8 +33,9 @@ class TrainLoop(object):
         self._loop_flag = False
         self._checkpoint_name = os.path.join(self._log_dir, 'CHECKPOINT')
         logging.debug('the checkpoint name will be: %s', self._checkpoint_name)
-        logging.debug('initializing saver.')
-        self._saver = tf.train.Saver()  # TODO(petrx): check options
+        with self._model.graph.as_default():
+            logging.debug('initializing saver.')
+            self._saver = tf.train.Saver()
         logging.debug('initializing the file writer and flushing the graph definition.')
         self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
         self._writer.flush()
@@ -43,11 +44,11 @@ class TrainLoop(object):
 
     def start(self):
         """Start the train loop."""
-        logging.info('starting train loop.')
+        logging.debug('initializing the train session.')
         config = tf.ConfigProto(
             log_device_placement=False,
             allow_soft_placement=True)
-        with tf.Session(config=config) as sess:
+        with tf.Session(config=config, graph=self._model.graph) as sess:
             logging.debug('initializing local and global variables.')
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
@@ -62,12 +63,12 @@ class TrainLoop(object):
                 while self._loop_flag:
                     step, self._loop_flag = self.step(sess)
             except tf.errors.OutOfRangeError as ex:
-                logging.debug('a tf.errors.OutOfRangeError is stopping the loop.')
+                logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
                 logging.debug('saving latest checkpoint')
                 self._saver.save(sess, self._checkpoint_name, global_step=step)
             finally:
-                logging.info('stopping the loop.')
+                logging.debug('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
         logging.info('training loop complete.')
@@ -92,7 +93,7 @@ class TrainLoop(object):
         fetches = [
             self._model.global_step,
             self._model.train_op,
-            self._model.loss_op,
+            self._model.loss.batch_value,
             self._model.summary_op,
             metrics_t,  # it's a dictionary.
         ]
@@ -146,8 +147,9 @@ class EvalLoop(object):
         self._main_loop_flag = False
         self._eval_loop_flag = False
         self._eval_step = 0
-        logging.debug('initializing the saver.')
-        self._saver = tf.train.Saver()
+        with self._model.graph.as_default():
+            logging.debug('initializing the saver.')
+            self._saver = tf.train.Saver()
         logging.debug('initializing the file writer and flushing the graph definition.')
         self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
         self._writer.flush()
@@ -164,11 +166,11 @@ class EvalLoop(object):
         self._total_idle_time = now - self._latest_timestamp
         logging.debug('now it is %s, last timestamp was %s',
                       self._tsfmt(now), self._tsfmt(self._latest_timestamp))
-        logging.debug('total idle time: %f (on maximum %d)',
-                      self._total_idle_time, self._eval_check_until_secs)
+        logging.info('total idle time: %f (on maximum %d) sec.',
+                     self._total_idle_time, self._eval_check_until_secs)
         if self._total_idle_time < self._eval_check_until_secs:
             return True
-        logging.warning('total idle timeout: %f', self._total_idle_time)
+        logging.warning('total idle timeout: %f sec.; stop looping.', self._total_idle_time)
         return False
 
     def _reset(self):
@@ -183,40 +185,36 @@ class EvalLoop(object):
         logging.info('evaluating the checkpoint: %s', checkpoint)
         self._latest_checkpoint = checkpoint
         self._eval_loop_flag = True
-        global_step = -1
+        logging.debug('initializing evaluation session.')
         config = tf.ConfigProto(
             log_device_placement=False,
             allow_soft_placement=True)
-        with tf.Session(config=config) as sess:
+        with tf.Session(config=config, graph=self._model.graph) as sess:
             logging.debug('initializing global and local variables')
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
 
-            logging.info('restoring session.')
+            logging.debug('restoring session.')
             self._saver.restore(sess, checkpoint)
 
             logging.debug('initializing coordinator and starting queue runners.')
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(coord=coord)
+
             try:
-                logging.info('starting the train loop.')
+                logging.debug('starting the train loop.')
+                global_step = -1
                 while self._eval_loop_flag:
                     global_step, self._eval_loop_flag = self._step(sess)
             except tf.errors.OutOfRangeError as ex:
-                logging.debug('a tf.errors.OutOfRangeError is stopping the loop.')
+                logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
             finally:
-                logging.info('stopping the loop.')
+                logging.debug('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
                 self._summarize(sess)
-        logging.info('evaluation loop complete.')
-
-    def _avg(self, items):
-        sum = 0.0
-        for item in items:
-            sum += item * 1.0
-        return sum / len(items)
+        logging.debug('evaluation loop complete.')
 
     def _summarize(self, sess):
         values = []
@@ -265,7 +263,7 @@ class EvalLoop(object):
 
     def start(self):
         """Run the evaluation loop."""
-        logging.info('starting the eval loop.')
+        logging.debug('starting the eval loop.')
         self._main_loop_flag = True
         while self._main_loop_flag:
             checkpoint = tf.train.latest_checkpoint(self._checkpoint_dir)
@@ -279,7 +277,7 @@ class EvalLoop(object):
                     logging.warning('Not evaluating: checkpoint %s', checkpoint)
                 self._main_loop_flag = self._sleep()
                 logging.debug('still looping? %s', str(self._main_loop_flag))
-        logging.info('eval loop complete.')
+        logging.debug('eval loop complete.')
 
     def _log_line(self, pre, step, global_step, loss, metrics, post):
         components = []

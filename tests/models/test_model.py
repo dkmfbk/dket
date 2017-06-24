@@ -55,7 +55,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.target)
         self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
-        self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -74,7 +73,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.target)
         self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
-        self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -104,7 +102,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.metrics)
         self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
-        self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -131,10 +128,9 @@ class TestBaseModel(tf.test.TestCase):
 
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
+        loss_batch_value = tf.constant(0.0, dtype=tf.float32)
         loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=False)
+        type(loss).batch_value = mock.PropertyMock(return_value=loss_batch_value)
 
         optimizer = mock.Mock()
         train_op = tf.no_op('train_op')
@@ -160,12 +156,11 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNotNone(instance.logits)
         self.assertIsNotNone(instance.output)
 
-        loss.assert_called_once_with(
+        loss.compute.assert_called_once_with(
             instance.target, instance.output, weights=None)
-        self.assertEqual(loss_op, instance.loss_op)
 
         optimizer.minimize.assert_called_once_with(
-            instance.loss_op, global_step=instance.global_step)
+            loss_batch_value, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
         metrics_01.compute.assert_called_once_with(
@@ -193,9 +188,6 @@ class TestBaseModel(tf.test.TestCase):
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
         loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
         metrics_01 = mock.Mock()
         metrics_02 = mock.Mock()
@@ -210,6 +202,8 @@ class TestBaseModel(tf.test.TestCase):
         self.assertFalse(instance.trainable)
         self.assertIsNone(instance.optimizer)
         self.assertIsNone(instance.train_op)
+        loss.compute.assert_called_once_with(instance.target, instance.output, weights=None)
+        loss.batch_value.assert_not_called()
 
     def test_build_not_trainable(self):
         """Test the building of a non-trainable model without loss."""
@@ -227,7 +221,6 @@ class TestBaseModel(tf.test.TestCase):
 
         self.assertFalse(instance.trainable)
         self.assertIsNone(instance.loss)
-        self.assertIsNone(instance.loss_op)
         self.assertIsNone(instance.optimizer)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
@@ -274,9 +267,6 @@ class TestBaseModel(tf.test.TestCase):
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
 
         loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
         optimizer = mock.Mock()
         train_op = tf.no_op('train_op')
@@ -298,9 +288,6 @@ class TestBaseModel(tf.test.TestCase):
         instance.feed(tensors)
 
         loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
         optimizer = mock.Mock()
         train_op = tf.no_op('train_op')
@@ -321,9 +308,6 @@ class TestBaseModel(tf.test.TestCase):
         instance.feed(tensors)
 
         loss = mock.Mock()
-        loss_op = tf.no_op('loss_op')
-        loss.side_effect = [loss_op]
-        type(loss).accept_logits = mock.PropertyMock(return_value=False)
 
         optimizer = mock.Mock()
         train_op = tf.no_op('train_op')

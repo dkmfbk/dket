@@ -145,8 +145,6 @@ class EvalLoop(object):
         self._total_idle_time = 0
         self._main_loop_flag = False
         self._eval_loop_flag = False
-        logging.debug('building loss accumulator.')
-        self._losses = []
         self._eval_step = 0
         logging.debug('initializing the saver.')
         self._saver = tf.train.Saver()
@@ -180,9 +178,6 @@ class EvalLoop(object):
                       self._tsfmt(self._latest_timestamp))
         logging.debug('resetting eval step.')
         self._eval_step = 0
-        logging.debug('resetting loss accumulator.')
-        self._losses.clear()
-        logging.debug('resetting metrics accumulator.')
 
     def _eval(self, checkpoint):
         logging.info('evaluating the checkpoint: %s', checkpoint)
@@ -225,17 +220,19 @@ class EvalLoop(object):
 
     def _summarize(self, sess):
         values = []
-        logging.debug('saving average loss.')
-        loss = self._avg(self._losses)
-        values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
 
         logging.debug('getting average metrics values.')
         metrics_avg_t = {}
         for key, metric in self._model.metrics.items():
             metrics_avg_t[key] = metric.value
 
-        fetches = [self._model.global_step, metrics_avg_t]
-        global_step, metrics_avg = sess.run(fetches)
+        logging.debug('evaluating average loss and metrics.')
+        fetches = [self._model.global_step, self._model.loss.value, metrics_avg_t]
+        global_step, loss, metrics_avg = sess.run(fetches)
+
+        logging.debug('creating loss summary.')
+        values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
+        logging.debug('creating metrics summaries.')
         for key, value in metrics_avg.items():
             values.append(tf.summary.Summary.Value(tag=key, simple_value=value))
 
@@ -255,7 +252,7 @@ class EvalLoop(object):
             metrics_update_ops[key] = metric.update_op
         fetches = [
             self._model.global_step,
-            self._model.loss_op,
+            self._model.loss.value,
             metrics_update_ops  # it's a dictionary!
         ]
         global_step, loss, metrics = sess.run(fetches)
@@ -263,8 +260,6 @@ class EvalLoop(object):
         if logging.getLogger().getEffectiveLevel() <= HDEBUG:
             logging.log(HDEBUG, self._log_line(
                 '', self._eval_step, global_step, loss, metrics, ''))
-        logging.debug('updating loss accumulator.')
-        self._losses.append(loss)
         cont = self._steps == 0 or self._eval_step < self._step
         return global_step, cont
 

@@ -8,12 +8,12 @@ import tensorflow as tf
 
 from liteflow import input as lin
 from liteflow import metrics
+from liteflow import losses
 
 from dket.runtime import logutils
 from dket.runtime import runtime
 from dket.models import pointsoftmax
 from dket import data
-from dket import losses
 from dket import ops
 from dket import optimizers
 from logutils import HDEBUG
@@ -234,7 +234,10 @@ def _get_feed_dict():
 
 def _get_loss():
     logging.debug('getting the loss function')
-    return losses.Loss.categorical_crossentropy()
+    loss = losses.StreamingLoss(
+        func=losses.categorical_crossentropy,
+        name='XEntropy')
+    return loss
 
 
 _SGD = 'sgd'

@@ -91,7 +91,6 @@ class BaseModel(object):
         self._output = None
         self._output_mask = None
         self._loss = None
-        self._loss_op = None
         self._optimizer = None
         self._train_op = None
         self._trainable = False
@@ -203,13 +202,13 @@ class BaseModel(object):
         self._build_graph()
 
         if self._loss:
-            self._loss_op = self._loss(
+            self._loss.compute(
                 self._target, self._output,
                 weights=self._output_mask)
 
         if self._optimizer:
             self._train_op = self._optimizer.minimize(
-                self._loss_op, global_step=self._global_step)
+                self._loss.batch_value, global_step=self._global_step)
 
         if self._metrics:
             for _, metric in self._metrics.items():
@@ -270,7 +269,7 @@ class BaseModel(object):
 
     @property
     def loss(self):
-        """The loss function."""
+        """The streaning average loss."""
         return self._loss
 
     @property
@@ -308,11 +307,6 @@ class BaseModel(object):
     def output(self):
         """A tensor representing the actual output of the model."""
         return self._output
-
-    @property
-    def loss_op(self):
-        """The loss op of the model."""
-        return self._loss_op
 
     @property
     def train_op(self):

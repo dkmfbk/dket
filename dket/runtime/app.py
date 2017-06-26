@@ -1,26 +1,27 @@
 """Run your dket experiment."""
-# TODO(petrux): review all the log entries.
 
 import logging
 import os
-import shutil
+import sys
 
 import tensorflow as tf
 
 from liteflow import input as lin
+from liteflow import metrics
+from liteflow import losses
 
 from dket.runtime import logutils
 from dket.runtime import runtime
 from dket.models import pointsoftmax
 from dket import data
-from dket import losses
 from dket import ops
 from dket import optimizers
-from dket import metrics
 from logutils import HDEBUG
 
 
-BASE = os.path.dirname(os.path.realpath(__file__))
+PATH = os.path.realpath(__file__)
+BASE = os.path.dirname(PATH)
+
 
 # pylint: disable=C0301
 tf.app.flags.DEFINE_string('model-name', None, 'The model name.')
@@ -52,54 +53,48 @@ tf.app.flags.DEFINE_string('base-log-dir', '.', 'The base log directory where al
 tf.app.flags.DEFINE_string('log-level', 'INFO', 'The log level. Can be none ore one of HDEBUG, DEBUG, INFO, WARNING')
 tf.app.flags.DEFINE_string('log-file', 'log', 'The log file as file name or as an absolute path, if not specified, it is just `log`. If not an absolute path, it will be placed in [BASE-LOG-DIR]/[MODE]/[LOG-FILE]. If the file already exists, new log entries will be appended.')
 tf.app.flags.DEFINE_boolean('log-to-stderr', False, 'If set, redirect also the log entries with level less than WARNING to the standard error stream.')
-# pylint: enable=C0301
 
 FLAGS = tf.app.flags.FLAGS
-
-def _debug_log_flags():
-    logging.debug('command line flags.')
-    for key, value in FLAGS.__flags.items():  # pylint: disable=I0011,W0212
-        logging.debug('--%s %s', key, str(value))
-
-
-_MODE_TRAIN = 'train'
-_MODE_EVAL = 'eval'
-_MODE_TEST = 'test'
-
-def _validate_mode():
-    mode = FLAGS.mode
-    if mode == _MODE_TRAIN:
-        return mode
-    if mode == _MODE_EVAL:
-        return mode
-    if mode == _MODE_TEST:
-        return mode
-    raise ValueError(
-        'Invalid mode. Must bee one of %s, %s, %s. Found `%s` instead'
-        % (_MODE_TRAIN, _MODE_EVAL, _MODE_TEST, mode))
+# pylint: enable=C0301
 
 
 def _get_log_dir():
     return os.path.join(FLAGS.base_log_dir, FLAGS.mode)
 
 
-def _setup_log_dir():
+_MODE_TRAIN = 'train'
+_MODE_EVAL = 'eval'
+_MODE_TEST = 'test'
+
+def _setup():
+    """Set up the execution environment."""
+    logging.debug('setting up the execution environment.')
+    logging.debug('validating mode: %s', FLAGS.mode)
+    modes = [_MODE_TRAIN, _MODE_TEST, _MODE_EVAL]
+    if FLAGS.mode not in modes:
+        message = "Mode must bee one of {}, found {}.".format(', '.join(modes), FLAGS.mode)
+        logging.critical(message)
+        raise ValueError(message)
+
+    logging.debug('setting up the logging directory.')
     log_dir = _get_log_dir()
-    logging.info('logging directory: %s', log_dir)
     if not os.path.exists(log_dir):
-        logging.debug('creating the directory: %s', log_dir)
+        logging.info('creating log directory %s', log_dir)
         os.makedirs(log_dir)
-    return log_dir
 
-
-def _setup_logging():
+    logging.debug('setting up the log infrastructure.')
     log_level = logutils.parse_level(FLAGS.log_level)
-    log_file = os.path.join(_get_log_dir(), FLAGS.log_file)
+    log_file = os.path.join(log_dir, FLAGS.log_file)
     log_to_stderr = FLAGS.log_to_stderr
     logutils.config(level=log_level, fpath=log_file, stderr=log_to_stderr)
     logging.debug('logging infrastructure configured.')
     logging.debug('setting TF log level to 9')
     tf.logging.set_verbosity(9)
+
+    logging.info('python version: %s', sys.version.replace('\n', ' '))
+    logging.info('executing: %s', PATH)
+    for key, value in FLAGS.__flags.items():  # pylint: disable=I0011,W0212
+        logging.info('--%s %s', key, str(value))
 
 
 def _get_model_type():
@@ -108,33 +103,46 @@ def _get_model_type():
         logging.critical(message)
         raise ValueError(message)
 
+    mtype = None
     logging.debug('loading the model class for name: %s.', FLAGS.model_name)
     if FLAGS.model_name == 'pointsoftmax':
-        return pointsoftmax.PointingSoftmaxModel
+        mtype = pointsoftmax.PointingSoftmaxModel
+    else:
+        message = 'Invalid model name {}'.format(FLAGS.model_name)
+        logging.critical(message)
+        raise ValueError(message)
 
-    message = 'Invalid model name {}'.format(FLAGS.model_name)
-    logging.critical(message)
-    raise ValueError(message)
+    logging.info('model type %s loaded for name %s', mtype.__name__, FLAGS.model_name)
+    return mtype
 
 
 _GPU = 'GPU'
 _CPU = 'CPU'
 
-def _get_device():
+def _get_device_type():
     device = FLAGS.device
     if not device:
         logging.debug('device not set: trying to set it for the mode.')
         if FLAGS.mode == _MODE_TRAIN:
-            logging.debug('setting %s device for mode %s', _GPU, FLAGS.mode)
+            logging.info('setting %s device type for mode %s', _GPU, FLAGS.mode)
             device = _GPU
         elif FLAGS.mode == _MODE_EVAL or FLAGS.mode == _MODE_TEST:
-            logging.debug('setting %s device for mode %s', _CPU, FLAGS.mode)
+            logging.info('setting %s device type for mode %s', _CPU, FLAGS.mode)
             device = _CPU
         else:
             message = 'cannot set a default device for mode {}'.format(device)
             logging.critical(message)
             raise ValueError(message)
+    else:
+        supported = [_GPU, _CPU]
+        if device not in supported:
+            message = "unsupported device type: {}. Must be one of {}"\
+                .format(device, ', '.join(supported))
+            logging.critical(message)
+            raise ValueError(message)
+        logging.info('device type selected: %s', device)
     return device
+
 
 def _get_hparams(dhparams):
     logging.log(HDEBUG, 'deault params:')
@@ -143,19 +151,21 @@ def _get_hparams(dhparams):
 
     if not FLAGS.hparams:
         logging.info('no hparams set: using default.')
-        return dhparams
+        hparams = dhparams
+    else:
+        hparams = FLAGS.hparams
+        if isinstance(hparams, str):
+            if os.path.exists(hparams):
+                logging.debug('trying to parse hparams from file %s', hparams)
+                hparams = ','.join([line.replace('\n', '') for line in open(hparams)])
+        logging.debug('serialized hparams: %s', hparams)
+        logging.debug('parsing hparams.')
+        hparams = dhparams.parse(hparams)
 
-    hparams = FLAGS.hparams
-    if isinstance(hparams, str):
-        if os.path.exists(hparams):
-            logging.info('trying to parse hparams from file %s', hparams)
-            hparams = ','.join([line.replace('\n', '') for line in open(hparams)])
-    logging.debug('serialized hparams: %s', hparams)
-    logging.debug('parsing hparams.')
-    hparams = dhparams.parse(hparams)
-    logging.debug('model will be configured with the following hparams:')
+    # final info logging.
+    logging.info('model will be configured with the following hparams:')
     for key, value in hparams.values().items():
-        logging.debug('hparams.' + key + '=' + str(value))
+        logging.info('hparams.' + key + '=' + str(value))
     return hparams
 
 
@@ -178,31 +188,32 @@ def _get_epochs_and_steps():
         message = 'at least one of epochs or steps must be set.'
         logging.critical(message)
         raise ValueError(message)
+    logging.info('epochs: %s, steps: %s', str(epochs), str(steps))
     return epochs, steps
 
 
 def _get_data_files():
     logging.debug('getting data files.')
-    data_dir = FLAGS.data_dir
-    data_files = FLAGS.data_files
-    if not data_dir and not data_files:
+    if not FLAGS.data_dir and not FLAGS.data_files:
         message = 'Both data directory and data files are missing.'
         logging.critical(message)
         raise ValueError(message)
 
-    data_files = data_files.split(',')
-    if not data_dir:
-        return data_files
+    if not FLAGS.data_dir:
+        data_files = FLAGS.data_files.split(',')
+    else:
+        data_files = []
+        for data_file in FLAGS.data_files:
+            if os.path.isabs(data_file):
+                logging.debug('absolute path data file: %s', data_file)
+                data_files.append(data_file)
+            else:
+                logging.debug('relative path data file [%s/]%s', FLAGS.data_dir, data_file)
+                data_files.append(os.path.join(FLAGS.data_dir, data_file))
 
-    data_abs_files = []
     for data_file in data_files:
-        if os.path.isabs(data_file):
-            logging.debug('absolute path data file: %s', data_file)
-            data_abs_files.append(data_file)
-        else:
-            logging.debug('relative path data file [%s/]%s', data_dir, data_file)
-            data_abs_files.append(os.path.join(data_dir, data_file))
-    return data_abs_files
+        logging.info('reading data from %s', data_file)
+    return data_files
 
 
 def _get_feed_dict():
@@ -211,7 +222,7 @@ def _get_feed_dict():
     # the liteflow component is made for shuffling and batching. So maybe a regular
     # TF component should be used.
     data_files = _get_data_files()
-    shuffle = _validate_mode() == _MODE_TRAIN
+    shuffle = FLAGS.mode == _MODE_TRAIN
     logging.debug('suffling.' if shuffle else 'not shuffling.')
     epochs, _ = _get_epochs_and_steps()
     if epochs is not None:
@@ -229,13 +240,17 @@ def _get_feed_dict():
         data.FORMULA_LENGTH_KEY: tf.cast(tensors[3], tf.int32)
     }
     for key, value in feed_dict.items():
-        logging.debug('%s: %s', key, str(value))
+        logging.info('feeding with `%s`: %s', key, str(value))
     return feed_dict
 
 
 def _get_loss():
     logging.debug('getting the loss function')
-    return losses.Loss.categorical_crossentropy()
+    loss = losses.StreamingLoss(
+        func=losses.categorical_crossentropy,
+        name='XEntropy')
+    logging.info('loss function: categorical cross entropy (streaming average)')
+    return loss
 
 
 _SGD = 'sgd'
@@ -264,26 +279,43 @@ def _get_optimizer():
             decay_steps=lr_decay_steps,
             decay_rate=lr_decay_rate,
             staircase=lr_decay_staircase)
+        logging.info('learning rate: %f, decay rate: %f, decay steps: %d, staircase: %s',
+                     lr, lr_decay_rate, lr_decay_steps, str(lr_decay_staircase))
+    else:
+        logging.info('learnign rate: %f', lr)
 
+    optimizer = None
     if FLAGS.optimizer == _SGD:
-        return optimizers.Optimizer.sgd(learning_rate=lr)
+        optimizer = optimizers.Optimizer.sgd(learning_rate=lr)
     else:
         message = 'invalid optimizer name: `{}`.'.format(FLAGS.optimizer)
         logging.critical(message)
         raise ValueError(message)
 
+    logging.info('optimizer %s for name %s',
+                 optimizer.__class__.__name__, FLAGS.optimizer)
+    return optimizer
+
 
 def _get_metrics_dict():
     logging.debug('getting evaluation metrics.')
-    metric = metrics.Metrics.mean_categorical_accuracy()
-    return {
-        metric.name: metric
-    }
+    metrics_dict = {}
+
+    logging.info('creating (per token) accuracy metric.')
+    acc = metrics.StreamingMetric(metrics.accuracy, name='Accuracy')
+    metrics_dict[acc.name] = acc
+
+    logging.info('creating per sentence accuracy metric.')
+    psa = metrics.StreamingMetric(metrics.per_sentence_accuracy, name='PerSentenceAccuracy')
+    metrics_dict[psa.name] = psa
+    return metrics_dict
+
 
 def _get_loop(model):
-    mode = _validate_mode()
+    mode = FLAGS.mode
     _, steps = _get_epochs_and_steps()
     if mode == _MODE_TRAIN:
+        logging.info('building the train loop.')
         loop = runtime.TrainLoop(
             model=model,
             log_dir=_get_log_dir(),
@@ -291,65 +323,38 @@ def _get_loop(model):
             checkpoint_every=FLAGS.checkpoint_every_steps)
         return loop
     if mode == _MODE_EVAL or mode == _MODE_TEST:
-        # eval loop.
+        logging.info('building the evaluation loop.')
+        ckprov = runtime.CheckpointProvider(
+            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
+            idle_time=FLAGS.eval_check_every_sec,
+            max_idle_time=FLAGS.eval_check_until_sec)
         return runtime.EvalLoop(
             model=model,
             log_dir=_get_log_dir(),
-            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
-            steps=steps,
-            eval_check_every_secs=FLAGS.eval_check_every_sec,
-            eval_check_until_secs=FLAGS.eval_check_until_sec)
+            checkpoint_provider=ckprov,
+            steps=steps)
     raise ValueError('Invalid mode: ' + mode)
 
 
 def _build_model():
-    logging.info('getting the device type to be used.')
-    device = _get_device()
-    logging.info('the device type to be used is %s', device)
-
-    logging.info('getting the model factory.')
+    logging.debug('building the model.')
     mtype = _get_model_type()
-
-    with tf.Graph().as_default() as graph:
-        with tf.device(device):
-            logging.debug('instantiating the model')
-            model = mtype(graph=graph)
-
-            logging.debug('getting the feed dictionary.')
+    with tf.Graph().as_default() as graph:  # pylint: disable=I0011,E1129
+        with tf.device(_get_device_type()):
             feed_dict = _get_feed_dict()
-
-            logging.debug('getting default hparams for the model.')
-            dhparams = mtype.get_default_hparams()
-            hparams = _get_hparams(dhparams)
-
-            logging.debug('getting the loss function.')
+            hparams = _get_hparams(mtype.get_default_hparams())
             loss = _get_loss()
-
-            logging.debug('getting the optimizer.')
             optimizer = _get_optimizer()
-
-            logging.debug('getting the metrics')
             metrics_dict = _get_metrics_dict()
+            return mtype(graph=graph)\
+                .feed(feed_dict)\
+                .build(hparams, loss, optimizer, metrics_dict)
 
-            logging.debug('feeding the model')
-            model = model.feed(feed_dict)
-
-            logging.debug('building the model.')
-            model = model.build(hparams, loss, optimizer, metrics_dict)
-
-            logging.debug('getting the runtime loop.')
-            loop = _get_loop(model)
-            logging.debug('starting the runtime loop.')
-            loop.start()
-            logging.debug('runtime loop complete.')
 
 def main(_):
-    """Main application entry point."""
-    _validate_mode()
-    _setup_log_dir()
-    _setup_logging()
-    _debug_log_flags()
-    _build_model()
+    """Main execution body."""
+    _get_loop(_build_model()).start()
 
 if __name__ == '__main__':
+    _setup()
     tf.app.run()

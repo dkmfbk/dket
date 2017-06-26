@@ -70,9 +70,9 @@ class _ToyTask(object):
     _MIN_LEN = 20
     _MAX_LEN = 30
     _FEEBACK_SIZE = _SHORTLIST_SIZE + 25  # half-way
-    _NUM_EXAMPLES = 100000
+    _NUM_EXAMPLES = 10  # 100000
     _LOG_EVRY = 1  # 100
-    _NUM_EPOCHS = 100
+    _NUM_EPOCHS = 1  # 100
     _LEARNING_RATE = 0.2
     _BATCH_SIZE = 100
 
@@ -154,7 +154,7 @@ class _ToyTask(object):
                     self._losses.add_item(loss)
                     self._accs.add_item(acc)
                     if step % self._LOG_EVRY == 0:
-                        logging.info(
+                        logging.debug(
                             'step: %d - avg. accuracy: %f - avg. loss: %f',
                             step, self._accs.latest(), self._losses.latest())
             except tf.errors.OutOfRangeError as ex:

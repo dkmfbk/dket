@@ -324,13 +324,15 @@ def _get_loop(model):
         return loop
     if mode == _MODE_EVAL or mode == _MODE_TEST:
         logging.info('building the evaluation loop.')
+        ckprov = runtime.CheckpointProvider(
+            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
+            idle_time=FLAGS.eval_check_every_sec,
+            max_idle_time=FLAGS.eval_check_until_sec)
         return runtime.EvalLoop(
             model=model,
             log_dir=_get_log_dir(),
-            checkpoint_dir=os.path.join(FLAGS.base_log_dir, _MODE_TRAIN),
-            steps=steps,
-            eval_check_every_secs=FLAGS.eval_check_every_sec,
-            eval_check_until_secs=FLAGS.eval_check_until_sec)
+            checkpoint_provider=ckprov,
+            steps=steps)
     raise ValueError('Invalid mode: ' + mode)
 
 

@@ -50,7 +50,7 @@ class TrainLoop(object):
 
     def start(self):
         """Start the train loop."""
-        logging.deug('started running the train loop.')
+        logging.debug('started running the train loop.')
         with self._model.graph.as_default() as graph:
             logging.debug('initializing session saver.')
             logging.debug('max number of checkpoint to keep: %d.', _MAX_CHECKPOINTS_TO_KEEP)
@@ -148,7 +148,7 @@ class TrainLoop(object):
                 [self._summary_msg(step, loss, metrics),
                  self._checkpoint_msg(checkpoint, delta)])
             logging.info(message)
-        elif logging.getLogger().getEffectiveLevel() <= HDEBUG:
+        else:
             logging.log(HDEBUG, self._summary_msg(step, loss, metrics))
 
         next_step = self._steps == 0 or step < self._steps
@@ -180,84 +180,58 @@ class TrainLoop(object):
 class EvalLoop(object):
     """Evaluation loop."""
 
-    _TS_FMT = '%Y-%m-%d %H:%M:%S.%3d'
-
-    def __init__(self, model, log_dir, checkpoint_dir, steps=0,
-                 eval_check_every_secs=300, eval_check_until_secs=3600):
+    def __init__(self, model, log_dir, checkpoint_provider, steps=0, logger=None):
         self._model = _validate_not_none(model, 'model')
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
-        self._checkpoint_dir = _validate_not_none(checkpoint_dir, 'checkpoint_dir')
+        self._provider = _validate_not_none(checkpoint_provider, 'checkpoint_provider')
         self._steps = _validate_not_none(steps, 'steps')
-        self._eval_check_every_secs = _validate_not_none(
-            eval_check_every_secs, 'eval_check_every_secs')
-        self._eval_check_until_secs = _validate_not_none(
-            eval_check_until_secs, 'eval_check_until_secs')
-        self._latest_gstep = -1
+
+        self._global_step = None
+        self._eval_step = None
+        self._step_fetches = None
         self._latest_checkpoint = None
-        self._latest_timestamp = time.time()
-        self._total_idle_time = 0
-        self._main_loop_flag = False
-        self._eval_loop_flag = False
-        self._eval_step = 0
-        with self._model.graph.as_default():
-            logging.debug('initializing the saver.')
-            self._saver = tf.train.Saver(max_to_keep=_MAX_CHECKPOINTS_TO_KEEP)
-        logging.debug('initializing the file writer and flushing the graph definition.')
-        self._writer = tf.summary.FileWriter(self._log_dir, graph=self._model.graph)
-        self._writer.flush()
-        logging.debug('finished initialization.')
+        self._saver = None
+        self._writer = None
 
-    def _tsfmt(self, timestamp):
-        return datetime.fromtimestamp(timestamp).strftime(self._TS_FMT)
+    def _eval(self):
+        logging.info('evaluating the checkpoint: %s', self._latest_checkpoint)
+        self._global_step = None
+        self._eval_step = None
+        self._step_fetches = None
 
-    def _sleep(self):
-        logging.debug('sleeping for %d seconds', self._eval_check_every_secs)
-        time.sleep(self._eval_check_every_secs)
-        logging.log(HDEBUG, 'waking up.')
-        now = time.time()
-        self._total_idle_time = now - self._latest_timestamp
-        logging.debug('now it is %s, last timestamp was %s',
-                      self._tsfmt(now), self._tsfmt(self._latest_timestamp))
-        logging.info('total idle time: %f (on maximum %d) sec.',
-                     self._total_idle_time, self._eval_check_until_secs)
-        if self._total_idle_time < self._eval_check_until_secs:
-            return True
-        logging.warning('total idle timeout: %f sec.; stop looping.', self._total_idle_time)
-        return False
+        with self._model.graph.as_default() as graph:
+            logging.debug('initializing session saver.')
+            self._saver = tf.train.Saver()
+            logging.debug('initializing the summary writer to path %s.', self._log_dir)
+            self._writer = tf.summary.FileWriter(self._log_dir, graph=graph)
+            logging.debug('flushing writer.')
+            self._writer.flush()
 
-    def _reset(self):
-        self._total_idle_time = 0.0
-        self._latest_timestamp = time.time()
-        logging.debug('resetting idle time to 0.0 and timestamp to %s',
-                      self._tsfmt(self._latest_timestamp))
-        logging.debug('resetting eval step.')
-        self._eval_step = 0
+        logging.debug('setting up session configuration')
+        logging.debug('allow softt device placement: %s', str(_ALLOW_SOFT_DEV_PLACEMENT))
+        config = tf.ConfigProto(allow_soft_placement=_ALLOW_SOFT_DEV_PLACEMENT)
 
-    def _eval(self, checkpoint):
-        logging.info('evaluating the checkpoint: %s', checkpoint)
-        self._latest_checkpoint = checkpoint
-        self._eval_loop_flag = True
-        logging.debug('initializing evaluation session.')
-        config = tf.ConfigProto(
-            log_device_placement=False,
-            allow_soft_placement=True)
         with tf.Session(config=config, graph=self._model.graph) as sess:
             logging.debug('initializing global and local variables')
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
 
             logging.debug('restoring session.')
-            self._saver.restore(sess, checkpoint)
+            self._saver.restore(sess, self._latest_checkpoint)
 
             logging.debug('initializing coordinator and starting queue runners.')
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(coord=coord)
 
             try:
+                logging.debug('getting the global step.')
+                self._global_step = sess.run(self._model.global_step)
+                logging.info('global step: %d', self._global_step)
+
                 logging.debug('starting the train loop.')
-                global_step = -1
-                while self._eval_loop_flag:
-                    global_step, self._eval_loop_flag = self._step(sess)
+                eval_loop = True
+                while eval_loop:
+                    eval_loop = self._step(sess)
             except tf.errors.OutOfRangeError as ex:
                 logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
@@ -266,7 +240,7 @@ class EvalLoop(object):
                 coord.request_stop()
                 coord.join(threads)
                 self._summarize(sess)
-        logging.debug('evaluation loop complete.')
+        logging.info('evaluation of checkpoint %s complete.', self._latest_checkpoint)
 
     def _summarize(self, sess):
         values = []
@@ -277,8 +251,8 @@ class EvalLoop(object):
             metrics_avg_t[key] = metric.value
 
         logging.debug('evaluating average loss and metrics.')
-        fetches = [self._model.global_step, self._model.loss.value, metrics_avg_t]
-        global_step, loss, metrics_avg = sess.run(fetches)
+        fetches = [self._model.loss.value, metrics_avg_t]
+        loss, metrics_avg = sess.run(fetches)
 
         logging.debug('creating loss summary.')
         values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
@@ -288,58 +262,139 @@ class EvalLoop(object):
 
         logging.debug('writing the summaries.')
         summary = tf.summary.Summary(value=values)
-        self._writer.add_summary(summary, global_step=global_step)
+        self._writer.add_summary(summary, global_step=self._global_step)
         self._writer.flush()
 
-        logging.info(
-            self._log_line(
-                'evaluation:', self._eval_step, global_step, loss, metrics_avg, ''))
+        logging.debug(
+            self._summary_msg(
+                self._global_step, loss, metrics_avg, self._latest_checkpoint))
+
 
     def _step(self, sess):
-        logging.debug('getting streaming average metrics update_ops.')
-        metrics_update_ops = {}
-        for key, metric in self._model.metrics.items():
-            metrics_update_ops[key] = metric.update_op
-        fetches = [
-            self._model.global_step,
-            self._model.loss.value,
-            metrics_update_ops  # it's a dictionary!
-        ]
-        global_step, loss, metrics = sess.run(fetches)
+        if self._eval_step is None:
+            logging.info('initializing evaluation step.')
+            self._eval_step = 0
+            logging.debug('getting streaming average metrics update_ops.')
+            metrics_update_ops = {}
+            for key, metric in self._model.metrics.items():
+                metrics_update_ops[key] = metric.update_op
+            logging.debug('initializing step fetches.')
+            self._step_fetches = [
+                self._model.loss.update_op,
+                metrics_update_ops  # it's a dictionary!
+            ]
+
+        loss, metrics = sess.run(self._step_fetches)
+        logging.debug(
+            self._summary_msg(
+                self._eval_step, loss, metrics, self._latest_checkpoint))
+
         self._eval_step += 1
-        if logging.getLogger().getEffectiveLevel() <= HDEBUG:
-            logging.log(HDEBUG, self._log_line(
-                '', self._eval_step, global_step, loss, metrics, ''))
-        cont = self._steps == 0 or self._eval_step < self._step
-        return global_step, cont
+        next_step = self._steps == 0 or self._eval_step < self._step
+        logging.debug('next evaluation step? %s', str(next_step))
+        return next_step
 
     def start(self):
         """Run the evaluation loop."""
-        logging.debug('starting the eval loop.')
-        self._main_loop_flag = True
-        while self._main_loop_flag:
-            checkpoint = tf.train.latest_checkpoint(self._checkpoint_dir)
-            if checkpoint and checkpoint != self._latest_checkpoint:
-                self._eval(checkpoint)
-                self._reset()
-            else:
-                if checkpoint is None:
-                    logging.warning('No checkpoint yet.')
-                else:
-                    logging.warning('Not evaluating: checkpoint %s', checkpoint)
-                self._main_loop_flag = self._sleep()
-                logging.debug('still looping? %s', str(self._main_loop_flag))
-        logging.debug('eval loop complete.')
+        logging.info('starting running the eval loop.')
+        while True:
+            logging.debug('polling the provider for the latest checkpoint.')
+            self._latest_checkpoint = self._provider.next()
+            if self._latest_checkpoint is None:
+                logging.info('no more checkpoints available.')
+                break
+            self._eval()
+        logging.info('eval loop complete.')
 
-    def _log_line(self, pre, step, global_step, loss, metrics, post):
-        components = []
-        if pre:
-            components.append(pre)
-        components.append('step: {}@{}'.format(step, global_step))
-        components.append('loss: {}'.format(loss))
-        for key, value in metrics.items():
-            components.append('{}: {}'.format(key, value))
-        if post:
-            components.append(post)
-        return ', '.join(components)
-        
+    def _summary_msg(self, step, loss, metrics, checkpoint):
+        return ', '.join(
+            ['step: {}'.format(step), 'loss: {:.2f}'.format(loss)] +
+            ['{}: {:.2f}'.format(key, value) for key, value in metrics.items()]+
+            ['checkpoint: {}'.format(checkpoint)])
+
+
+class CheckpointProvider(object):
+    """Provides the latest checkpoint for evaluation.
+
+    This class provides access to the latest checkpoint from a certain
+    checkpoint directory, through the `next()` method. If no checkpoint
+    is found (other than the latest one, from a previous check) in a certain
+    amount of time, `None` is returned.
+    """
+
+    def __init__(self, checkpoint_dir, idle_time=300, max_idle_time=3600):
+        self._checkpoint_dir = _validate_not_none(checkpoint_dir, 'checkpoint_dir')
+        self._idle_time = _validate_not_none(idle_time, 'idle_time')
+        self._max_idle_time = _validate_not_none(max_idle_time, 'max_idle_time')
+        self._tot_idle_time = 0.0
+        self._latest_checkpoint = None
+        self._latest_timestamp = None
+
+    @property
+    def checkpoint_dir(self):
+        """The checkpoint directory."""
+        return self._checkpoint_dir
+
+    @property
+    def idle_time(self):
+        """The idle time (in sec.) when polling the checkpoint directory."""
+        return self._idle_time
+
+    @property
+    def max_idle_time(self):
+        """The maximum idle time (in sec.) when polling the checkpoint directory."""
+        return self._max_idle_time
+
+    def _get_latest_checkpoint(self):
+        logging.debug('loding latest checkpoint from %s', self._checkpoint_dir)
+        checkpoint = tf.train.latest_checkpoint(self._checkpoint_dir)
+        if checkpoint is None:
+            logging.warning('No checkpoint.')
+            return None
+        if checkpoint == self._latest_checkpoint:
+            logging.warning('Not evaluating checkpoint %s', checkpoint)
+            return None
+        logging.info('valid checkpoint: %s', checkpoint)
+        return checkpoint
+
+    def _sleep(self):
+        logging.debug('sleeping for %d seconds', self._idle_time)
+        time.sleep(self._idle_time)
+        logging.log(HDEBUG, 'waking up')
+        now = time.time()
+        self._tot_idle_time = now - self._latest_timestamp
+        logging.debug(
+            'now it is %s, last timestamp was %s',
+            _timestamp_fmt(now), _timestamp_fmt(self._latest_timestamp))
+        logging.info(
+            'total idle time: %.2f (on maximum %d) sec.',
+            self._tot_idle_time, self._max_idle_time)
+        if self._tot_idle_time < self._max_idle_time:
+            return True
+        logging.warning('total idle timeout: %.2f sec.; stop looping.', self._tot_idle_time)
+        return False
+
+    def next(self):
+        """Returns the next checkpoint.
+
+        provides access to the latest checkpoint from a certain checkpoint directory.
+        If no checkpoint is found (other than the latest one, from a previous check)
+        in a certain amount of time, `None` is returned.
+        """
+
+        checkpoint = None
+        logging.debug('polling %s for the latest checkpoint.', self._checkpoint_dir)
+        self._latest_timestamp = time.time()
+        logging.debug('setting timestamp at %s', _timestamp_fmt(self._latest_timestamp))
+        logging.debug('setting total idle time at 0.0 sec.')
+        self._tot_idle_time = 0.0
+
+        while True:
+            checkpoint = self._get_latest_checkpoint()
+            if checkpoint or not self._sleep():
+                break
+
+        # save and return the latest checkpoint
+        logging.debug('setting and returning the latest checkpoint.')
+        self._latest_checkpoint = checkpoint
+        return checkpoint

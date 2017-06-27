@@ -322,7 +322,7 @@ class CheckpointProvider(object):
     amount of time, `None` is returned.
     """
 
-    def __init__(self, checkpoint_dir, idle_time=300, max_idle_time=3600):
+    def __init__(self, checkpoint_dir, idle_time=10, max_idle_time=300):
         self._checkpoint_dir = _validate_not_none(checkpoint_dir, 'checkpoint_dir')
         self._idle_time = _validate_not_none(idle_time, 'idle_time')
         self._max_idle_time = _validate_not_none(max_idle_time, 'max_idle_time')

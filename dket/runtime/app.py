@@ -34,8 +34,8 @@ tf.app.flags.DEFINE_string('mode', 'train', 'The execution mode: can be train, e
 tf.app.flags.DEFINE_integer('epochs', None, 'The number of training epochs. If none, only the [STEPS] value will be considered.')
 tf.app.flags.DEFINE_integer('steps', None, 'The number of training steps. If none, only the [EPOCHS] value will be considered.')
 tf.app.flags.DEFINE_integer('checkpoint-every-steps', 100, 'Number of training steps after which the model state is saved. This flag is considered only in --mode=train.')
-tf.app.flags.DEFINE_integer('eval-check-every-sec', 300, 'Time interval in seconds. If --mode=eval/test, the [LOG-DIR] is periodically checked to see if there is a new checkpoint to evaluate.')
-tf.app.flags.DEFINE_integer('eval-check-until-sec', 3600, 'Time interval in seconds. If --mode=eval/test, the maximum amount of time to wait for a new model checkpoint to appear in [LOG-DIR] before ending the evaluation process.')
+tf.app.flags.DEFINE_integer('eval-check-every-sec', 10, 'Time interval in seconds. If --mode=eval/test, the [LOG-DIR] is periodically checked to see if there is a new checkpoint to evaluate.')
+tf.app.flags.DEFINE_integer('eval-check-until-sec', 300, 'Time interval in seconds. If --mode=eval/test, the maximum amount of time to wait for a new model checkpoint to appear in [LOG-DIR] before ending the evaluation process.')
 tf.app.flags.DEFINE_integer('eval-max-global-step', None, 'The maximum global step checkpoint to evaluate. Works only if --mode=eval/test.')
 
 tf.app.flags.DEFINE_float('lr', 0.1, 'The initial value for the learning rate.')

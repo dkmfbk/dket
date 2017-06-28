@@ -26,6 +26,14 @@ def _timestamp_fmt(timestamp):
     return datetime.fromtimestamp(timestamp).strftime(_TIMESTAMP_FMT)
 
 
+def _as_summary(kvp):
+    return tf.summary.Summary(
+        value=[
+            tf.summary.Summary.Value(tag=key, simple_value=value)
+            for key, value in kvp.items()
+        ])
+
+
 _MAX_CHECKPOINTS_TO_KEEP = 20
 _ALLOW_SOFT_DEV_PLACEMENT = True
 
@@ -134,10 +142,16 @@ class TrainLoop(object):
                 metrics_t,  # it's a dictionary.
             ]
 
-        logging.log(HDEBUG, 'running the session step.')
+        logging.debug('running the session step.')
         step, _, loss, summary, metrics = sess.run(self._fetches)
-        logging.log(HDEBUG, 'writing summaries.')
+
+        logging.debug('creating loss summary.')
+        self._writer.add_summary(_as_summary({'loss': loss}), global_step=step)
+        logging.debug('creating metrics summaries.')
+        self._writer.add_summary(_as_summary(metrics), global_step=step)
+        logging.debug('writing session summaries.')
         self._writer.add_summary(summary, global_step=step)
+        logging.log(HDEBUG, 'flushing summaries.')
         self._writer.flush()
 
         save_step = self._checkpoint_every == 0 or (step % self._checkpoint_every == 0)
@@ -180,7 +194,7 @@ class TrainLoop(object):
 class EvalLoop(object):
     """Evaluation loop."""
 
-    def __init__(self, model, log_dir, checkpoint_provider, steps=0, logger=None):
+    def __init__(self, model, log_dir, checkpoint_provider, steps=0):
         self._model = _validate_not_none(model, 'model')
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
         self._provider = _validate_not_none(checkpoint_provider, 'checkpoint_provider')
@@ -198,14 +212,6 @@ class EvalLoop(object):
         self._global_step = None
         self._eval_step = None
         self._step_fetches = None
-
-        with self._model.graph.as_default() as graph:
-            logging.debug('initializing session saver.')
-            self._saver = tf.train.Saver()
-            logging.debug('initializing the summary writer to path %s.', self._log_dir)
-            self._writer = tf.summary.FileWriter(self._log_dir, graph=graph)
-            logging.debug('flushing writer.')
-            self._writer.flush()
 
         logging.debug('setting up session configuration')
         logging.debug('allow softt device placement: %s', str(_ALLOW_SOFT_DEV_PLACEMENT))
@@ -296,6 +302,15 @@ class EvalLoop(object):
 
     def start(self):
         """Run the evaluation loop."""
+
+        with self._model.graph.as_default() as graph:
+            logging.debug('initializing session saver.')
+            self._saver = tf.train.Saver()
+            logging.debug('initializing the summary writer to path %s.', self._log_dir)
+            self._writer = tf.summary.FileWriter(self._log_dir)
+            logging.debug('flushing writer.')
+            self._writer.flush()
+
         logging.info('starting running the eval loop.')
         while True:
             logging.debug('polling the provider for the latest checkpoint.')

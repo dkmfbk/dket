@@ -344,7 +344,9 @@ def _build_model():
             feed_dict = _get_feed_dict()
             hparams = _get_hparams(mtype.get_default_hparams())
             loss = _get_loss()
-            optimizer = _get_optimizer()
+            optimizer = None
+            if FLAGS.mode == _MODE_TRAIN:
+                optimizer = _get_optimizer()
             metrics_dict = _get_metrics_dict()
             return mtype(graph=graph)\
                 .feed(feed_dict)\

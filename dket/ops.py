@@ -57,7 +57,7 @@ def summarize(var, scope=None):
 
     Attaches many summaries to a `Tensor`. Such summaries are:
     * a scalar summary with the mean
-    * a scalar summary with the standard deviation  
+    * a scalar summary with the standard deviation
     * a scalar summary with the maximum
     * a scalar summary with the minimum
     * an histogram summary

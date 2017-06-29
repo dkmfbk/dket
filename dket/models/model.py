@@ -218,6 +218,8 @@ class BaseModel(object):
                     weights=self._output_mask)
 
         if self._trainable:
+            for variable in tf.trainable_variables():
+                ops.summarize(variable)
             self._summary_op = tf.summary.merge_all()
             if self._summary_op is None:
                 self._summary_op = tf.no_op('NoSummary')

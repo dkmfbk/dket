@@ -307,7 +307,7 @@ class EvalLoop(object):
             logging.debug('initializing session saver.')
             self._saver = tf.train.Saver()
             logging.debug('initializing the summary writer to path %s.', self._log_dir)
-            self._writer = tf.summary.FileWriter(self._log_dir)
+            self._writer = tf.summary.FileWriter(self._log_dir, graph=graph)
             logging.debug('flushing writer.')
             self._writer.flush()
 

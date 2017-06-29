@@ -271,7 +271,7 @@ class EvalLoop(object):
         self._writer.add_summary(summary, global_step=self._global_step)
         self._writer.flush()
 
-        logging.debug(
+        logging.info(
             self._summary_msg(
                 self._global_step, loss, metrics_avg, self._latest_checkpoint))
 

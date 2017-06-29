@@ -41,12 +41,20 @@ _ALLOW_SOFT_DEV_PLACEMENT = True
 class TrainLoop(object):
     """Train loop."""
 
-    def __init__(self, model, log_dir, steps=0, checkpoint_every=0):
+    def __init__(self, model, log_dir,
+                 steps=0, checkpoint_every=0,
+                 post_metrics=None):
         logging.debug('initializing TrainLoop instance.')
         self._model = _validate_not_none(model, 'model')
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
         self._steps = _validate_not_none(steps, 'steps')
         self._checkpoint_every = _validate_not_none(checkpoint_every, 'checkpoint_every')
+        self._post_metrics = post_metrics or {}
+        if not post_metrics:
+            logging.debug('no post metrics set.')
+        for key, _ in post_metrics.items():
+            logging.log(HDEBUG, 'post metric: %s', key)
+
         self._checkpoint_name = os.path.join(self._log_dir, 'CHECKPOINT')
         logging.info('TrainLoop initialized. Checkpoint at %s.', self._checkpoint_name)
 
@@ -139,16 +147,25 @@ class TrainLoop(object):
                 self._model.train_op,
                 self._model.loss.batch_value,
                 self._model.summary_op,
-                metrics_t,  # it's a dictionary.
+                metrics_t,  # it's a dictionary.,
+                self._model.target,
+                self._model.output,
+                self._model.inputs[self._model.FORMULA_LENGTH_KEY],
             ]
 
         logging.debug('running the session step.')
-        step, _, loss, summary, metrics = sess.run(self._fetches)
+        step, _, loss, summary, metrics, targets, predictions, lengths = sess.run(self._fetches)
+
+        if self._post_metrics:
+            logging.debug('adding post metrics.')
+            for key, pmetric in self._post_metrics.items():
+                metrics[key] = pmetric.reset().compute(targets, predictions, lengths)
 
         logging.debug('creating loss summary.')
         self._writer.add_summary(_as_summary({'loss': loss}), global_step=step)
         logging.debug('creating metrics summaries.')
         self._writer.add_summary(_as_summary(metrics), global_step=step)
+
         logging.debug('writing session summaries.')
         self._writer.add_summary(summary, global_step=step)
         logging.log(HDEBUG, 'flushing summaries.')

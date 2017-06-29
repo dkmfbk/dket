@@ -14,6 +14,7 @@ from dket.runtime import logutils
 from dket.runtime import runtime
 from dket.models import pointsoftmax
 from dket import data
+from dket import metrics as dmetrics
 from dket import ops
 from dket import optimizers
 from logutils import HDEBUG
@@ -310,17 +311,27 @@ def _get_metrics_dict():
     metrics_dict[psa.name] = psa
     return metrics_dict
 
+def _get_post_metrics():
+    logging.debug('getting the post metrics.')
+    post_metrics = {}
+    logging.info('creating Levenstein edit distance (LED).')
+    led = dmetrics.Metric.editdistance()
+    post_metrics['led'] = led
+    return post_metrics
+
 
 def _get_loop(model):
     mode = FLAGS.mode
     _, steps = _get_epochs_and_steps()
+    post_metrics = _get_post_metrics()
     if mode == _MODE_TRAIN:
         logging.info('building the train loop.')
         loop = runtime.TrainLoop(
             model=model,
             log_dir=_get_log_dir(),
             steps=steps,
-            checkpoint_every=FLAGS.checkpoint_every_steps)
+            checkpoint_every=FLAGS.checkpoint_every_steps,
+            post_metrics=post_metrics)
         return loop
     if mode == _MODE_EVAL or mode == _MODE_TEST:
         logging.info('building the evaluation loop.')

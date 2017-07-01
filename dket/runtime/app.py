@@ -343,7 +343,7 @@ def _get_loop(model):
             model=model,
             log_dir=_get_log_dir(),
             checkpoint_provider=ckprov,
-            steps=steps)
+            steps=steps, post_metrics=post_metrics)
     raise ValueError('Invalid mode: ' + mode)
 
 

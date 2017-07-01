@@ -50,9 +50,9 @@ class TrainLoop(object):
         self._steps = _validate_not_none(steps, 'steps')
         self._checkpoint_every = _validate_not_none(checkpoint_every, 'checkpoint_every')
         self._post_metrics = post_metrics or {}
-        if not post_metrics:
+        if not self._post_metrics:
             logging.debug('no post metrics set.')
-        for key, _ in post_metrics.items():
+        for key, _ in self._post_metrics.items():
             logging.log(HDEBUG, 'post metric: %s', key)
 
         self._checkpoint_name = os.path.join(self._log_dir, 'CHECKPOINT')
@@ -211,11 +211,17 @@ class TrainLoop(object):
 class EvalLoop(object):
     """Evaluation loop."""
 
-    def __init__(self, model, log_dir, checkpoint_provider, steps=0):
+    def __init__(self, model, log_dir, checkpoint_provider,
+                 steps=0, post_metrics=None):
         self._model = _validate_not_none(model, 'model')
         self._log_dir = _validate_not_none(log_dir, 'log_dir')
         self._provider = _validate_not_none(checkpoint_provider, 'checkpoint_provider')
         self._steps = _validate_not_none(steps, 'steps')
+        self._post_metrics = post_metrics or {}
+        if not self._post_metrics:
+            logging.debug('no post metrics set.')
+        for key, _ in self._post_metrics.items():
+            logging.log(HDEBUG, 'post metric: %s', key)
 
         self._global_step = None
         self._eval_step = None
@@ -277,6 +283,10 @@ class EvalLoop(object):
         fetches = [self._model.loss.value, metrics_avg_t]
         loss, metrics_avg = sess.run(fetches)
 
+        for key, pmetric in self._post_metrics.items():
+            logging.debug('adding post metric: %s', key)
+            metrics_avg[key] = pmetric.average
+
         logging.debug('creating loss summary.')
         values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
         logging.debug('creating metrics summaries.')
@@ -304,10 +314,21 @@ class EvalLoop(object):
             logging.debug('initializing step fetches.')
             self._step_fetches = [
                 self._model.loss.update_op,
-                metrics_update_ops  # it's a dictionary!
+                metrics_update_ops,  # it's a dictionary!
+                self._model.target,
+                self._model.output,
+                self._model.inputs[self._model.FORMULA_LENGTH_KEY],
             ]
+            for key, pmetric in self._post_metrics.items():
+                logging.debug('resetting post metric %s', key)
+                pmetric.reset()
 
-        loss, metrics = sess.run(self._step_fetches)
+        loss, metrics, targets, predictions, lengths = sess.run(self._step_fetches)
+        for key, pmetric in self._post_metrics.items():
+            logging.debug('accumulating post metric: %s', key)
+            curr = pmetric.compute(targets, predictions, lengths)
+            metrics[key] = curr
+
         logging.debug(
             self._summary_msg(
                 self._eval_step, loss, metrics, self._latest_checkpoint))

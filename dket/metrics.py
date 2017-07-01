@@ -1,55 +1,88 @@
-"""Metrics for `dket` model evaluation."""
+"""Downstream metrics."""
 
-import itertools
+import numpy as np
+import editdistance as editdist_
 
-import tensorflow as tf
+def _avg(values):
+    return sum([item * 1.0 for item in values]) / len(values)
 
+class Metric(object):
+    """Wrap a metric function into a moving average calclulation."""
 
-class Metrics(object):
-    """A function used to judge performances of the model."""
+    def __init__(self, func):
+        self._func = func
+        self._values = []
 
-    def __init__(self, metrics):
-        """Initialize a new instance.
+    @property
+    def average(self):
+        """The average of the values seen so far."""
+        if not self._values:
+            return None
+        return _avg(self._values)
+
+    @property
+    def min(self):
+        """The minimum value seen so far."""
+        if not self._values:
+            return None
+        return min(self._values)
+
+    @property
+    def max(self):
+        """The maximum value seen so far."""
+        if not self._values:
+            return None
+        return max(self._values)
+
+    def reset(self):
+        """Reset the moving average."""
+        self._values.clear()
+        return self
+
+    def compute(self, targets, predictions, lengths=None):
+        """Compute the average of the metric for a batch of examples.
 
         Arguments:
-          metrics: a list of callable objects implementing the
-            same signature of the `Metric.compute` method.
-        """
-        self._metrics = metrics
-
-    def __call__(self, truth, predicted):
-        """Wrapper for the `compute` method."""
-        return self.compute(truth, predicted)
-
-    def compute(self, truth, predicted):
-        """Compute a set of evaluation metrics on the results.
-
-        Arguments:
-          truth: a `Tensor` representing the gold truth.
-          predicted:  a `Tensor` of same shape and dtype than `truth` representing
-            actual predictions.
+          targets: a `numpy` tensor of shape [batch, length] of `int` representing
+            the gold truth labels.
+          predictions: a `numpy` tensor of shape [batch, length, num_classes] of
+            `float`, representing the predictions of the model.
+          lengths: a `numpy` array of shape [batch] representing the actual lengths
+            of the sentences in the batch.
 
         Returns:
-          a `list` of `Op` objects representing the evaluation metrics for the model.
+          a `float` representing the average value of the metric over the batch.
         """
-        return list(itertools.chain(*[m(truth, predicted) for m in self._metrics]))
+        values = self._func(targets, predictions, lengths=lengths)
+        self._values += values
+        return _avg(values)
 
-    @staticmethod
-    def batch_mean_accuracy():
-        """Compute the mean accuracy on a batch.
+    @classmethod
+    def editdistance(cls):
+        """Build a Metric instance calculating the edit distance."""
+        return Metric(func=editdistance)
 
-        Returns:
-          a `Metrics` instance that returns a list with one `Op` representing
-          the average accuracy of the prediction w.r.t. the gold truth. Both
-          the `truth` and `predicted` tensors are intended to be of type `tf.int32`
-          and to have the same shape and are intended to be sparse representation
-          of classification labels.
-        """
-        def _accuracy(truth, predicted):
-            acc = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(truth, predicted),
-                    tf.float32),
-                name='accuracy')
-            return [acc]
-        return Metrics([_accuracy])
+
+def editdistance(targets, predictions, lengths=None):
+    """Edit distance between target and predictions.
+
+    Arguments:
+      targets: a `numpy` tensor of shape [batch, length] of `int` representing
+        the gold truth labels.
+      predictions: a `numpy` tensor of shape [batch, length, num_classes] of
+        `float`, representing the predictions of the model.
+      lengths: a `numpy` array of shape [batch] representing the actual lengths
+        of the sentences in the batch.
+
+    Returns:
+      a list of `int` of length `batch` representing the edit distances for
+        each sequence in the batch.
+    """
+    distances = []
+    predictions = np.argmax(predictions, axis=-1)
+    lengths = lengths if lengths is not None else [targets.shape[1]] * targets.shape[0]
+    for target, prediction, length in zip(targets, predictions, lengths):
+        target = target[:length]
+        prediction = prediction[:length]
+        distances.append(editdist_.eval(target, prediction))
+    return distances

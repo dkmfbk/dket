@@ -7,6 +7,6 @@ if [ -d .py2venv ]; then
 else
     virtualenv .py2venv --python=python2
     source .py2venv/bin/activate
-    pip install -r venvrequirements.txt
+    pip install -r venvrequirements.txt --process-dependency-links
     deactivate
 fi

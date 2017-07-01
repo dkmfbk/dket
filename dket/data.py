@@ -14,10 +14,12 @@ and has two int64 list features:
      values for the terms of the output formula.
 """
 
+import itertools
+
 import tensorflow as tf
 
 
-SENTENECE_LENGTH_KEY = 'sentence_length'
+SENTENCE_LENGTH_KEY = 'sentence_length'
 FORMULA_LENGTH_KEY = 'formula_length'
 WORDS_KEY = 'words'
 FORMULA_KEY = 'formula'
@@ -94,7 +96,7 @@ def encode(words_idxs, formula_idxs):
     example = tf.train.Example(
         features=tf.train.Features(
             feature={
-                SENTENECE_LENGTH_KEY: tf.train.Feature(
+                SENTENCE_LENGTH_KEY: tf.train.Feature(
                     int64_list=tf.train.Int64List(
                         value=[len(words_idxs)])),
                 FORMULA_LENGTH_KEY: tf.train.Feature(
@@ -130,7 +132,7 @@ def decode(example):
         return [int(item) for item in feature.int64_list.value]
 
     fmap = example.features.feature
-    _ = _parse_int(fmap[SENTENECE_LENGTH_KEY])
+    _ = _parse_int(fmap[SENTENCE_LENGTH_KEY])
     _ = _parse_int(fmap[FORMULA_LENGTH_KEY])
     words = _parse_int_list(fmap[WORDS_KEY])
     formula = _parse_int_list(fmap[FORMULA_KEY])
@@ -145,11 +147,14 @@ def parse(serialized):
         from the `encode()` method).
 
     Returns:
-      a pair of 1D ternsors, `words` of shape [sentence_length] and
-        `formula` of shape [formula_length].
+      a tuple of 4 tensors:
+        `words`: 1D tensor of shape [sentence_length].
+        `sentence_length`: 0D tesnor (i.e. scalar) representing the sentence length.
+        `formula`: 1D tensor of shape [formula_length].
+        `formula_length`: a 0D tensor (i.e. scalar) representing the formula length
     """
     features = {
-        SENTENECE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
+        SENTENCE_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
         FORMULA_LENGTH_KEY: tf.FixedLenFeature([], tf.int64),
         WORDS_KEY: tf.VarLenFeature(tf.int64),
         FORMULA_KEY: tf.VarLenFeature(tf.int64),
@@ -157,6 +162,36 @@ def parse(serialized):
     parsed = tf.parse_single_example(
         serialized=serialized,
         features=features)
+    sentence_length = parsed[SENTENCE_LENGTH_KEY]
+    formula_length = parsed[FORMULA_LENGTH_KEY]
     words = tf.sparse_tensor_to_dense(parsed[WORDS_KEY])
     formula = tf.sparse_tensor_to_dense(parsed[FORMULA_KEY])
-    return words, formula
+    return words, sentence_length, formula, formula_length
+
+
+def read_from_files(file_patterns, shuffle=True, num_epochs=None):
+    """Read examples from a set of files.
+
+    **Rrmarks:** this function creates queue runners and **local** variables.
+
+    Arguments:
+      file_patterns: an iterable of file patterns, matching data files.
+      shuffle: if `True`, files will be shuffled across different epochs.
+      num_epochs: `int`, the number of epochs, i.e. the amount of times the reading operations
+        will cycle across all the files before raising an OutOfRange error. If `None`, the
+        cycle will continue indefinetly.
+
+    Returns:
+      a tuple of 4 tensors:
+        `words`: 1D tensor of shape [sentence_length].
+        `sentence_length`: 0D tesnor (i.e. scalar) representing the sentence length.
+        `formula`: 1D tensor of shape [formula_length].
+        `formula_length`: a 0D tensor (i.e. scalar) representing the formula length
+    """
+    files = list(itertools.chain(*[tf.gfile.Glob(p) for p in file_patterns]))
+    fqueue = tf.train.string_input_producer(
+        files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue')
+    reader = tf.TFRecordReader(name='TFRecordReader')
+    _, value = reader.read(fqueue, name='Read')
+    tensors = parse(value)
+    return tensors

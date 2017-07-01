@@ -327,6 +327,7 @@ class BaseModel(object):
         return self._metrics
 
 
+# TODO(petrux): add additional properties, e.g. actual formula lengths.
 class DketModel(BaseModel):
     """Base dket model."""
 

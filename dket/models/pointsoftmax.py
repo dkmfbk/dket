@@ -11,6 +11,16 @@ class PointingSoftmaxModel(model.DketModel):
 
     def __init__(self, graph=None):
         super(PointingSoftmaxModel, self).__init__(graph=graph)
+        self._decoder_inputs = None
+
+    @property
+    def decoder_inputs(self):
+        """A `3D Tensor` representing the gold-truth decoder inputs.
+        
+        *NOTE* if the model is not trainable, this tensor will be `None`
+        since the decoder will be fed back with the previous output step
+        by step.
+        """
 
     @classmethod
     def get_default_hparams(cls):
@@ -48,15 +58,40 @@ class PointingSoftmaxModel(model.DketModel):
 
             with tf.variable_scope('Decoder'):
                 decoder_cell = tf.contrib.rnn.GRUCell(self.hparams.hidden_size)
-                decoder = layers.pointing_decoder(
-                    attention_states=encoder_out,
-                    attention_inner_size=self.hparams.attention_size,
-                    decoder_cell=decoder_cell,
-                    shortlist_size=self.hparams.shortlist_size,
-                    attention_sequence_length=self._sentence_length,
-                    output_sequence_length=self._formula_length,
-                    emit_out_feedback_size=self.hparams.feedback_size,
-                    parallel_iterations=self.hparams.parallel_iterations,
-                    swap_memory=False,
+                attention = layers.BahdanauAttention(
+                    states=encoder_out,
+                    inner_size=self.hparams.attention_size,
                     trainable=self.trainable)
-                self._output = decoder()
+                location = layers.LocationSoftmax(
+                    attention=attention,
+                    sequence_length=self._sentence_length)
+                output = layers.PointingSoftmaxOutput(
+                    shortlist_size=self.hparams.shortlist_size,
+                    decoder_out_size=cell.output_size,
+                    state_size=encoder_out.shape[-1].value,
+                    trainable=self._trainable)
+                
+                self._decoder_inputs = None
+                if self._trainable:
+                    location_size = utils.get_dimension(self._words, 1)
+                    output_size = self.hparams.shortlist_size + location_size
+                    self._decoder_inputs = tf.one_hot(self._target, output_size, dtype=tf.float32)
+
+                ps_decoder = layers.PointingSoftmaxDecoder(
+                    cell=decoder_cell,
+                    location_softmax=location,
+                    pointing_output=output,
+                    input_size=self.hparams.feedback_size,
+                    decoder_inputs=self._decoder_inputs,
+                    trainable=self._trainable)
+                
+                eos = None if self._trainable else self.EOS_IDX
+                helper = layers.TerminationHelper(lengths=self._formula_length, EOS=eos)
+                decoder = layers.DynamicDecoder(
+                    decoder=ps_decoder, helper=helper,
+                    parallel_iterations=self.hparams.parallel_iterations,
+                    swap_memory=False)
+                self._output, _ = decoder.decode()
+
+                print('TARGET: ' + str(self._target))
+                print('OUTPUT: ' + str(self._output))

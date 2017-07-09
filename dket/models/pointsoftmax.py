@@ -86,11 +86,13 @@ class PointingSoftmaxModel(model.DketModel):
                     trainable=self._trainable)
                 
                 eos = None if self._trainable else self.EOS_IDX
+                pad_to = None if self._trainable else utils.get_dimension(self._target, 1)
                 helper = layers.TerminationHelper(lengths=self._formula_length, EOS=eos)
                 decoder = layers.DynamicDecoder(
-                    decoder=ps_decoder, helper=helper,
+                    decoder=ps_decoder, helper=helper, pad_to=pad_to,
                     parallel_iterations=self.hparams.parallel_iterations,
                     swap_memory=False)
+                
                 self._output, _ = decoder.decode()
 
                 print('TARGET: ' + str(self._target))

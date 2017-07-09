@@ -309,6 +309,7 @@ class BaseModel(object):
         """Unscaled log propabilities."""
         return self._logits
 
+    # TODO(petrux): what about renaming `predictions`?
     @property
     def output(self):
         """A tensor representing the actual output of the model."""

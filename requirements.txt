@@ -8,3 +8,7 @@
 
 # requires mock to run the tests
 mock==2.0.0
+
+# install ipython and pylint
+pylint==1.7.2
+ipython==6.1.0

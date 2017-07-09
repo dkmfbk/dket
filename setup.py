@@ -11,6 +11,7 @@ setup(name='dket',
       license='Apache License 2.0',
       packages=find_packages(exclude=["tests"]),
       install_requires=[
+          'editdistance==0.3.1',
           'liteflow==0.1.0',
       ],
       dependency_links=[

@@ -94,6 +94,3 @@ class PointingSoftmaxModel(model.DketModel):
                     swap_memory=False)
                 
                 self._output, _ = decoder.decode()
-
-                print('TARGET: ' + str(self._target))
-                print('OUTPUT: ' + str(self._output))

@@ -280,15 +280,13 @@ class EvalLoop(object):
             metrics_avg_t[key] = metric.value
 
         logging.debug('evaluating average loss and metrics.')
-        fetches = [self._model.loss.value, metrics_avg_t]
-        loss, metrics_avg = sess.run(fetches)
+        fetches = metrics_avg_t
+        metrics_avg = sess.run(fetches)
 
         for key, pmetric in self._post_metrics.items():
             logging.debug('adding post metric: %s', key)
             metrics_avg[key] = pmetric.average
 
-        logging.debug('creating loss summary.')
-        values.append(tf.summary.Summary.Value(tag='loss', simple_value=loss))
         logging.debug('creating metrics summaries.')
         for key, value in metrics_avg.items():
             values.append(tf.summary.Summary.Value(tag=key, simple_value=value))
@@ -300,7 +298,7 @@ class EvalLoop(object):
 
         logging.info(
             self._summary_msg(
-                self._global_step, loss, metrics_avg, self._latest_checkpoint))
+                self._global_step, metrics_avg, self._latest_checkpoint))
 
 
     def _step(self, sess):
@@ -313,7 +311,6 @@ class EvalLoop(object):
                 metrics_update_ops[key] = metric.update_op
             logging.debug('initializing step fetches.')
             self._step_fetches = [
-                self._model.loss.update_op,
                 metrics_update_ops,  # it's a dictionary!
                 self._model.target,
                 self._model.output,
@@ -323,7 +320,7 @@ class EvalLoop(object):
                 logging.debug('resetting post metric %s', key)
                 pmetric.reset()
 
-        loss, metrics, targets, predictions, lengths = sess.run(self._step_fetches)
+        metrics, targets, predictions, lengths = sess.run(self._step_fetches)
         for key, pmetric in self._post_metrics.items():
             logging.debug('accumulating post metric: %s', key)
             curr = pmetric.compute(targets, predictions, lengths)
@@ -331,7 +328,7 @@ class EvalLoop(object):
 
         logging.debug(
             self._summary_msg(
-                self._eval_step, loss, metrics, self._latest_checkpoint))
+                self._eval_step, metrics, self._latest_checkpoint))
 
         self._eval_step += 1
         next_step = self._steps == 0 or self._eval_step < self._step
@@ -359,9 +356,9 @@ class EvalLoop(object):
             self._eval()
         logging.info('eval loop complete.')
 
-    def _summary_msg(self, step, loss, metrics, checkpoint):
+    def _summary_msg(self, step, metrics, checkpoint):
         return ', '.join(
-            ['step: {}'.format(step), 'loss: {:.2f}'.format(loss)] +
+            ['step: {}'.format(step)] +
             ['{}: {:.2f}'.format(key, value) for key, value in metrics.items()]+
             ['checkpoint: {}'.format(checkpoint)])
 

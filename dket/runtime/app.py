@@ -49,6 +49,7 @@ tf.app.flags.DEFINE_float('adagrad-rho', None, 'If --optimizer=adagrad, set the 
 
 tf.app.flags.DEFINE_string('device', None, 'Force the model to be built on a certain type of device (CPU or GPU). If not set, the device will be chosen according to the mode using GPU for training and CPU for evaluation.')
 tf.app.flags.DEFINE_integer('threads', 4, 'The number of threads to be used for the input pipeline.')
+tf.app.flags.DEFINE_integer('seed', 23, 'The random seed.')
 
 tf.app.flags.DEFINE_string('base-log-dir', '.', 'The base log directory where all the model dumps, summaries, ecc. will be stored in [BASE-LOG-DIR]/[MODE]. If not set, the current directory will be taken.')
 tf.app.flags.DEFINE_string('log-level', 'INFO', 'The log level. Can be none ore one of HDEBUG, DEBUG, INFO, WARNING')
@@ -70,6 +71,9 @@ _MODE_TEST = 'test'
 def _setup():
     """Set up the execution environment."""
     logging.debug('setting up the execution environment.')
+    logging.debug('the random seed is: %d', FLAGS.seed)
+    tf.set_random_seed(FLAGS.seed)
+
     logging.debug('validating mode: %s', FLAGS.mode)
     modes = [_MODE_TRAIN, _MODE_TEST, _MODE_EVAL]
     if FLAGS.mode not in modes:
@@ -229,10 +233,11 @@ def _get_feed_dict():
     if epochs is not None:
         logging.debug('epochs: %d', epochs)
     logging.debug('reading from data.')
-    tensors = data.read_from_files(data_files, shuffle=shuffle, num_epochs=epochs)
+    tensors = data.read_from_files(
+        data_files, shuffle=shuffle, num_epochs=epochs, seed=FLAGS.seed)
     logging.debug('got %d tensors.', len(tensors))
     logging.debug('reading shuffled and batched and padded tensors.')
-    tensors = lin.shuffle_batch(tensors, FLAGS.batch_size)
+    tensors = lin.shuffle_batch(tensors, FLAGS.batch_size, seed=FLAGS.seed)
     logging.debug('got %d tensors.', len(tensors))
     feed_dict = {
         data.WORDS_KEY: tf.cast(tensors[0], tf.int32),
@@ -354,9 +359,10 @@ def _build_model():
         with tf.device(_get_device_type()):
             feed_dict = _get_feed_dict()
             hparams = _get_hparams(mtype.get_default_hparams())
-            loss = _get_loss()
+            loss = None
             optimizer = None
             if FLAGS.mode == _MODE_TRAIN:
+                loss = _get_loss()
                 optimizer = _get_optimizer()
             metrics_dict = _get_metrics_dict()
             return mtype(graph=graph)\

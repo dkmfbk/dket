@@ -10,7 +10,7 @@ import tempfile
 import tensorflow as tf
 from liteflow import input as lin
 
-from dket import data, losses, metrics, optimizers
+from dket import data, metrics, optimizers
 from dket.models.pointsoftmax import PointingSoftmaxModel as PSM
 from dket.runtime import logutils
 

@@ -200,6 +200,9 @@ class BaseModel(object):
         self._optimizer = optimizer
         self._metrics = metrics
         self._trainable = self._optimizer is not None
+
+        # Invoke the template method to build the
+        # actual forward pass graph.
         self._build_graph()
 
         if self._loss:
@@ -306,6 +309,7 @@ class BaseModel(object):
         """Unscaled log propabilities."""
         return self._logits
 
+    # TODO(petrux): what about renaming `predictions`?
     @property
     def output(self):
         """A tensor representing the actual output of the model."""
@@ -327,12 +331,12 @@ class BaseModel(object):
         return self._metrics
 
 
-# TODO(petrux): add additional properties, e.g. actual formula lengths.
 class DketModel(BaseModel):
     """Base dket model."""
 
     __metaclass__ = abc.ABCMeta
 
+    EOS_IDX = 0
     WORDS_KEY = data.WORDS_KEY
     SENTENCE_LENGTH_KEY = data.SENTENCE_LENGTH_KEY
     FORMULA_KEY = data.FORMULA_KEY

@@ -169,7 +169,7 @@ def parse(serialized):
     return words, sentence_length, formula, formula_length
 
 
-def read_from_files(file_patterns, shuffle=True, num_epochs=None):
+def read_from_files(file_patterns, shuffle=True, num_epochs=None, seed=None):
     """Read examples from a set of files.
 
     **Rrmarks:** this function creates queue runners and **local** variables.
@@ -190,7 +190,7 @@ def read_from_files(file_patterns, shuffle=True, num_epochs=None):
     """
     files = list(itertools.chain(*[tf.gfile.Glob(p) for p in file_patterns]))
     fqueue = tf.train.string_input_producer(
-        files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue')
+        files, num_epochs=num_epochs, shuffle=shuffle, name='FilenameQueue', seed=seed)
     reader = tf.TFRecordReader(name='TFRecordReader')
     _, value = reader.read(fqueue, name='Read')
     tensors = parse(value)

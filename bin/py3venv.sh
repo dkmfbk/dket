@@ -26,6 +26,7 @@ source $VENV_DIR/bin/activate
 echo 'installing tensorflow version: '$TF_VERSION
 pip install $TF_VERSION
 pip install -r $REQUIREMENTS --process-dependency-links
+echo 'removing dket.egg-info directory'
+rm -rf dket.egg-info
 echo 'done'
 deactivate
-

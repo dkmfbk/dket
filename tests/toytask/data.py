@@ -11,6 +11,7 @@ import dket.data
 # pylint: disable=C0301
 tensorflow.app.flags.DEFINE_integer('size', 10000, 'The number of examples to be generated.')
 tensorflow.app.flags.DEFINE_string('output', None, 'The output file. If not set, a temporary one will be used')
+tensorflow.app.flags.DEFINE_integer('seed', 23, 'The random seed to be used.')
 FLAGS = tensorflow.app.flags.FLAGS
 # pylint: enable=C0301
 
@@ -59,4 +60,5 @@ def generate_dataset(size, fpath=None, factory=example):
 
 
 if __name__ == '__main__':
+    random.seed(FLAGS.seed)
     generate_dataset(FLAGS.size, FLAGS.output)

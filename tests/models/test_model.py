@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from dket.models import model
 
-class _BaseModel(model.BaseModel):
+class _BaseModel(model._Model):  # pylint: disable=W0212
 
     _TARGET_KEY = 'TARGET'
 
@@ -53,7 +53,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.metrics)
         self.assertIsNone(instance.inputs)
         self.assertIsNone(instance.target)
-        self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
@@ -71,7 +70,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.metrics)
         self.assertIsNone(instance.inputs)
         self.assertIsNone(instance.target)
-        self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
@@ -100,7 +98,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.loss)
         self.assertIsNone(instance.optimizer)
         self.assertIsNone(instance.metrics)
-        self.assertIsNone(instance.logits)
         self.assertIsNone(instance.output)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
@@ -153,7 +150,6 @@ class TestBaseModel(tf.test.TestCase):
         self.assertEqual(instance.get_default_hparams().dim_2,
                          instance.hparams.dim_2)
         self.assertFalse('extra' in instance.hparams.values())
-        self.assertIsNotNone(instance.logits)
         self.assertIsNotNone(instance.output)
 
         loss.compute.assert_called_once_with(
@@ -197,13 +193,8 @@ class TestBaseModel(tf.test.TestCase):
             'metrics_02': metrics_02
         }
 
-        instance.build(hparams, loss, optimizer=None, metrics=metrics)
-
-        self.assertFalse(instance.trainable)
-        self.assertIsNone(instance.optimizer)
-        self.assertIsNone(instance.train_op)
-        loss.compute.assert_called_once_with(instance.target, instance.output, weights=None)
-        loss.batch_value.assert_not_called()
+        self.assertRaises(ValueError, instance.build, 
+                          hparams, loss=loss, optimizer=None)
 
     def test_build_not_trainable(self):
         """Test the building of a non-trainable model without loss."""

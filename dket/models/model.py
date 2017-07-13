@@ -11,7 +11,7 @@ from dket import data
 from dket import ops
 
 
-class BaseModel(object):
+class _Model(object):
     """Base model implementation.
 
     This class implements a SINGLE TASK model where single task means one
@@ -88,7 +88,6 @@ class BaseModel(object):
         self._tensors = None
         self._inputs = None
         self._target = None
-        self._logits = None
         self._output = None
         self._output_mask = None
         self._loss = None
@@ -148,11 +147,10 @@ class BaseModel(object):
     def build(self, hparams, loss=None, optimizer=None, metrics=None):
         """Build the model instance.
 
-        This method is the backbon of the model creation and performs many operations,
+        This method is the backbone of the model creation and performs many operations,
         leaving the graph creation to the asbtract template method `_build_graph()` which
-        MUST be implemented in subclasses and MUST complete leaving the `self._logits`
-        and `self._output` tensors defined. The method will set the `self.built` flag
-        value to `True`.
+        MUST be implemented in subclasses and MUST complete leaving the `self._predictions`
+        tensors defined. The method will set the `self.built` flag value to `True`.
 
         Arguments:
           hparams: a `tf.contrib.training.HParams` representing the configuration for
@@ -178,9 +176,11 @@ class BaseModel(object):
           ValueError: if `hparams` is `None` or if `optimizer` is provided without `loss`.
 
         Remarks:
-          for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
-          for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
+          For the `loss` argument, you can use an instance of the `dket.loss.Loss` class.
+          For the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
           class.
+        
+        *NOTE* `loss` and `optimizer` MUST be both provided or both `None`.
         """
         if not self._fed:
             raise RuntimeError('The model has not been fed yes.')
@@ -188,9 +188,14 @@ class BaseModel(object):
         if self._built:
             raise RuntimeError('The model has already been built.')
 
-        if loss is None and optimizer is not None:
-            raise ValueError(
-                'If `loss` is `None`, `optimizer` must be `None`.')
+        if optimizer is None:
+            if loss is not None:
+                raise ValueError(
+                    'If `optimizer` is `None`, `loss` must be `None`.')    
+        if optimizer is not None:
+            if loss is None:
+                raise ValueError(
+                    'If `optimizer` is not `None`, `loss` cannot be `None`.')
 
         if hparams is None:
             raise ValueError('`hparams` cannot be `None`.')
@@ -303,12 +308,6 @@ class BaseModel(object):
         """A tensor representing the output mask (or `None`)."""
         return self._output_mask
 
-    # TODO(petrux): check usage and possibly REMOVE.
-    @property
-    def logits(self):
-        """Unscaled log propabilities."""
-        return self._logits
-
     # TODO(petrux): what about renaming `predictions`?
     @property
     def output(self):
@@ -331,7 +330,7 @@ class BaseModel(object):
         return self._metrics
 
 
-class DketModel(BaseModel):
+class DketModel(_Model):
     """Base dket model."""
 
     __metaclass__ = abc.ABCMeta

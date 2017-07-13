@@ -17,6 +17,7 @@ class _BaseModel(model._Model):  # pylint: disable=W0212
         super(_BaseModel, self).__init__()
         self._summary = summary
         self._tensors = None
+        self._logits = None
 
     def get_default_hparams(self):
         return tf.contrib.training.HParams(dim_0=10, dim_1=3, dim_2=7)
@@ -31,7 +32,7 @@ class _BaseModel(model._Model):  # pylint: disable=W0212
         assert not self.built
         shape = [self.hparams.dim_0, self.hparams.dim_1, self.hparams.dim_2]
         self._logits = tf.random_normal(shape, name='Logits')
-        self._output = tf.identity(
+        self._predictions = tf.identity(
             tf.nn.softmax(self._logits),
             name='Probabilities')
         if self._summary:
@@ -53,7 +54,7 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.metrics)
         self.assertIsNone(instance.inputs)
         self.assertIsNone(instance.target)
-        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.predictions)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -70,7 +71,7 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.metrics)
         self.assertIsNone(instance.inputs)
         self.assertIsNone(instance.target)
-        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.predictions)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -98,7 +99,7 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNone(instance.loss)
         self.assertIsNone(instance.optimizer)
         self.assertIsNone(instance.metrics)
-        self.assertIsNone(instance.output)
+        self.assertIsNone(instance.predictions)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
 
@@ -150,19 +151,19 @@ class TestBaseModel(tf.test.TestCase):
         self.assertEqual(instance.get_default_hparams().dim_2,
                          instance.hparams.dim_2)
         self.assertFalse('extra' in instance.hparams.values())
-        self.assertIsNotNone(instance.output)
+        self.assertIsNotNone(instance.predictions)
 
         loss.compute.assert_called_once_with(
-            instance.target, instance.output, weights=None)
+            instance.target, instance.predictions, weights=None)
 
         optimizer.minimize.assert_called_once_with(
             loss_batch_value, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
         metrics_01.compute.assert_called_once_with(
-            instance.target, instance.output, weights=None)
+            instance.target, instance.predictions, weights=None)
         metrics_02.compute.assert_called_once_with(
-            instance.target, instance.output, weights=None)
+            instance.target, instance.predictions, weights=None)
 
         self.assertIsNotNone(instance.summary_op)
 

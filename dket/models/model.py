@@ -88,7 +88,7 @@ class _Model(object):
         self._tensors = None
         self._inputs = None
         self._target = None
-        self._output = None
+        self._predictions = None
         self._output_mask = None
         self._loss = None
         self._optimizer = None
@@ -212,7 +212,7 @@ class _Model(object):
 
         if self._loss:
             self._loss.compute(
-                self._target, self._output,
+                self._target, self._predictions ,
                 weights=self._output_mask)
 
         if self._optimizer:
@@ -222,7 +222,7 @@ class _Model(object):
         if self._metrics:
             for _, metric in self._metrics.items():
                 metric.compute(
-                    self.target, self.output,
+                    self._target, self._predictions,
                     weights=self._output_mask)
 
         if self._trainable:
@@ -310,9 +310,9 @@ class _Model(object):
 
     # TODO(petrux): what about renaming `predictions`?
     @property
-    def output(self):
+    def predictions(self):
         """A tensor representing the actual output of the model."""
-        return self._output
+        return self._predictions
 
     @property
     def train_op(self):

@@ -93,4 +93,4 @@ class PointingSoftmaxModel(model.DketModel):
                     parallel_iterations=self.hparams.parallel_iterations,
                     swap_memory=False)
                 
-                self._output, _ = decoder.decode()
+                self._predictions, _ = decoder.decode()

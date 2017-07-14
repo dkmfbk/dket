@@ -149,7 +149,7 @@ class TrainLoop(object):
                 self._model.summary_op,
                 metrics_t,  # it's a dictionary.,
                 self._model.target,
-                self._model.output,
+                self._model.predictions,
                 self._model.inputs[self._model.FORMULA_LENGTH_KEY],
             ]
 
@@ -313,7 +313,7 @@ class EvalLoop(object):
             self._step_fetches = [
                 metrics_update_ops,  # it's a dictionary!
                 self._model.target,
-                self._model.output,
+                self._model.predictions,
                 self._model.inputs[self._model.FORMULA_LENGTH_KEY],
             ]
             for key, pmetric in self._post_metrics.items():

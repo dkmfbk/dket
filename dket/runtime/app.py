@@ -304,26 +304,18 @@ def _get_optimizer():
 
 
 def _get_metrics_dict():
-    logging.debug('getting evaluation metrics.')
-    metrics_dict = {}
-
-    logging.info('creating (per token) accuracy metric.')
-    acc = metrics.StreamingMetric(metrics.accuracy, name='Accuracy')
-    metrics_dict[acc.name] = acc
-
-    logging.info('creating per sentence accuracy metric.')
-    psa = metrics.StreamingMetric(metrics.per_sentence_accuracy, name='PerSentenceAccuracy')
-    metrics_dict[psa.name] = psa
-    return metrics_dict
+    logging.warning('no graph metrics (only downstream)')
+    return {}
 
 def _get_post_metrics():
     logging.debug('getting the post metrics.')
-    post_metrics = {}
     logging.info('creating Levenstein edit distance (LED).')
-    led = dmetrics.Metric.editdistance()
-    post_metrics['led'] = led
-    return post_metrics
-
+    pmetrics = [
+        dmetrics.Metric.editdistance(),
+        dmetrics.Metric.per_token_accuracy(),
+        dmetrics.Metric.per_sentence_accuracy()]
+    pmetrics = dict([(p.name, p) for p in pmetrics])
+    return pmetrics
 
 def _get_loop(model):
     mode = FLAGS.mode

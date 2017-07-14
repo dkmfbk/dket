@@ -91,6 +91,7 @@ class _Model(object):
         self._predictions = None
         self._output_mask = None
         self._loss = None
+        self._loss_op = None
         self._optimizer = None
         self._train_op = None
         self._trainable = False
@@ -117,6 +118,11 @@ class _Model(object):
     def loss(self):
         """The streaning average loss."""
         return self._loss
+
+    @property
+    def loss_op(self):
+        """The op that computes the loss for the given batch."""
+        return self._loss.batch_value
 
     @property
     def optimizer(self):
@@ -237,13 +243,15 @@ class _Model(object):
           metrics: a `dict` where the key is a string and the value is an instance
             of `liteflow.metrics.StreamingMetric`.
 
+            
         Returns:
           the very same instance of the model.
 
         Raises:
           RuntimeError: is the model has not been fed (i.e. `self.fed` is `False`) or
             if the method has already been invoked (i.e. `self.built` is `True`)
-          ValueError: if `hparams` is `None` or if `optimizer` is provided without `loss`.
+          ValueError: if `hparams` is `None` 
+          ValueError: if `optimizer` is provided without `loss` are not both provided or `None`.
 
         Remarks:
           For the `loss` argument, you can use an instance of the `dket.loss.Loss` class.
@@ -258,14 +266,11 @@ class _Model(object):
         if self._built:
             raise RuntimeError('The model has already been built.')
 
-        if optimizer is None:
-            if loss is not None:
-                raise ValueError(
-                    'If `optimizer` is `None`, `loss` must be `None`.')    
-        if optimizer is not None:
-            if loss is None:
-                raise ValueError(
-                    'If `optimizer` is not `None`, `loss` cannot be `None`.')
+        if optimizer is None and loss is not None:
+            raise ValueError('If `optimizer` is `None`, `loss` must be `None`.')    
+
+        if optimizer is not None and loss is None:
+            raise ValueError('If `optimizer` is not `None`, `loss` cannot be `None`.')
 
         if hparams is None:
             raise ValueError('`hparams` cannot be `None`.')
@@ -276,21 +281,21 @@ class _Model(object):
         self._metrics = metrics
         self._trainable = self._optimizer is not None
 
-        # Invoke the template method to build the
-        # actual forward pass graph.
         self._build_graph()
 
         if self._trainable:
             self._loss.compute(
-                self._target, self._predictions , weights=self._output_mask)
+                self._target, self._predictions,
+                weights=self._output_mask)
             self._train_op = self._optimizer.minimize(
                 self._loss.batch_value, global_step=self._global_step)
 
         if self._metrics:
+            metrics_mask = self._output_mask if self._trainable else None
             for _, metric in self._metrics.items():
                 metric.compute(
                     self._target, self._predictions,
-                    weights=self._output_mask)
+                    weights=metrics_mask)
 
         if self._trainable:
             for variable in tf.trainable_variables():

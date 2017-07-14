@@ -145,7 +145,7 @@ class TrainLoop(object):
             self._fetches = [
                 self._model.global_step,
                 self._model.train_op,
-                self._model.loss.batch_value,
+                self._model.loss_op,
                 self._model.summary_op,
                 metrics_t,  # it's a dictionary.,
                 self._model.target,

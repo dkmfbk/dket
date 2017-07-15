@@ -240,10 +240,10 @@ def _get_feed_dict():
     tensors = lin.shuffle_batch(tensors, FLAGS.batch_size, seed=FLAGS.seed)
     logging.debug('got %d tensors.', len(tensors))
     feed_dict = {
-        data.WORDS_KEY: tf.cast(tensors[0], tf.int32),
-        data.SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32),
-        data.FORMULA_KEY: tf.cast(tensors[2], tf.int32),
-        data.FORMULA_LENGTH_KEY: tf.cast(tensors[3], tf.int32)
+        data.WORDS_KEY: tf.cast(tensors[0], tf.int32, name='WORDS'),
+        data.SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32, name='SENT_LEN'),
+        data.FORMULA_KEY: tf.cast(tensors[2], tf.int32, name='FORMULA'),
+        data.FORMULA_LENGTH_KEY: tf.cast(tensors[3], tf.int32, name='FORMULA_LEN')
     }
     for key, value in feed_dict.items():
         logging.info('feeding with `%s`: %s', key, str(value))

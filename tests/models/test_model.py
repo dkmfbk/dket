@@ -9,6 +9,7 @@ import tensorflow as tf
 
 from dket.models import model
 
+
 class _BaseModel(model._Model):  # pylint: disable=W0212
 
     _TARGET_KEY = 'TARGET'
@@ -27,7 +28,7 @@ class _BaseModel(model._Model):  # pylint: disable=W0212
         self._tensors = copy.copy(tensors)
         self._inputs = copy.copy(tensors)
         self._target = self._inputs.pop(self._TARGET_KEY)
-        
+
     def _build_graph(self):
         assert not self.built
         shape = [self.hparams.dim_0, self.hparams.dim_1, self.hparams.dim_2]
@@ -129,7 +130,8 @@ class TestBaseModel(tf.test.TestCase):
 
         loss_batch_value = tf.constant(0.0, dtype=tf.float32)
         loss = mock.Mock()
-        type(loss).batch_value = mock.PropertyMock(return_value=loss_batch_value)
+        type(loss).batch_value = mock.PropertyMock(
+            return_value=loss_batch_value)
 
         optimizer = mock.Mock()
         train_op = tf.no_op('train_op')
@@ -195,7 +197,7 @@ class TestBaseModel(tf.test.TestCase):
             'metrics_02': metrics_02
         }
 
-        self.assertRaises(ValueError, instance.build, 
+        self.assertRaises(ValueError, instance.build,
                           hparams, loss=loss, optimizer=None)
 
     def test_build_not_trainable(self):
@@ -226,7 +228,6 @@ class TestBaseModel(tf.test.TestCase):
         # invoked with the output mask as `weights` but with `None`.
         metric.compute.assert_called_once_with(
             instance.target, instance.predictions, weights=None)
-        
 
     def test_build_trainable_without_loss(self):  # pylint: disable=I0011,C0103
         """Built a model with an optimizer but without a loss function."""

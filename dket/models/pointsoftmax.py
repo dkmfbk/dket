@@ -76,8 +76,10 @@ class PointingSoftmaxModel(model.DketModel):
                 if self._trainable:
                     location_size = utils.get_dimension(self._words, 1)
                     output_size = self.hparams.shortlist_size + location_size
-                    self._decoder_inputs = tf.one_hot(self._target, output_size, dtype=tf.float32)
-
+                    self._decoder_inputs = tf.one_hot(
+                        self._target, output_size, dtype=tf.float32,
+                        name='decoder_training_input')
+                
                 ps_decoder = layers.PointingSoftmaxDecoder(
                     cell=decoder_cell,
                     location_softmax=location,

@@ -11,7 +11,7 @@ from dket import data
 from dket import ops
 
 
-class BaseModel(object):
+class _Model(object):
     """Base model implementation.
 
     This class implements a SINGLE TASK model where single task means one
@@ -88,10 +88,10 @@ class BaseModel(object):
         self._tensors = None
         self._inputs = None
         self._target = None
-        self._logits = None
-        self._output = None
+        self._predictions = None
         self._output_mask = None
         self._loss = None
+        self._loss_op = None
         self._optimizer = None
         self._train_op = None
         self._trainable = False
@@ -103,6 +103,86 @@ class BaseModel(object):
     def graph(self):
         """The graph in which the model has been created."""
         return self._graph
+
+    @property
+    def global_step(self):
+        """The global step of the model."""
+        return self._global_step
+
+    @property
+    def hparams(self):
+        """The full initialization HParams of the model."""
+        return self._hparams
+
+    @property
+    def loss(self):
+        """The streaning average loss."""
+        return self._loss
+
+    @property
+    def loss_op(self):
+        """The op that computes the loss for the given batch."""
+        return self._loss.batch_value
+
+    @property
+    def optimizer(self):
+        """The optimizer of the model."""
+        return self._optimizer
+
+    @property
+    def trainable(self):
+        """`True` if the model is trainable."""
+        return self._trainable
+
+    @property
+    def inputs(self):
+        """A tensor or a dictionary of tensors represenitng the model input(s)."""
+        return self._inputs
+
+    @property
+    def feeding(self):
+        """A dictionaty of feeding tensors (both input and target outputs)."""
+        return self._tensors
+
+    @property
+    def target(self):
+        """A tensor representing the target output of the model."""
+        return self._target
+
+    @property
+    def output_mask(self):
+        """A tensor representing the output mask (or `None`)."""
+        return self._output_mask
+
+    @property
+    def predictions(self):
+        """A tensor representing the actual output of the model."""
+        return self._predictions
+
+    @property
+    def train_op(self):
+        """The train op of the model."""
+        return self._train_op
+
+    @property
+    def summary_op(self):
+        """The summary op of the model."""
+        return self._summary_op
+
+    @property
+    def metrics(self):
+        """A dictionary of liteflow.metrics.StreamingMetric used for the evaluation."""
+        return self._metrics
+
+    @property
+    def fed(self):
+        """`True` if the model has beed feed with queues."""
+        return self._fed
+
+    @property
+    def built(self):
+        """`True` if the model has been built."""
+        return self._built
 
     @abc.abstractmethod
     def _feed_helper(self, tensors):
@@ -135,24 +215,18 @@ class BaseModel(object):
         self._fed = True
         return self
 
-    @property
-    def fed(self):
-        """`True` if the model has beed feed with queues."""
-        return self._fed
-
-    @property
-    def feeding(self):
-        """The feeding tensors."""
-        return self._tensors
+    @abc.abstractmethod
+    def _build_graph(self):
+        """Build the (inference) graph."""
+        raise NotImplementedError('To be implemented in subclasses.')
 
     def build(self, hparams, loss=None, optimizer=None, metrics=None):
         """Build the model instance.
 
-        This method is the backbon of the model creation and performs many operations,
+        This method is the backbone of the model creation and performs many operations,
         leaving the graph creation to the asbtract template method `_build_graph()` which
-        MUST be implemented in subclasses and MUST complete leaving the `self._logits`
-        and `self._output` tensors defined. The method will set the `self.built` flag
-        value to `True`.
+        MUST be implemented in subclasses and MUST complete leaving the `self._predictions`
+        tensors defined. The method will set the `self.built` flag value to `True`.
 
         Arguments:
           hparams: a `tf.contrib.training.HParams` representing the configuration for
@@ -169,18 +243,22 @@ class BaseModel(object):
           metrics: a `dict` where the key is a string and the value is an instance
             of `liteflow.metrics.StreamingMetric`.
 
+
         Returns:
           the very same instance of the model.
 
         Raises:
           RuntimeError: is the model has not been fed (i.e. `self.fed` is `False`) or
             if the method has already been invoked (i.e. `self.built` is `True`)
-          ValueError: if `hparams` is `None` or if `optimizer` is provided without `loss`.
+          ValueError: if `hparams` is `None` 
+          ValueError: if `optimizer` is provided without `loss` are not both provided or `None`.
 
         Remarks:
-          for the `loss` argument, you can use an instance of the `dket.loss.Loss` class,
-          for the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
+          For the `loss` argument, you can use an instance of the `dket.loss.Loss` class.
+          For the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
           class.
+
+        *NOTE* `loss` and `optimizer` MUST be both provided or both `None`.
         """
         if not self._fed:
             raise RuntimeError('The model has not been fed yes.')
@@ -188,9 +266,13 @@ class BaseModel(object):
         if self._built:
             raise RuntimeError('The model has already been built.')
 
-        if loss is None and optimizer is not None:
+        if optimizer is None and loss is not None:
             raise ValueError(
-                'If `loss` is `None`, `optimizer` must be `None`.')
+                'If `optimizer` is `None`, `loss` must be `None`.')
+
+        if optimizer is not None and loss is None:
+            raise ValueError(
+                'If `optimizer` is not `None`, `loss` cannot be `None`.')
 
         if hparams is None:
             raise ValueError('`hparams` cannot be `None`.')
@@ -201,31 +283,25 @@ class BaseModel(object):
         self._metrics = metrics
         self._trainable = self._optimizer is not None
 
-        # Invoke the template method to build the
-        # actual forward pass graph.
         self._build_graph()
 
-        if self._loss:
-            self._loss.compute(
-                self._target, self._output,
-                weights=self._output_mask)
-
-        if self._optimizer:
+        if self._trainable:
+            self._loss.compute(self._target, self._predictions,
+                               weights=self._output_mask)
             self._train_op = self._optimizer.minimize(
                 self._loss.batch_value, global_step=self._global_step)
-
-        if self._metrics:
-            for _, metric in self._metrics.items():
-                metric.compute(
-                    self.target, self.output,
-                    weights=self._output_mask)
-
-        if self._trainable:
             for variable in tf.trainable_variables():
                 ops.summarize(variable)
             self._summary_op = tf.summary.merge_all()
             if self._summary_op is None:
                 self._summary_op = tf.no_op('NoSummary')
+
+        if self._metrics:
+            metrics_mask = self._output_mask if self._trainable else None
+            for _, metric in self._metrics.items():
+                metric.compute(
+                    self._target, self._predictions,
+                    weights=metrics_mask)
 
         self._built = True
         return self
@@ -252,86 +328,8 @@ class BaseModel(object):
             merged.add_hparam(key, value)
         return merged
 
-    @property
-    def built(self):
-        """`True` if the model has been built."""
-        return self._built
 
-    @abc.abstractmethod
-    def _build_graph(self):
-        """Build the (inference) graph."""
-        raise NotImplementedError(
-            'This method must be implemented in subclasses')
-
-    @property
-    def global_step(self):
-        """The global step of the model."""
-        return self._global_step
-
-    @property
-    def hparams(self):
-        """The full initialization HParams of the model."""
-        return self._hparams
-
-    @property
-    def loss(self):
-        """The streaning average loss."""
-        return self._loss
-
-    @property
-    def optimizer(self):
-        """The optimizer of the model."""
-        return self._optimizer
-
-    @property
-    def trainable(self):
-        """`True` if the model is trainable."""
-        return self._trainable
-
-    @property
-    def inputs(self):
-        """A tensor or a dictionary of tensors represenitng the model input(s)."""
-        return self._inputs
-
-    @property
-    def target(self):
-        """A tensor representing the target output of the model."""
-        return self._target
-
-    @property
-    def output_mask(self):
-        """A tensor representing the output mask (or `None`)."""
-        return self._output_mask
-
-    # TODO(petrux): check usage and possibly REMOVE.
-    @property
-    def logits(self):
-        """Unscaled log propabilities."""
-        return self._logits
-
-    # TODO(petrux): what about renaming `predictions`?
-    @property
-    def output(self):
-        """A tensor representing the actual output of the model."""
-        return self._output
-
-    @property
-    def train_op(self):
-        """The train op of the model."""
-        return self._train_op
-
-    @property
-    def summary_op(self):
-        """The summary op of the model."""
-        return self._summary_op
-
-    @property
-    def metrics(self):
-        """A dictionary of liteflow.metrics.StreamingMetric used for the evaluation."""
-        return self._metrics
-
-
-class DketModel(BaseModel):
+class DketModel(_Model):
     """Base dket model."""
 
     __metaclass__ = abc.ABCMeta
@@ -364,7 +362,8 @@ class DketModel(BaseModel):
 
         self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
         if self._sentence_length is None:
-            logging.debug(self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.SENTENCE_LENGTH_KEY +
+                          ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._words, 0)
             length = utils.get_dimension(self._words, 1)
             self._sentence_length = length * \
@@ -372,7 +371,8 @@ class DketModel(BaseModel):
 
         self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
         if self._formula_length is None:
-            logging.debug(self.FORMULA_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.FORMULA_LENGTH_KEY +
+                          ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._target, 0)
             length = utils.get_dimension(self._target, 1)
             self._formula_length = length * \
@@ -385,7 +385,6 @@ class DketModel(BaseModel):
         self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
         self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
         self._target = tensors[self.FORMULA_KEY]
-
 
     @classmethod
     @abc.abstractmethod

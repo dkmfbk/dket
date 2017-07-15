@@ -145,11 +145,11 @@ class TrainLoop(object):
             self._fetches = [
                 self._model.global_step,
                 self._model.train_op,
-                self._model.loss.batch_value,
+                self._model.loss_op,
                 self._model.summary_op,
                 metrics_t,  # it's a dictionary.,
                 self._model.target,
-                self._model.output,
+                self._model.predictions,
                 self._model.inputs[self._model.FORMULA_LENGTH_KEY],
             ]
 
@@ -285,7 +285,7 @@ class EvalLoop(object):
 
         for key, pmetric in self._post_metrics.items():
             logging.debug('adding post metric: %s', key)
-            metrics_avg[key] = pmetric.average
+            metrics_avg[key] = pmetric.average()
 
         logging.debug('creating metrics summaries.')
         for key, value in metrics_avg.items():
@@ -313,17 +313,16 @@ class EvalLoop(object):
             self._step_fetches = [
                 metrics_update_ops,  # it's a dictionary!
                 self._model.target,
-                self._model.output,
-                self._model.inputs[self._model.FORMULA_LENGTH_KEY],
+                self._model.predictions,
             ]
             for key, pmetric in self._post_metrics.items():
                 logging.debug('resetting post metric %s', key)
                 pmetric.reset()
 
-        metrics, targets, predictions, lengths = sess.run(self._step_fetches)
+        metrics, targets, predictions = sess.run(self._step_fetches)
         for key, pmetric in self._post_metrics.items():
             logging.debug('accumulating post metric: %s', key)
-            curr = pmetric.compute(targets, predictions, lengths)
+            curr = pmetric.compute(targets, predictions, lengths=None)
             metrics[key] = curr
 
         logging.debug(

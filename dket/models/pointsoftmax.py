@@ -21,6 +21,7 @@ class PointingSoftmaxModel(model.DketModel):
         since the decoder will be fed back with the previous output step
         by step.
         """
+        return self._decoder_inputs
 
     @classmethod
     def get_default_hparams(cls):

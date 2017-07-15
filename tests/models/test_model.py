@@ -13,11 +13,12 @@ class _BaseModel(model._Model):  # pylint: disable=W0212
 
     _TARGET_KEY = 'TARGET'
 
-    def __init__(self, summary=True):
+    def __init__(self, summary=True, output_mask=None):
         super(_BaseModel, self).__init__()
         self._summary = summary
         self._tensors = None
         self._logits = None
+        self._output_mask = output_mask
 
     def get_default_hparams(self):
         return tf.contrib.training.HParams(dim_0=10, dim_1=3, dim_2=7)
@@ -26,8 +27,7 @@ class _BaseModel(model._Model):  # pylint: disable=W0212
         self._tensors = copy.copy(tensors)
         self._inputs = copy.copy(tensors)
         self._target = self._inputs.pop(self._TARGET_KEY)
-        self._output_mask = None
-
+        
     def _build_graph(self):
         assert not self.built
         shape = [self.hparams.dim_0, self.hparams.dim_1, self.hparams.dim_2]
@@ -44,7 +44,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_global_step_initialization(self):
         """Global step is set right after the model creation."""
-        instance = _BaseModel()
+        instance = _BaseModel(output_mask=tf.ones([10, 20]))
         self.assertIsNotNone(instance.global_step)
         self.assertFalse(instance.fed)
         self.assertFalse(instance.built)
@@ -60,7 +60,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_get_default_hparams(self):
         """The method `get_default_hparams` should be invocable as the model is created."""
-        instance = _BaseModel()
+        instance = _BaseModel(output_mask=tf.ones([10, 20]))
         self.assertIsNotNone(instance.get_default_hparams())
         self.assertIsNotNone(instance.global_step)
         self.assertFalse(instance.fed)
@@ -77,7 +77,7 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_feed(self):
         """Feed the model with tensors."""
-        instance = _BaseModel()
+        instance = _BaseModel(output_mask=tf.ones([10, 20]))
         with tf.variable_scope('Inputs'):
             inputs = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -109,13 +109,14 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_feed_with_none_args(self):
         """Test feeding the model with `None` inputs or target."""
-        instance = _BaseModel()
+        instance = _BaseModel(output_mask=tf.ones([10, 20]))
         self.assertRaises(ValueError, instance.feed, tensors=None)
 
     def test_build_trainable(self):
         """Test the building of a trainable model."""
 
-        instance = _BaseModel()
+        mask = tf.ones([10, 20])
+        instance = _BaseModel(output_mask=mask)
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -154,16 +155,16 @@ class TestBaseModel(tf.test.TestCase):
         self.assertIsNotNone(instance.predictions)
 
         loss.compute.assert_called_once_with(
-            instance.target, instance.predictions, weights=None)
+            instance.target, instance.predictions, weights=mask)
 
         optimizer.minimize.assert_called_once_with(
             loss_batch_value, global_step=instance.global_step)
         self.assertEqual(train_op, instance.train_op)
 
         metrics_01.compute.assert_called_once_with(
-            instance.target, instance.predictions, weights=None)
+            instance.target, instance.predictions, weights=mask)
         metrics_02.compute.assert_called_once_with(
-            instance.target, instance.predictions, weights=None)
+            instance.target, instance.predictions, weights=mask)
 
         self.assertIsNotNone(instance.summary_op)
 
@@ -199,7 +200,8 @@ class TestBaseModel(tf.test.TestCase):
 
     def test_build_not_trainable(self):
         """Test the building of a non-trainable model without loss."""
-        instance = _BaseModel()
+        mask = tf.ones([10, 20])
+        instance = _BaseModel(output_mask=mask)
         with tf.variable_scope('Inputs'):
             tensors = {
                 'A': tf.constant(23, dtype=tf.int32),
@@ -208,14 +210,23 @@ class TestBaseModel(tf.test.TestCase):
             }
         instance.feed(tensors)
 
+        metric = mock.Mock()
+        metrics = {'metric': metric}
+
         hparams = tf.contrib.training.HParams(dim_0=2, dim_1=4, extra='Ciaone')
-        instance.build(hparams, loss=None, optimizer=None, metrics=None)
+        instance.build(hparams, loss=None, optimizer=None, metrics=metrics)
 
         self.assertFalse(instance.trainable)
         self.assertIsNone(instance.loss)
         self.assertIsNone(instance.optimizer)
         self.assertIsNone(instance.train_op)
         self.assertIsNone(instance.summary_op)
+
+        # assert that, in inference mode, the metrics are not
+        # invoked with the output mask as `weights` but with `None`.
+        metric.compute.assert_called_once_with(
+            instance.target, instance.predictions, weights=None)
+        
 
     def test_build_trainable_without_loss(self):  # pylint: disable=I0011,C0103
         """Built a model with an optimizer but without a loss function."""

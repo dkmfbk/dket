@@ -243,7 +243,7 @@ class _Model(object):
           metrics: a `dict` where the key is a string and the value is an instance
             of `liteflow.metrics.StreamingMetric`.
 
-            
+
         Returns:
           the very same instance of the model.
 
@@ -257,7 +257,7 @@ class _Model(object):
           For the `loss` argument, you can use an instance of the `dket.loss.Loss` class.
           For the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
           class.
-        
+
         *NOTE* `loss` and `optimizer` MUST be both provided or both `None`.
         """
         if not self._fed:
@@ -267,10 +267,12 @@ class _Model(object):
             raise RuntimeError('The model has already been built.')
 
         if optimizer is None and loss is not None:
-            raise ValueError('If `optimizer` is `None`, `loss` must be `None`.')    
+            raise ValueError(
+                'If `optimizer` is `None`, `loss` must be `None`.')
 
         if optimizer is not None and loss is None:
-            raise ValueError('If `optimizer` is not `None`, `loss` cannot be `None`.')
+            raise ValueError(
+                'If `optimizer` is not `None`, `loss` cannot be `None`.')
 
         if hparams is None:
             raise ValueError('`hparams` cannot be `None`.')
@@ -284,11 +286,15 @@ class _Model(object):
         self._build_graph()
 
         if self._trainable:
-            self._loss.compute(
-                self._target, self._predictions,
-                weights=self._output_mask)
+            self._loss.compute(self._target, self._predictions,
+                               weights=self._output_mask)
             self._train_op = self._optimizer.minimize(
                 self._loss.batch_value, global_step=self._global_step)
+            for variable in tf.trainable_variables():
+                ops.summarize(variable)
+            self._summary_op = tf.summary.merge_all()
+            if self._summary_op is None:
+                self._summary_op = tf.no_op('NoSummary')
 
         if self._metrics:
             metrics_mask = self._output_mask if self._trainable else None
@@ -296,13 +302,6 @@ class _Model(object):
                 metric.compute(
                     self._target, self._predictions,
                     weights=metrics_mask)
-
-        if self._trainable:
-            for variable in tf.trainable_variables():
-                ops.summarize(variable)
-            self._summary_op = tf.summary.merge_all()
-            if self._summary_op is None:
-                self._summary_op = tf.no_op('NoSummary')
 
         self._built = True
         return self
@@ -328,6 +327,7 @@ class _Model(object):
                 value = actual[key]
             merged.add_hparam(key, value)
         return merged
+
 
 class DketModel(_Model):
     """Base dket model."""
@@ -362,7 +362,8 @@ class DketModel(_Model):
 
         self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
         if self._sentence_length is None:
-            logging.debug(self.SENTENCE_LENGTH_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.SENTENCE_LENGTH_KEY +
+                          ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._words, 0)
             length = utils.get_dimension(self._words, 1)
             self._sentence_length = length * \
@@ -370,7 +371,8 @@ class DketModel(_Model):
 
         self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
         if self._formula_length is None:
-            logging.debug(self.FORMULA_LENGTH_KEY + ' tensor not provided, creating default one.')
+            logging.debug(self.FORMULA_LENGTH_KEY +
+                          ' tensor not provided, creating default one.')
             batch = utils.get_dimension(self._target, 0)
             length = utils.get_dimension(self._target, 1)
             self._formula_length = length * \
@@ -383,7 +385,6 @@ class DketModel(_Model):
         self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
         self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
         self._target = tensors[self.FORMULA_KEY]
-
 
     @classmethod
     @abc.abstractmethod

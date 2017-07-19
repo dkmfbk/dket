@@ -2,7 +2,9 @@
 
 import abc
 import copy
+import pydoc
 import warnings
+
 
 import six
 
@@ -27,12 +29,12 @@ def merge(default, params):
         # If the default param value is None, issue a
         # warning and overwrite it with the actual value.
         if dvalue is None:
-            warnings.warn('default value for key {} is `None`'.format(key))
+            warnings.warn('default value for key `{}` is `None`'.format(key))
             merged[key] = value
             continue
 
         if value is None:
-            warnings.warn('default value for key {} is `None`'.format(key))
+            warnings.warn('default value for key `{}` is `None`'.format(key))
             merged[key] = value
             continue
 
@@ -45,7 +47,7 @@ def merge(default, params):
         if isinstance(dvalue, dict):
             if not isinstance(value, dict):
                 raise ValueError(
-                    'expected {} for parameter {}, found {} instead.'\
+                    'expected {} for parameter `{}`, found {} instead.'\
                     .format(key, type({}), type(value)))
             if dvalue:
                 value = merge(dvalue, value)
@@ -53,7 +55,6 @@ def merge(default, params):
         # Cast the actual value into the default value type
         # and assign it to the current parameter key.
         merged[key] = type(dvalue)(value)
-
     return merged
 
 
@@ -90,3 +91,19 @@ class Configurable(object):
     def _validate_params(self, params):
         """Validates the parameters and return the final params dictionary."""
         raise NotImplementedError()
+
+    @classmethod
+    def create(cls, mode, params):
+        """Factory method for Configurable object."""
+        return cls(mode, params)
+
+
+def factory(clz, mode, params):
+    """Factory method for generic configurable object."""
+    ctype = pydoc.locate(clz)
+    if not ctype:
+        raise RuntimeError('could not resolve type `{}`'.format(clz))
+    if not issubclass(ctype, Configurable):
+        raise RuntimeError('resolved type {} is not subclass of {}'\
+            .format(str(ctype), str(Configurable)))
+    return ctype.create(mode, params)

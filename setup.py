@@ -13,6 +13,7 @@ setup(name='dket',
       install_requires=[
           'editdistance==0.3.1',
           'liteflow==0.1.0',
+          'six==1.10.0'
       ],
       dependency_links=[
           'git+https://github.com/petrux/LiTeFlow.git@master#egg=liteflow-0.1.0'

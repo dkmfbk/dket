@@ -2,106 +2,196 @@
 
 import abc
 import logging
+import six
 
 import tensorflow as tf
 
 from liteflow import utils
 
+from dket import configurable
 from dket import data
 from dket import ops
 
 
-class _Model(object):
-    """Base model implementation.
+class ModelInputs(configurable.Configurable):
+    """Dket model input tensors parser."""
 
-    This class implements a SINGLE TASK model where single task means one
-    target tensor, one output, one loss. The model can handle multiple inputs.
-    The model must be first fed with input(s) and target `Tensor`s and then
-    built, specifying its topology configuration, the loss function, the
-    optimization algorithm and evaluation metrics. If the optimization is not
-    specified, the model will not be trainable.
+    WORDS_KEY = data.WORDS_KEY
+    SENTENCE_LENGTH_KEY = data.SENTENCE_LENGTH_KEY
+    FORMULA_KEY = data.FORMULA_KEY
+    FORMULA_LENGTH_KEY = data.FORMULA_LENGTH_KEY
 
-    NOTA BENE for the implementors of concrete subclasses. What you need to do is
-    to subclass the `BaseModel` class and to define its two abstract methods.abc
+    FILES_PK = 'files'
+    EPOCHS_PK = 'epochs'
+    BATCH_SIZE_PK = 'batch_size'
+    SHUFFLE_PK = 'shuffle'
+    SEED_PK = 'seed'
 
-      * `_build_graph()` is the method which is in charge to build the graph. Implementing
-        this method you MUST set the `self._logits` and the `self._output` tensors. This
-        method is invoked as an abstract template from within the `.build()` method.
-      * `get_default_hparams()` is the classs method that is in charge to generate the default
-        `HParams` for the model. Note that it is a classmethod and must be implemented
-        in concrete subclasses with the @classmethod decorator.
+    def __init__(self, mode, params):
+        super(ModelInputs, self).__init__(mode, params)
+        self._tensors = {}
+        if self._params[self.FILES_PK]:
+            self._tensors = self._build_from_files()
+        else:
+            self._tensors = self._build_placeholders()
 
-    Example:
-    ```python
+    @classmethod
+    def get_default_params(cls):
+        return {
+            cls.FILES_PK: '',
+            cls.EPOCHS_PK: 0,
+            cls.BATCH_SIZE_PK: 200,
+            cls.SHUFFLE_PK: True,
+            cls.SEED_PK: None,
+        }
 
-    class MyModel(BaseModel):
+    def _validate_params(self, params):
+        logging.debug('validating the paramters.')
 
-        def _build_graph(self):
-            # Build your graph from self._inputs to self._outputs.
+        # `files` is intended to be a comma separated list
+        # of input files to read data from. If no file is
+        # provided, all other params will be ignored.
+        files = params[self.FILES_PK]
+        files = files.split(',') if files else []
+        for file in files:
+            logging.debug('input file: %s', file)
+        if not files:
+            logging.info('no input files: all other params will be ignored.')
+            params[self.FILES_PK] = None
+            return params
+
+        # The number of epochs must be a non-negative integer
+        # or `None`. If 0 is provided, `None` will be used.
+        epochs_msg = 'epochs number must be an non-negative integer or `None`'
+        epochs = params[self.EPOCHS_PK]
+        if epochs is None:
             pass
-
-        @classmethod
-        def get_default_hparams(cls):
-            # Build the default `HParams`.
+        elif epochs == 0:
+            logging.debug('setting epochs value to `None`.')
+            params[self.EPOCHS_PK] = None
+        elif epochs < 0:
+            logging.critical(epochs_msg)
+            raise ValueError(epochs_msg)
+        else:
             pass
+        logging.debug('epochs: %s', str(params[self.EPOCHS_PK]))
 
-    # Define the inputs and the target: can be placeholder
-    # or tenrors coming from a dequeue operation.
-    tensors = {
-        'A': tf.placeholder(...),
-        'B': tf.placeholder(...),
-        'target': tf.placeholder(...)
-    }
+        # The batch size must be a non-neg integer.
+        batch_size_msg = 'epochs number must be an positive integer.'
+        if not params[self.BATCH_SIZE_PK]:
+            logging.critical(batch_size_msg)
+            raise ValueError(batch_size_msg)
+        logging.debug('batch size: %d')
 
-    # Define your `HParams` to be used in the model configuration:
-    hparams = tf.contrib.training.HParams(...)
+        # The shuffle flag must be `True`, `False` or `None`.
+        if params[self.SHUFFLE_PK] is None:
+            logging.debug('applying automating shuffling policy.')
+            params[self.SHUFFLE_PK] = self._mode == tf.contrib.learn.ModeKeys.TRAIN
+        logging.debug('shuffle: %s', str(params[self.SHUFFLE_PK]))
 
-    # Define the loss function, which is a function accepting
-    # the target and the output tenso as argumetns. It is strongly
-    # suggested to use an instance of the `dket.loss.Loss` class.
-    loss = ...
+        # The random seed must be an integer or `None`.
+        logging.debug('seed: %s', str(params[self.SEED_PK]))
 
-    # Define the optimizer. Same as for the loss, it could be better
-    # to use some instance of the `dket.oprimizer.Optimizer` class.
-    optimizer = ...
+        # return the validate params dictionary!
+        return params
 
-    # Define some evaluation metrics. Since they have to be used both
-    # in training (batch-by-batch) and in evaluation (epoch-by-epoch)
-    # they must be able to track both the batch values and the streaming
-    # average, so you need to use `liteflow.metrics.StreamingMetric`.
-    metrics = {
-        'my_metric': liteflow.metrics.StreamingMetrics(...)
-    }
+    def _build_from_files(self):
+        tensors = data.inputs(
+            file_patterns=self._params[self.FILES_PK].split(','),
+            batch_size=self._params[self.BATCH_SIZE_PK],        
+            shuffle=self._params[self.SHUFFLE_PK],
+            num_epochs=self._params[self.EPOCHS_PK],
+            seed=self._params[self.SEED_PK])
+        for key, value in tensors.items():
+            logging.debug('tensor %s fetched from input pipeline (%s)', key, value)
 
-    # Now you can build and feed the model:
-    instance = MyModel().feed(tensors).build(hparams, loss, optimizer, metrics)
-    ```
-    """
+        # WORDS_KEY is mandatory in every configuration.
+        if self.WORDS_KEY not in tensors:
+            msg = 'tensor `' + self.WORDS_KEY + '` is mandatory.'
+            logging.critical(msg)
+            raise ValueError(msg)
 
-    __metaclass__ = abc.ABCMeta
+        # if SENTENCE_LENGTH_KEY is not provided, use the full
+        # sentence lengths for each sequence in the batch.
+        if self.SENTENCE_LENGTH_KEY not in tensors:
+            logging.warning(
+                'tensor `' + self.SENTENCE_LENGTH_KEY +
+                '` not provided: using default one.')
+            tensors[self.SENTENCE_LENGTH_KEY] = None
 
-    def __init__(self, graph=None):
-        self._graph = graph or tf.get_default_graph()
-        self._global_step = ops.get_or_create_global_step(graph=self._graph)
-        self._hparams = None
-        self._fed = False
-        self._tensors = None
+        # FORMULA_KEY is mandatory if the mode is TRAIN or EVAL,
+        # while can be none if the mode is INFER.
+        formula_msg = 'no `' + self.FORMULA_KEY + '` tensor provided.'
+        if self.FORMULA_KEY not in tensors:
+            if self._mode == tf.contrib.learn.ModeKeys.INFER:
+                logging.info(formula_msg)
+                tensors[self.FORMULA_KEY] = None
+            else:
+                logging.critical(formula_msg)
+                raise ValueError(formula_msg)
+
+        # FORMULA_LENGTH_KEY is mandatory only in TRAIN mode.
+        if self.FORMULA_LENGTH_KEY not in tensors:
+            if self._mode == tf.contrib.learn.ModeKeys.TRAIN:
+                msg = 'tensor `' + self.FORMULA_LENGTH_KEY\
+                      + '` must be provided in TRAIN mode.'
+                logging.critical(msg)
+                raise ValueError(msg)
+            tensors[self.FORMULA_LENGTH_KEY] = None
+        return tensors
+
+    def _build_sequences_and_lengths(self):
+        sequences = tf.placeholder(dtype=tf.int32, shape=[None, None])
+        batch = utils.get_dimension(sequences, 0)
+        length = utils.get_dimension(sequences, 1)
+        lengths = length * tf.ones(dtype=tf.int32, shape=[batch])
+        lengths = tf.cast(lengths, tf.float32)
+        return sequences, lengths
+
+    def _build_placeholders(self):
+        logging.info('feeding model with placeholders only.')
+        words, wlengths = self._build_sequences_and_lengths()
+        formula, flengths = self._build_sequences_and_lengths()
+        return {
+            self.WORDS_KEY: words,
+            self.SENTENCE_LENGTH_KEY: wlengths,
+            self.FORMULA_KEY: formula,
+            self.FORMULA_LENGTH_KEY: flengths,
+        }
+
+    def get(self, key):
+        """Get the input tensor for the given key."""
+        return self._tensors[key]
+    
+
+@six.add_metaclass(abc.ABCMeta)
+class Model(configurable.Configurable):
+    """Base dket model class."""
+
+    EOS_IDX = 0
+    INPUT_CLASS_PK = 'input.class'
+    INPUT_PARAMS_PK = 'input.params'
+    INPUT_VOC_SIZE_PK = 'input.vocabulary_size'
+    OUTPUT_VOC_SIZE_PK = 'output.vocabulary_size'
+    LOSS_NAME_PK = 'loss.name'
+    OPTIMIZER_CLASS_PK = 'optimizer.class'
+    OPTIMIZER_PARAMS_PK = 'optimizer.params',
+
+    def __init__(self, mode, params):
+        super(Model, self).__init__(mode, params)
+        self._graph = None
+        self._global_step = None
         self._inputs = None
-        self._target = None
         self._predictions = None
-        self._output_mask = None
-        self._loss = None
         self._loss_op = None
         self._optimizer = None
         self._train_op = None
-        self._trainable = False
         self._summary_op = None
         self._metrics = None
-        self._built = False
 
     @property
     def graph(self):
-        """The graph in which the model has been created."""
+        """The graph context for the current model instance."""
         return self._graph
 
     @property
@@ -110,287 +200,116 @@ class _Model(object):
         return self._global_step
 
     @property
-    def hparams(self):
-        """The full initialization HParams of the model."""
-        return self._hparams
-
-    @property
-    def loss(self):
-        """The streaning average loss."""
-        return self._loss
-
-    @property
-    def loss_op(self):
-        """The op that computes the loss for the given batch."""
-        return self._loss.batch_value
-
-    @property
-    def optimizer(self):
-        """The optimizer of the model."""
-        return self._optimizer
-
-    @property
-    def trainable(self):
-        """`True` if the model is trainable."""
-        return self._trainable
-
-    @property
     def inputs(self):
-        """A tensor or a dictionary of tensors represenitng the model input(s)."""
         return self._inputs
 
     @property
-    def feeding(self):
-        """A dictionaty of feeding tensors (both input and target outputs)."""
-        return self._tensors
-
-    @property
-    def target(self):
-        """A tensor representing the target output of the model."""
-        return self._target
-
-    @property
-    def output_mask(self):
-        """A tensor representing the output mask (or `None`)."""
-        return self._output_mask
-
-    @property
     def predictions(self):
-        """A tensor representing the actual output of the model."""
         return self._predictions
 
     @property
+    def loss_op(self):
+        return self._loss_op
+
+    @property
     def train_op(self):
-        """The train op of the model."""
         return self._train_op
 
     @property
-    def summary_op(self):
-        """The summary op of the model."""
-        return self._summary_op
-
-    @property
     def metrics(self):
-        """A dictionary of liteflow.metrics.StreamingMetric used for the evaluation."""
         return self._metrics
 
-    @property
-    def fed(self):
-        """`True` if the model has beed feed with queues."""
-        return self._fed
+    @classmethod
+    def get_default_params(cls):
+        return {
+            'model.class': '',
+            'input.class': 'dket.models.model.ModelInputs',
+            'input.params': ModelInputs.get_default_params(),
+            'input.vocabulary_size': 0,
+            'output.vocabulary_size': 0,
+            'loss.name': 'dket.models.losses.XEntropy',
+            'optimizer.class': 'SGD',
+            'optimizer.params': {
+                'lr': 0.1,
+                'lr.decay.class': '',
+                'lr.decay.params': {},
+                'clip_gradients.class': '',
+                'clip_gradients.params': {},
+                'colocate_ops_and_grads': True,
+            }
+        }
 
-    @property
-    def built(self):
-        """`True` if the model has been built."""
-        return self._built
+    def _validate_params(self, params):
+        return params
 
-    @abc.abstractmethod
-    def _feed_helper(self, tensors):
-        """Process the feed tensors and place inputs and target."""
-        raise NotImplementedError('To be implemented in subclasses.')
-
-    def feed(self, tensors):
-        """Feed the model with input and target queues.
-
-        Arguments:
-          tensors: a `Tensor` or a dict of `str`, `Tensor` representing the model input(s).
-          target: a `Tensor` representing the model output.
-
-        Returns:
-          the very same instance of the model.
-        """
-
-        if self._fed:
-            raise RuntimeError(
-                'Cannot feed a model that has already been fed.')
-
-        if self._built:
-            raise RuntimeError(
-                'Cannot feed a model that has already been built.')
-
-        if tensors is None:
-            raise ValueError('`tensors` argument cannot be `None`')
-
-        self._feed_helper(tensors)
-        self._fed = True
-        return self
+    def _build_inputs(self):
+        clz = self._params[self.INPUT_CLASS_PK]
+        params = self._params[self.INPUT_PARAMS_PK]
+        self._inputs = configurable.factory(clz, self.mode, params)
 
     @abc.abstractmethod
     def _build_graph(self):
-        """Build the (inference) graph."""
-        raise NotImplementedError('To be implemented in subclasses.')
+        raise NotImplementedError()
 
-    def build(self, hparams, loss=None, optimizer=None, metrics=None):
-        """Build the model instance.
+    def _build_loss(self):
+        if self.mode != tf.contrib.learn.ModeKeys.TRAIN:
+            logging.debug('mode is `%s`: skipping the loss calculation.', self.mode)
+            return
 
-        This method is the backbone of the model creation and performs many operations,
-        leaving the graph creation to the asbtract template method `_build_graph()` which
-        MUST be implemented in subclasses and MUST complete leaving the `self._predictions`
-        tensors defined. The method will set the `self.built` flag value to `True`.
+        targets = self.inputs.get(ModelInputs.FORMULA_KEY)
+        lengths = self.inputs.get(ModelInputs.FORMULA_LENGTH_KEY)
+        weights = tf.sequence_mask(lengths, dtype=tf.float32)
+        predictions = self._predictions
+        clz = self._params[self.LOSS_NAME_PK]
+        loss = configurable.factory(clz, self.mode, {})
+        self._loss_op = loss.compute(targets, predictions, weights=weights)
 
-        Arguments:
-          hparams: a `tf.contrib.training.HParams` representing the configuration for
-            the current model instance. Such settings will be merged with the default ones
-            so that all the entries in the default one will be overwritten and all the
-            entries that are not in the default one will be discarded.
-          loss: a function accepting the `self.target` and `self.output` tensors as arguments
-            and returning the loss op that will be placed in `self.loss_op` representing
-            the loss function of the model.
-          optimizer: a function accepting the `self.loss_op` tensor, an optional list
-            of trainable variables (or getting the graph tf.GraphKeys.TRAINABLE_VARIABLES if such
-            list is not provided) and the `global_step` as a named argument. If this argument
-            is `None`, the `self.trainable` flag is set to `False`.
-          metrics: a `dict` where the key is a string and the value is an instance
-            of `liteflow.metrics.StreamingMetric`.
+    def _build_train_op(self):
+        if self.mode != tf.contrib.learn.ModeKeys.TRAIN:
+            logging.debug('mode is `%s`: skipping the loss calculation.', self.mode)
+            return
 
+        opt_class = self._params[self.OPTIMIZER_CLASS_PK]
+        opt_params = self._params[self.OPTIMIZER_PARAMS_PK]
+        self._optimizer = configurable.factory(opt_class, self.mode, opt_params)
+        self._train_op = self._optimizer.minimize(
+            self._loss_op, global_step=self._global_step)
 
-        Returns:
-          the very same instance of the model.
+    def _build_metrics(self):
+        logging.warning('in-graph metrics are currently NOT SUPPORTED.')
+        self._metrics = {}
 
-        Raises:
-          RuntimeError: is the model has not been fed (i.e. `self.fed` is `False`) or
-            if the method has already been invoked (i.e. `self.built` is `True`)
-          ValueError: if `hparams` is `None` 
-          ValueError: if `optimizer` is provided without `loss` are not both provided or `None`.
+    def _build_summary(self):
+        if self.mode == tf.contrib.learn.ModeKeys.TRAIN:
+            for var in tf.trainable_variables():
+                ops.summarize(var)
+            for grad in self._optimizer.grads:
+                ops.summarize(grad)
+            for grad in self._optimizer.cgrads:
+                ops.summarize(grad)
+            tf.summary.scalar('learning_rate', self._optimizer.learning_rate)
 
-        Remarks:
-          For the `loss` argument, you can use an instance of the `dket.loss.Loss` class.
-          For the `optimizer` argument, you can use an instance od the `dket.optimizer.Optimizer`
-          class.
+        if self.mode == tf.contrib.learn.ModeKeys.TRAIN\
+            or self.mode == tf.contrib.learn.ModeKeys.EVAL:
+                for _, _ in self._metrics.items():
+                    # TODO(petrux): in theory, during training you should
+                    # summarize the batch values, during the evaluation you
+                    # should save the moving avg. values.
+                    pass
 
-        *NOTE* `loss` and `optimizer` MUST be both provided or both `None`.
-        """
-        if not self._fed:
-            raise RuntimeError('The model has not been fed yes.')
+        self._summary_op = tf.summary.merge_all()
 
-        if self._built:
-            raise RuntimeError('The model has already been built.')
-
-        if optimizer is None and loss is not None:
-            raise ValueError(
-                'If `optimizer` is `None`, `loss` must be `None`.')
-
-        if optimizer is not None and loss is None:
-            raise ValueError(
-                'If `optimizer` is not `None`, `loss` cannot be `None`.')
-
-        if hparams is None:
-            raise ValueError('`hparams` cannot be `None`.')
-
-        self._hparams = self._set_hparams(hparams)
-        self._loss = loss
-        self._optimizer = optimizer
-        self._metrics = metrics
-        self._trainable = self._optimizer is not None
-
-        self._build_graph()
-
-        if self._trainable:
-            self._loss.compute(self._target, self._predictions,
-                               weights=self._output_mask)
-            self._train_op = self._optimizer.minimize(
-                self._loss.batch_value, global_step=self._global_step)
-            for variable in tf.trainable_variables():
-                ops.summarize(variable)
-            self._summary_op = tf.summary.merge_all()
-            if self._summary_op is None:
-                self._summary_op = tf.no_op('NoSummary')
-
-        if self._metrics:
-            metrics_mask = self._output_mask if self._trainable else None
-            for _, metric in self._metrics.items():
-                metric.compute(
-                    self._target, self._predictions,
-                    weights=metrics_mask)
-
-        self._built = True
-        return self
-
-    @classmethod
-    @abc.abstractmethod
-    def get_default_hparams(cls):
-        """Returns the default `tf.contrib.training.HParams`.
-
-        Remarks: this method will be called in a static-like scenario so
-        so nothing (property, fields, ecc.) from the instance state should
-        be used.
-        """
-        raise NotImplementedError(
-            'This method must be implemented in subclasses')
-
-    def _set_hparams(self, hparams):
-        actual = hparams.values()
-        default = self.get_default_hparams().values()
-        merged = tf.contrib.training.HParams()
-        for key, value in default.items():
-            if key in actual:
-                value = actual[key]
-            merged.add_hparam(key, value)
-        return merged
-
-
-class DketModel(_Model):
-    """Base dket model."""
-
-    __metaclass__ = abc.ABCMeta
-
-    EOS_IDX = 0
-    WORDS_KEY = data.WORDS_KEY
-    SENTENCE_LENGTH_KEY = data.SENTENCE_LENGTH_KEY
-    FORMULA_KEY = data.FORMULA_KEY
-    FORMULA_LENGTH_KEY = data.FORMULA_LENGTH_KEY
-    TARGET_KEY = FORMULA_KEY
-
-    def __init__(self, graph=None):
-        super(DketModel, self).__init__(graph=graph)
-        self._words = None
-        self._sentence_length = None
-        self._formula_length = None
-        self._formula = None
-
-    def _feed_helper(self, tensors):
-        if self.FORMULA_KEY not in tensors:
-            raise ValueError("""The tensor with key `""" + self.FORMULA_KEY +
-                             """` must be supplied as an input tensor.""")
-        self._formula = tensors[self.FORMULA_KEY]
-
-        self._inputs = {}
-        if self.WORDS_KEY not in tensors:
-            raise ValueError("""The tensor with key `""" + self.WORDS_KEY +
-                             """` must be supplied as an input tensor.""")
-        self._words = tensors[self.WORDS_KEY]
-
-        self._sentence_length = tensors.get(self.SENTENCE_LENGTH_KEY, None)
-        if self._sentence_length is None:
-            logging.debug(self.SENTENCE_LENGTH_KEY +
-                          ' tensor not provided, creating default one.')
-            batch = utils.get_dimension(self._words, 0)
-            length = utils.get_dimension(self._words, 1)
-            self._sentence_length = length * \
-                tf.ones(dtype=tf.float32, shape=[batch])
-
-        self._formula_length = tensors.get(self.FORMULA_LENGTH_KEY, None)
-        if self._formula_length is None:
-            logging.debug(self.FORMULA_LENGTH_KEY +
-                          ' tensor not provided, creating default one.')
-            batch = utils.get_dimension(self._target, 0)
-            length = utils.get_dimension(self._target, 1)
-            self._formula_length = length * \
-                tf.ones(dtype=tf.float32, shape=[batch])
-        else:
-            self._output_mask = tf.sequence_mask(
-                self._formula_length, dtype=tf.float32, name='output_mask')
-
-        self._inputs[self.WORDS_KEY] = self._words
-        self._inputs[self.SENTENCE_LENGTH_KEY] = self._sentence_length
-        self._inputs[self.FORMULA_LENGTH_KEY] = self._formula_length
-        self._target = tensors[self.FORMULA_KEY]
-
-    @classmethod
-    @abc.abstractmethod
-    def get_default_hparams(cls):
-        pass
-
-    @abc.abstractmethod
-    def _build_graph(self):
-        pass
+    def build(self, graph=None):
+        """Build the current instance of the model."""
+        if self._graph:
+            raise RuntimeError(
+                'The model has already been built.')
+        self._graph = graph or tf.Graph()
+        with self._graph.as_default() as graph:
+            self._global_step = ops.get_or_create_global_step(graph=graph)
+            self._build_inputs()
+            self._build_graph()
+            self._build_loss()
+            self._build_train_op()
+            self._build_metrics()
+            self._build_summary()

@@ -18,6 +18,7 @@ import itertools
 
 import tensorflow as tf
 
+from liteflow import input as linput
 
 SENTENCE_LENGTH_KEY = 'sentence_length'
 FORMULA_LENGTH_KEY = 'formula_length'
@@ -194,4 +195,16 @@ def read_from_files(file_patterns, shuffle=True, num_epochs=None, seed=None):
     reader = tf.TFRecordReader(name='TFRecordReader')
     _, value = reader.read(fqueue, name='Read')
     tensors = parse(value)
+    return tensors
+
+def inputs(file_patterns, batch_size, shuffle=True, num_epochs=None, seed=None):
+    """Build the input pipeline."""
+    tensors = read_from_files(file_patterns, shuffle, num_epochs, seed)
+    tensors = linput.shuffle_batch(tensors, batch_size, seed=seed)
+    tensors = {
+        WORDS_KEY: tf.cast(tensors[0], tf.int32, name=WORDS_KEY),
+        SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32, name=SENTENCE_LENGTH_KEY),
+        FORMULA_KEY: tf.cast(tensors[2], tf.int32, name=FORMULA_KEY),
+        FORMULA_LENGTH_KEY: tf.cast(tensors[3], tf.int32, name=FORMULA_LENGTH_KEY)
+    }
     return tensors

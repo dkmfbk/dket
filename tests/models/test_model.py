@@ -73,7 +73,7 @@ class TestModelInputs(tf.test.TestCase):
         params = {
             ModelInputs.FILES_PK: '',
             ModelInputs.EPOCHS_PK: -1,
-            ModelInputs.BATCH_SIZE_PK: 0,
+            ModelInputs.BATCH_SIZE_PK: 1,
             ModelInputs.SHUFFLE_PK: True,
             ModelInputs.SEED_PK: None
         }
@@ -148,7 +148,8 @@ class TModel(Model):
     def _build_graph(self):
         shape = [self._params['x'], self._params['y']]
         self._data = tf.get_variable('DATA', shape=shape, dtype=tf.float32)
-        self._predictions = tf.one_hot(
+        coeff = tf.reduce_prod(self._data)
+        self._predictions = coeff * tf.one_hot(
             self.inputs.get(ModelInputs.FORMULA_KEY), 
             self._params['num_classes'])
 
@@ -178,7 +179,6 @@ class TestModel(tf.test.TestCase):
         self.assertIsNotNone(tmodel.loss_op)
         self.assertIsNotNone(tmodel.train_op)
         self.assertIsNotNone(tmodel.metrics)
-
         
 
 #     def test_factory(self):

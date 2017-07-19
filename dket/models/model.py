@@ -11,7 +11,7 @@ from liteflow import utils
 from dket import configurable
 from dket import data
 from dket import ops
-
+from dket import train
 
 class ModelInputs(configurable.Configurable):
     """Dket model input tensors parser."""
@@ -62,7 +62,7 @@ class ModelInputs(configurable.Configurable):
 
         # The number of epochs must be a non-negative integer
         # or `None`. If 0 is provided, `None` will be used.
-        epochs_msg = 'epochs number must be an non-negative integer or `None`'
+        epochs_msg = 'epochs number must be a non-negative integer or `None`'
         epochs = params[self.EPOCHS_PK]
         if epochs is None:
             pass
@@ -77,7 +77,7 @@ class ModelInputs(configurable.Configurable):
         logging.debug('epochs: %s', str(params[self.EPOCHS_PK]))
 
         # The batch size must be a non-neg integer.
-        batch_size_msg = 'epochs number must be an positive integer.'
+        batch_size_msg = 'batch size must be an positive integer.'
         if not params[self.BATCH_SIZE_PK]:
             logging.critical(batch_size_msg)
             raise ValueError(batch_size_msg)
@@ -175,7 +175,7 @@ class Model(configurable.Configurable):
     OUTPUT_VOC_SIZE_PK = 'output.vocabulary_size'
     LOSS_NAME_PK = 'loss.name'
     OPTIMIZER_CLASS_PK = 'optimizer.class'
-    OPTIMIZER_PARAMS_PK = 'optimizer.params',
+    OPTIMIZER_PARAMS_PK = 'optimizer.params'
 
     def __init__(self, mode, params):
         super(Model, self).__init__(mode, params)
@@ -228,15 +228,8 @@ class Model(configurable.Configurable):
             'input.vocabulary_size': 0,
             'output.vocabulary_size': 0,
             'loss.name': 'dket.models.losses.XEntropy',
-            'optimizer.class': 'SGD',
-            'optimizer.params': {
-                'lr': 0.1,
-                'lr.decay.class': '',
-                'lr.decay.params': {},
-                'clip_gradients.class': '',
-                'clip_gradients.params': {},
-                'colocate_ops_and_grads': True,
-            }
+            'optimizer.class': 'dket.train.SGD',
+            'optimizer.params': train.SGD.get_default_params()
         }
 
     def _validate_params(self, params):
@@ -283,9 +276,9 @@ class Model(configurable.Configurable):
         if self.mode == tf.contrib.learn.ModeKeys.TRAIN:
             for var in tf.trainable_variables():
                 ops.summarize(var)
-            for grad in self._optimizer.grads:
+            for grad in self._optimizer.gradients:
                 ops.summarize(grad)
-            for grad in self._optimizer.cgrads:
+            for grad in self._optimizer.clipped_gradients:
                 ops.summarize(grad)
             tf.summary.scalar('learning_rate', self._optimizer.learning_rate)
 

@@ -5,11 +5,40 @@ import logging
 
 import six
 import tensorflow as tf
+from liteflow import losses
 
 from dket import configurable
 
 
 _TRAIN_MODE_KEY = tf.contrib.learn.ModeKeys.TRAIN
+
+
+class XEntropy(configurable.Configurable):
+    """Categorical crossentropy loss function."""
+
+    def __init__(self, mode, params):
+        if mode != _TRAIN_MODE_KEY:
+            logging.warning(
+                'loss function expects mode `%s`, found `%s` instead',
+                _TRAIN_MODE_KEY, mode)
+        super(XEntropy, self).__init__(mode, params)
+
+    @classmethod
+    def get_default_params(cls):
+        return {}
+
+    def _validate_params(self, params):
+        if params:
+            logging.warning('parameters will be ignored.')
+        return {}
+
+    def compute(self, targets, predictions, weights=None):
+        """Computes the categorical crossentropy."""
+        values, weights = losses.categorical_crossentropy(
+            targets, predictions, weights=weights)
+        values = tf.multiply(values, weights)
+        return tf.reduce_sum(values) / tf.reduce_sum(weights)
+
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -157,7 +186,7 @@ class GradClipByValueFn(GradClipFn):
 @six.add_metaclass(abc.ABCMeta)
 class Optimizer(configurable.Configurable):
     """Base optimizer class.
-    
+
     The default parameters for the configurable class are the following:
       lr: `float`, initial learning rate value.
       lr.decay.class: fully qualified name of a subclass of `LRDecayFn`

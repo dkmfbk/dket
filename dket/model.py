@@ -287,8 +287,9 @@ class Model(configurable.Configurable):
             self._loss_op, global_step=self._global_step)
 
     def _build_metrics(self):
-        logging.warning('in-graph metrics are currently NOT SUPPORTED.')
-        self._metrics = {}
+        if self.mode != tf.contrib.learn.ModeKeys.INFER:
+            logging.warning('in-graph metrics are currently NOT SUPPORTED.')
+            self._metrics = {}
 
     def _build_summary(self):
         if self.mode == tf.contrib.learn.ModeKeys.TRAIN:

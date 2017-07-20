@@ -98,12 +98,23 @@ class Configurable(object):
         return cls(mode, params)
 
 
-def factory(clz, mode, params):
-    """Factory method for generic configurable object."""
+def resolve(clz, default_module=None):
+    """Resolve the configurable type."""
     ctype = pydoc.locate(clz)
+    if not ctype and default_module:
+        if isinstance(default_module, six.string_types):
+            clz = default_module + '.' + clz
+            ctype = resolve(clz)
+        else:  # use it as a module
+            ctype = getattr(default_module, clz)
+
     if not ctype:
         raise RuntimeError('could not resolve type `{}`'.format(clz))
     if not issubclass(ctype, Configurable):
         raise RuntimeError('resolved type {} is not subclass of {}'\
             .format(str(ctype), str(Configurable)))
-    return ctype.create(mode, params)
+    return ctype
+
+def factory(clz, mode, params, default_module='dket.model'):
+    """Factory method for generic configurable object."""
+    return resolve(clz, default_module).create(mode, params)

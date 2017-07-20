@@ -1,5 +1,6 @@
 """Test module for dket.configurable."""
 
+import sys
 import unittest
 
 import tensorflow as tf
@@ -155,6 +156,76 @@ class TestConfigurable(unittest.TestCase):
         params['foo']['x'] = 7.0
         params['foo']['y'] = 9.0
         self.assertRaises(RuntimeError, _Configurable, MKEYS.TRAIN, params)
+
+
+# pylint: disable=C0111,E0011
+class DummyConf(configurable.Configurable):
+
+    _call_args = []
+
+    @classmethod
+    def get_default_params(cls):
+        return {
+            'seed': 0,
+            'label': 'Hello World!'
+        }
+
+    def _validate_params(self, params):
+        return params
+
+    @classmethod
+    def get_create_call_args(cls):
+        return cls._call_args
+
+    @classmethod
+    def call_args(cls):
+        if cls._call_args:
+            return cls._call_args[-1]
+        return ()
+
+    @classmethod
+    def create(cls, mode, params):
+        cls._call_args.append((mode, params))
+        return cls(mode, params)
+# pylint: enable=C0111,E0011
+
+
+class TestResolve(unittest.TestCase):
+    """Test the configurable.resolve method."""
+
+    _MODULE = sys.modules[__name__]
+    _MODULE_NAME = __name__
+    _CLZ = DummyConf.__name__
+    _FULL_CLZ = __name__ + '.' + _CLZ
+    _MODE_KEY = tf.contrib.learn.ModeKeys.TRAIN
+
+    def test_resolve(self):
+        """Test the configurable.resolve method."""
+        self.assertEqual(DummyConf, configurable.resolve(self._CLZ, self._MODULE))
+        self.assertEqual(DummyConf, configurable.resolve(self._CLZ, self._MODULE_NAME))
+        self.assertEqual(DummyConf, configurable.resolve(self._FULL_CLZ))
+        self.assertRaises(RuntimeError, configurable.resolve, self._CLZ)
+        self.assertRaises(RuntimeError, configurable.resolve, type('NonConf').__name__, self._MODULE)
+
+
+class TestFactory(unittest.TestCase):
+    """Test the configurable.factory method."""
+
+    def test_factory(self):
+        """Test the configurable.factory method."""
+        clz = __name__ + '.' + DummyConf.__name__
+        module = sys.modules[__name__]
+        mode = tf.contrib.learn.ModeKeys.TRAIN
+        params = DummyConf.get_default_params()
+        params['seed'] = 23
+        params['label'] = 'ciaone proprio!'
+        instance = configurable.factory(clz, mode, params, module)
+
+        self.assertIsInstance(instance, DummyConf)
+        self.assertEqual(mode, instance.mode)
+        self.assertEqual(params, instance.get_params())
+        self.assertEqual(1, len(DummyConf.get_create_call_args()))
+        self.assertEqual((mode, params), DummyConf.call_args())
 
 
 if __name__ == '__main__':

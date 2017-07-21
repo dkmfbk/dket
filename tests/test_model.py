@@ -125,6 +125,7 @@ class TestModel(tf.test.TestCase):
         self.assertIsNone(tmodel.inputs)
         self.assertIsNone(tmodel.loss_op)
         self.assertIsNone(tmodel.train_op)
+        self.assertIsNone(tmodel.summary_op)
         self.assertIsNone(tmodel.metrics)
 
         tmodel.build()
@@ -133,6 +134,7 @@ class TestModel(tf.test.TestCase):
         self.assertIsNotNone(tmodel.inputs)
         self.assertIsNotNone(tmodel.loss_op)
         self.assertIsNotNone(tmodel.train_op)
+        self.assertIsNotNone(tmodel.summary_op)
         self.assertIsNotNone(tmodel.metrics)
 
     def _test_default_eval(self, mtype):
@@ -144,6 +146,7 @@ class TestModel(tf.test.TestCase):
         self.assertIsNone(tmodel.inputs)
         self.assertIsNone(tmodel.loss_op)
         self.assertIsNone(tmodel.train_op)
+        self.assertIsNone(tmodel.summary_op)
         self.assertIsNone(tmodel.metrics)
 
         tmodel.build()
@@ -152,6 +155,7 @@ class TestModel(tf.test.TestCase):
         self.assertIsNotNone(tmodel.inputs)
         self.assertIsNone(tmodel.loss_op)
         self.assertIsNone(tmodel.train_op)
+        self.assertIsNone(tmodel.summary_op)
         self.assertIsNotNone(tmodel.metrics)
 
     def _test_default_infer(self, mtype):
@@ -162,6 +166,7 @@ class TestModel(tf.test.TestCase):
         self.assertIsNone(tmodel.inputs)
         self.assertIsNone(tmodel.loss_op)
         self.assertIsNone(tmodel.train_op)
+        self.assertIsNone(tmodel.summary_op)
         self.assertIsNone(tmodel.metrics)
 
         tmodel.build()
@@ -170,7 +175,8 @@ class TestModel(tf.test.TestCase):
         self.assertIsNotNone(tmodel.inputs)
         self.assertIsNone(tmodel.loss_op)
         self.assertIsNone(tmodel.train_op)
-        self.assertIsNotNone(tmodel.metrics)
+        self.assertIsNone(tmodel.summary_op)
+        self.assertIsNone(tmodel.metrics)
 
     def test_complete(self):
         """Test all the model types building in each mode."""

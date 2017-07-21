@@ -32,6 +32,9 @@ class TestExampleGenerator(object):
         formula = [random.randint(self._frange[0], self._frange[1]) for _ in flen] + [0]
         return words, formula
 
+    def __call__(self):
+        return self.next()
+
 
 class TestDataFactory(object):
     """Test data factory."""

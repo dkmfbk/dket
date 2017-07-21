@@ -349,6 +349,7 @@ class PointingSoftmaxModel(Model):
     def get_default_params(cls):
         base = super(PointingSoftmaxModel, cls).get_default_params()
         params = {
+            cls.MODEL_CLASS_PK: 'PointingSoftmaxModel',
             'embedding_size': 128,
             'attention_size': 128,
             'recurrent_cell': 'GRU',

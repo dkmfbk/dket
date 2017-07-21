@@ -169,6 +169,7 @@ class Model(configurable.Configurable):
     """Base dket model class."""
 
     EOS_IDX = 0
+    MODEL_CLASS_PK = 'model.class'
     INPUT_CLASS_PK = 'input.class'
     INPUT_PARAMS_PK = 'input.params'
     INPUT_VOC_SIZE_PK = 'input.vocabulary_size'
@@ -240,7 +241,7 @@ class Model(configurable.Configurable):
     @classmethod
     def get_default_params(cls):
         return {
-            'model.class': '',
+            cls.MODEL_CLASS_PK: '',
             cls.INPUT_CLASS_PK: 'dket.model.ModelInputs',
             cls.INPUT_PARAMS_PK: ModelInputs.get_default_params(),
             cls.INPUT_VOC_SIZE_PK: 0,

@@ -3,7 +3,9 @@
 import argparse
 import copy
 import json
+import logging
 import os
+import shutil
 import subprocess
 
 from dket import configurable
@@ -19,6 +21,7 @@ CLZ_OPTIMIZER_DEFAULT = 'SGD'
 parser = argparse.ArgumentParser(prog='dket-create-experiment')
 parser.add_argument('--name', type=str, help='the experiment name. If not set, the base directory name will be used.')
 parser.add_argument('--logdir', type=str, required=True, help='The base directory for the new experiment to be created. If not existing, the directory will be created. If existing it MUST be empty. A config.json file with the experimental settings will be created.')
+parser.add_argument('--force', action='store_true', help='If true, erease an already existing [LOGDIR]')
 parser.add_argument('--clone-from', type=str, help='Another experiment directory to stem from. The config.json settings file will be cloned for further modification.')
 parser.add_argument('--editor', type=str, help='An editor to be used to edit the newly created config.json file. If empty, no editor will be launched.')
 parser.add_argument('--model', type=str, help='The class name of the model to be used.')
@@ -28,12 +31,26 @@ parser.add_argument('--grad-clip', type=str, help='The class name of the gradien
 # pylint: enable=C0103,C0301,I0011
 ARGS = parser.parse_args()
 
+
+def _prepare():
+    logdir = os.path.abspath(ARGS.logdir)
+    if os.path.exists(logdir):
+        if os.listdir(logdir):
+            if not ARGS.force:
+                raise FileExistsError(
+                    'The directory {} already exists and it is not empty.'.format(logdir))
+        logging.warning('Directory {} already exists: removing and recreating.'.format(logdir))
+        shutil.rmtree(logdir)
+    os.makedirs(logdir)
+    fpath = os.path.join(logdir, CFG)
+    return logdir, fpath
+
+
 def main():
     """Create the new experiment."""
-    logdir = os.path.abspath(ARGS.logdir)
+    logdir, fpath = _prepare()
     if ARGS.clone_from:
         reference = json.load(open(os.path.join(ARGS.clone_from, CFG)))
-        print(json.dumps(reference, indent=4, separators=(',', ': ')))
         config = clone(
             reference=reference,
             logdir=logdir,
@@ -50,7 +67,9 @@ def main():
             optimizer_clz=ARGS.optimizer,
             lr_decay_clz=ARGS.lr_decay,
             grad_clip_clz=ARGS.grad_clip)
-    print(json.dumps(config, indent=4, separators=(',', ': ')))
+
+    json.dump(config, open(fpath, mode='w'), indent=4, separators=(',', ': '))
+    return fpath
 
 
 def clone(reference, logdir, name,
@@ -127,6 +146,6 @@ def from_scratch(logdir, name,
 
 
 if __name__ == '__main__':
-    main()
+    FPATH = main()
     if ARGS.editor:
-        subprocess.call([ARGS.editor, '-nw'])
+        subprocess.call([ARGS.editor, FPATH])

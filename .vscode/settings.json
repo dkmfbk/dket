@@ -9,6 +9,7 @@
         "-p",
         "test_*.py"
     ],
+    "python.pythonPath": ".py3venv/bin/python",
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

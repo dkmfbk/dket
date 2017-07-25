@@ -7,6 +7,8 @@ import logging
 import os
 import shutil
 import subprocess
+import warnings
+import sys
 
 from dket import configurable
 from dket import model
@@ -20,14 +22,14 @@ CLZ_OPTIMIZER_DEFAULT = 'SGD'
 # pylint: disable=C0103,C0301,I0011
 parser = argparse.ArgumentParser(prog='dket-experiment-setup')
 parser.add_argument('--name', type=str, help='the experiment name. If not set, the base directory name will be used.')
-parser.add_argument('--logdir', type=str, required=True, help='The base directory for the new experiment to be created. If not existing, the directory will be created. If existing it MUST be empty. A config.json file with the experimental settings will be created.')
-parser.add_argument('--force', action='store_true', help='If true, erease an already existing [LOGDIR]')
-parser.add_argument('--clone-from', type=str, help='Another experiment directory to stem from. The config.json settings file will be cloned for further modification.')
+parser.add_argument('--config', type=str, required=True, help='The config.json file to be created. To override an existing file, "use the --force, Luke".')
+parser.add_argument('--clone-from', type=str, help='Another config.jsoen file to stem from. The config.json settings file will be cloned for further modification.')
+parser.add_argument('--force', action='store_true', help='If true, erease an already existing config.json file.')
 parser.add_argument('--editor', type=str, help='An editor to be used to edit the newly created config.json file. If empty, no editor will be launched.')
-parser.add_argument('--model', type=str, help='The class name of the model to be used.')
-parser.add_argument('--optimizer', type=str, help='The class name of the optimizer to be used.')
-parser.add_argument('--lr-decay', type=str, help='The class name of the learning rate decay function to be used.')
-parser.add_argument('--grad-clip', type=str, help='The class name of the gradient clipping function to be used.')
+parser.add_argument('--model', type=str, help='The class name of the model to be used. If passed, overrides the cloned config.')
+parser.add_argument('--optimizer', type=str, help='The class name of the optimizer to be used. If passed, overrides the cloned config.')
+parser.add_argument('--lr-decay', type=str, help='The class name of the learning rate decay function to be used. If passed, overrides the cloned config.')
+parser.add_argument('--grad-clip', type=str, help='The class name of the gradient clipping function to be used. If passed, overrides the cloned config.')
 # pylint: enable=C0103,C0301,I0011
 ARGS = parser.parse_args()
 
@@ -47,21 +49,31 @@ def _prepare():
 
 def main():
     """Create the new experiment."""
-    logdir = _prepare()
+    fpath = ARGS.config
+    fname = os.path.splitext(os.path.split(fpath)[1])[0]
+    if os.path.exists(fpath) and not ARGS.force:
+        raise FileExistsError(
+            'File {} already exists: use the --force flag to overwrite.'\
+                .format(fpath))
+    
+    
+    if not ARGS.name:
+        warnings.warn(
+            'Missing explicit configuration name: using the file name: {}'\
+                .format(fname))
+
     if ARGS.clone_from:
         reference = json.load(open(os.path.join(ARGS.clone_from, CFG)))
         config = clone(
             reference=reference,
-            logdir=logdir,
-            name=ARGS.name or logdir,
+            name=ARGS.name or fname,
             model_clz=ARGS.model,
             optimizer_clz=ARGS.optimizer,
             lr_decay_clz=ARGS.lr_decay,
             grad_clip_clz=ARGS.grad_clip)
     else:
         config = from_scratch(
-            logdir=logdir,
-            name=ARGS.name or logdir,
+            name=ARGS.name or fname,
             model_clz=ARGS.model,
             optimizer_clz=ARGS.optimizer,
             lr_decay_clz=ARGS.lr_decay,
@@ -69,14 +81,13 @@ def main():
 
     # correct the logdir settings to the `.` path.
     config[runtime.Experiment.LOGDIR_KEY] = '.'
-    fpath = os.path.join(logdir, CFG)
     json.dump(config, open(fpath, mode='w'), indent=4, separators=(',', ': '))
     return fpath
 
 
-def clone(reference, logdir, name,
-          model_clz=None, optimizer_clz=None,
-          lr_decay_clz=None, grad_clip_clz=None):
+def clone(reference, name, model_clz=None,
+          optimizer_clz=None, lr_decay_clz=None,
+          grad_clip_clz=None):
     """Clone an existing configuration."""
 
     t_model = configurable.resolve(model_clz, model) if model_clz else None
@@ -86,7 +97,6 @@ def clone(reference, logdir, name,
 
     result = copy.deepcopy(reference)
     result[runtime.Experiment.NAME_KEY] = name
-    result[runtime.Experiment.LOGDIR_KEY] = logdir
     rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
     if not rparams:
         t_model = t_model or configurable.resolve(CLZ_MODEL_DEFAULT, model)
@@ -108,13 +118,12 @@ def clone(reference, logdir, name,
     return result
     
 
-def from_scratch(logdir, name,
-                 model_clz=None, optimizer_clz=None,
+def from_scratch(name, model_clz=None, optimizer_clz=None,
                  lr_decay_clz=None, grad_clip_clz=None):
     """Build a default configuration experiment."""
 
     config = runtime.Experiment.get_default_config()
-    config[runtime.Experiment.LOGDIR_KEY] = logdir
+    config[runtime.Experiment.LOGDIR_KEY] = '.'
     config[runtime.Experiment.NAME_KEY] = name
 
     model_clz = model_clz if model_clz else CLZ_MODEL_DEFAULT
@@ -147,6 +156,10 @@ def from_scratch(logdir, name,
 
 
 if __name__ == '__main__':
-    FPATH = main()
-    if ARGS.editor:
-        subprocess.call([ARGS.editor, FPATH])
+    try:
+        FPATH = main()
+        if ARGS.editor:
+            subprocess.call([ARGS.editor, FPATH])
+    except IOError as ex:
+        sys.stderr.write(str(ex))
+        sys.exit(1)

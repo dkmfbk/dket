@@ -132,51 +132,41 @@ class Experiment(object):
             for p in patterns.split(',')])
 
     @classmethod
-    def load(cls, logdir, force=False):
+    def load(cls, config, force=False):
         """Load an experiment from logdir containing only a json config file."""
-        if not logdir:
-            raise ValueError('log directory must be specified.')
+        if not config:
+            raise ValueError('Experiment configuration must be specified.')
+
+        basedir, _ = tuple(os.path.split(config)) 
+        config = json.load(open(config))
         
-        logdir = os.path.abspath(logdir)
-        if not os.path.exists(logdir):
-            raise FileNotFoundError('The log directory does not exist.')
-
-        listdir = os.listdir(logdir)
-        if not listdir or cls.CONFIG_FILE_NAME not in listdir:
-            raise IOError('The log directory must contain {}'\
-                          .format(cls.CONFIG_FILE_NAME))
-
-        listdir.remove(cls.CONFIG_FILE_NAME)
-        if cls.LOG_FILE_NAME in listdir:
-            listdir.remove(cls.LOG_FILE_NAME)
-
-        if listdir and not force:
-            raise IOError('The log directory must contain only the {} file'\
-                          .format(cls.CONFIG_FILE_NAME))
-
-        logging.info('cleaning up %s', logdir)
-        for fname in listdir:
-            fpath = os.path.join(logdir, fname)
-            if os.path.isfile(fpath):
-                os.remove(fpath)
+        name = config[cls.NAME_KEY]
+        logdir = config[cls.LOGDIR_KEY]
+        logdir = os.path.abspath(os.path.join(basedir, logdir))
+        logdir = os.path.join(logdir, name)
+        if os.path.exists(logdir):
+            if force:
+                logging.info('removing existing logdir %s and recreating.', logdir)
+                shutil.rmtree(logdir)
+                os.makedirs(logdir)
             else:
-                shutil.rmtree(fpath)
-
-        # Log directory in config files made absolute.
-        config = json.load(open(os.path.join(logdir, cls.CONFIG_FILE_NAME)))
-        if not config[cls.LOGDIR_KEY]:
-            config[cls.LOGDIR_KEY] = logdir
-        conf_logdir = os.path.join(logdir, config[cls.LOGDIR_KEY])
-        conf_logdir = os.path.abspath(conf_logdir)
-        if conf_logdir != logdir:
-            raise RuntimeError(
-                """The configuration log directory is different from the actual one: """
-                """expected {}, found {} instead.""".format(logdir, config[cls.LOGDIR_KEY]))
-        config[cls.LOGDIR_KEY] = conf_logdir
+                if os.listdir(logdir):
+                    raise FileExistsError(
+                        'The logging directory {} already exists and is not empty.'\
+                        .format(logdir))
+                else:
+                    logging.warning(
+                        'The log directory %s already exists but is empty: will be used anyway.',
+                        logdir)
+        else:
+            os.makedirs(logdir)
+            logging.info('created logdir is: %s', logdir)
+        #override the logdir setting.
+        config[cls.LOGDIR_KEY] = logdir
 
         # Train/Eval file patterns made absolude.
-        config[cls.TRAIN_FILES_KEY] = cls._abs_file_paths(logdir, config[cls.TRAIN_FILES_KEY])
-        config[cls.EVAL_FILES_KEY] = cls._abs_file_paths(logdir, config[cls.EVAL_FILES_KEY])
+        config[cls.TRAIN_FILES_KEY] = cls._abs_file_paths(basedir, config[cls.TRAIN_FILES_KEY])
+        config[cls.EVAL_FILES_KEY] = cls._abs_file_paths(basedir, config[cls.EVAL_FILES_KEY])
         return Experiment(config)
 
 

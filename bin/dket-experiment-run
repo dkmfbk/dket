@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+import os
+import sys
+
+from dket import logutils
+from dket import runtime
+
+
+CFG = runtime.Experiment.CONFIG_FILE_NAME
+CLZ_MODEL_DEFAULT = 'PointingSoftmaxModel'
+CLZ_OPTIMIZER_DEFAULT = 'SGD'
+
+PATH = os.path.realpath(__file__)
+BASE = os.path.dirname(PATH)
+
+# pylint: disable=C0103,C0301,I0011
+parser = argparse.ArgumentParser(prog='dket-experiment-run')
+parser.add_argument('--config', type=str, required=True, help='The config.json configuration file of the experiment.')
+parser.add_argument('--force', action='store_true', help='Overwrite existing files.')
+parser.add_argument('--log-level', type=str, default='INFO', help='The log level.')
+parser.add_argument('--log-to-stderr', action='store_true', help='Log to the stderr.')
+# pylint: enable=C0103,C0301,I0011
+ARGS = parser.parse_args()
+
+
+if __name__ == '__main__':
+    LOG = os.path.abspath(ARGS.config) + '.log' 
+    logutils.config(level=ARGS.log_level, fpath=LOG, stderr=ARGS.log_to_stderr)
+    logging.info('executing: %s', PATH)
+    logging.info('python version: %s', sys.version.replace('\n', ' '))
+    logging.debug('--config: %s', ARGS.config)
+    logging.debug('--force: %s', str(ARGS.force))
+    logging.debug('--log-level: %s', ARGS.log_level)
+    logging.debug('--log-to-stderr: %s', str(ARGS.log_to_stderr))
+    CONFIG = os.path.abspath(ARGS.config)
+    try:
+        runtime.Experiment.load(CONFIG, ARGS.force).run()
+    except Exception as ex:  # pylint: disable=W0703
+        logging.exception(str(ex))
+        sys.exit(1)

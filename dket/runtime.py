@@ -54,7 +54,8 @@ class Experiment(object):
     EVAL_FILES_KEY = 'eval.files'
     EVAL_DUMP_KEY = 'eval.dump'
     EVAL_DEVICE_KEY = 'eval.device'
-    PARAMS_KEY = 'params'
+    MODEL_CLASS_KEY = 'model.class'
+    MODEL_PARAMS_KEY = 'model.params'
 
     _TRAIN = tf.contrib.learn.ModeKeys.TRAIN
     _EVAL = tf.contrib.learn.ModeKeys.EVAL
@@ -70,12 +71,12 @@ class Experiment(object):
         self._eval_files = config[self.EVAL_FILES_KEY]
         self._eval_dev = config[self.EVAL_DEVICE_KEY]
         self._eval_dump = config[self.EVAL_DUMP_KEY]
-        self._params = config[self.PARAMS_KEY]
+        self._params = config[self.MODEL_PARAMS_KEY]
 
         # build the training model.
         t_params = copy.deepcopy(self._params)
         t_params[Model.INPUT_PARAMS_PK][ModelInputs.FILES_PK] = self._train_files
-        clz = t_params[Model.MODEL_CLASS_PK]
+        clz = config[self.MODEL_CLASS_KEY]
         with tf.device(self._train_dev):
             t_model = configurable.factory(clz, self._TRAIN, t_params, dket.model)
             t_logdir = os.path.join(self._logdir, self._TRAIN)
@@ -120,7 +121,7 @@ class Experiment(object):
             cls.EVAL_FILES_KEY: '',
             cls.EVAL_DUMP_KEY: True,
             cls.EVAL_DEVICE_KEY: 'CPU',
-            cls.PARAMS_KEY: {}
+            cls.MODEL_PARAMS_KEY: {}
         }
 
     @staticmethod

@@ -87,11 +87,11 @@ def clone(reference, logdir, name,
     result = copy.deepcopy(reference)
     result[runtime.Experiment.NAME_KEY] = name
     result[runtime.Experiment.LOGDIR_KEY] = logdir
-    rparams = result[runtime.Experiment.PARAMS_KEY]
+    rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
     if not rparams:
         t_model = t_model or configurable.resolve(CLZ_MODEL_DEFAULT, model)
-        result[runtime.Experiment.PARAMS_KEY] = t_model.get_default_params()
-        rparams = result[runtime.Experiment.PARAMS_KEY]
+        result[runtime.Experiment.MODEL_PARAMS_KEY] = t_model.get_default_params()
+        rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
     
     if t_optimizer:
         rparams[model.Model.OPTIMIZER_CLASS_PK] = optimizer_clz
@@ -142,7 +142,7 @@ def from_scratch(logdir, name,
         params[opt_params_key][lr_decay_class_key] = lr_decay_clz
         params[opt_params_key][lr_decay_params_key] = t_lr_decay.get_default_params()
  
-    config[runtime.Experiment.PARAMS_KEY] = params
+    config[runtime.Experiment.MODEL_PARAMS_KEY] = params
     return config
 
 

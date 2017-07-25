@@ -39,16 +39,15 @@ def _prepare():
             if not ARGS.force:
                 raise FileExistsError(
                     'The directory {} already exists and it is not empty.'.format(logdir))
-        logging.warning('Directory {} already exists: removing and recreating.'.format(logdir))
+        logging.warning('Directory % already exists: removing and recreating.', logdir)
         shutil.rmtree(logdir)
     os.makedirs(logdir)
-    fpath = os.path.join(logdir, CFG)
-    return logdir, fpath
+    return logdir
 
 
 def main():
     """Create the new experiment."""
-    logdir, fpath = _prepare()
+    logdir = _prepare()
     if ARGS.clone_from:
         reference = json.load(open(os.path.join(ARGS.clone_from, CFG)))
         config = clone(
@@ -68,6 +67,9 @@ def main():
             lr_decay_clz=ARGS.lr_decay,
             grad_clip_clz=ARGS.grad_clip)
 
+    # correct the logdir settings to the `.` path.
+    config[runtime.Experiment.LOGDIR_KEY] = '.'
+    fpath = os.path.join(logdir, CFG)
     json.dump(config, open(fpath, mode='w'), indent=4, separators=(',', ': '))
     return fpath
 
@@ -90,7 +92,6 @@ def clone(reference, logdir, name,
         t_model = t_model or configurable.resolve(CLZ_MODEL_DEFAULT, model)
         result[runtime.Experiment.PARAMS_KEY] = t_model.get_default_params()
         rparams = result[runtime.Experiment.PARAMS_KEY]
-        
     
     if t_optimizer:
         rparams[model.Model.OPTIMIZER_CLASS_PK] = optimizer_clz

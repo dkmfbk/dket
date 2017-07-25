@@ -4,7 +4,7 @@
     "train.steps": 100,
     "train.device": "GPU",
     "train.files": "../dataset-*.rio",
-    "train.checkpoint_every": 50,
+    "train.checkpoint_every": 10,
     "eval.files": "../dataset-*.rio",
     "eval.dump": true,
     "eval.device": "CPU",

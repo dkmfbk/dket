@@ -275,7 +275,7 @@ class Training(object):
 
         save_step = self._ckpt_every == 0 or (step % self._ckpt_every == 0)
         ckpt = self._save_ckpt(step) if save_step else None
-        self._summarize(step, loss, summary, metrics)
+        self._summarize(step, loss, summary, metrics, ckpt=ckpt)
         if ckpt and self._eval:
             self._eval.start(ckpt)
 
@@ -392,10 +392,10 @@ class Evaluation(object):
                 while loop:
                     loop = self._step()
             except tf.errors.OutOfRangeError as ex:
-                logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
+                logging.debug('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=ex)
             finally:
-                logging.debug('stopping the loop.')
+                logging.info('stopping the loop.')
                 coord.request_stop()
                 coord.join(threads)
                 self._summarize()
@@ -425,7 +425,7 @@ class Evaluation(object):
         # initialize the dump file if not existing.
         dumpfile_name = 'dump-' + str(self._global_step) + '.tsv'
         dumpfile = os.path.join(self._dumpdir, dumpfile_name)
-        logging.info('dumping to: %s', dumpfile)
+        logging.debug('dumping to: %s', dumpfile)
 
         _str = lambda items: ' '.join([str(item) for item in list(items)])
         with open(dumpfile, mode='a') as fdump:

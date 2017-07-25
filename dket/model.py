@@ -273,7 +273,7 @@ class Model(configurable.Configurable):
         weights = tf.sequence_mask(lengths, dtype=tf.float32)
         predictions = self._predictions
         clz = self._params[self.LOSS_NAME_PK]
-        loss = configurable.factory(clz, self.mode, {})
+        loss = configurable.factory(clz, self.mode, {}, train)
         self._loss_op = loss.compute(targets, predictions, weights=weights)
 
     def _build_train_op(self):
@@ -283,7 +283,7 @@ class Model(configurable.Configurable):
 
         opt_class = self._params[self.OPTIMIZER_CLASS_PK]
         opt_params = self._params[self.OPTIMIZER_PARAMS_PK]
-        self._optimizer = configurable.factory(opt_class, self.mode, opt_params)
+        self._optimizer = configurable.factory(opt_class, self.mode, opt_params, train)
         self._train_op = self._optimizer.minimize(
             self._loss_op, global_step=self._global_step)
 
@@ -326,6 +326,12 @@ class Model(configurable.Configurable):
             self._build_train_op()
             self._build_metrics()
             self._build_summary()
+
+    @classmethod
+    def create(cls, mode, params):
+        model = cls(mode, params)
+        model.build()
+        return model
 
 
 class PointingSoftmaxModel(Model):

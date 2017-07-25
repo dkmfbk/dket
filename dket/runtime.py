@@ -1,16 +1,16 @@
 """Runtime infrastructure for training and evaluating dket models."""
 
-import collections
 import copy
 import json
 import logging
 import time
 import shutil
 import os
-from datetime import datetime
 
+import numpy as np
 import tensorflow as tf
 
+import dket.model
 from dket import configurable
 from dket.metrics import Metric
 from dket.model import Model, ModelInputs
@@ -43,6 +43,7 @@ class Experiment(object):
     """A dket experiment main class."""
 
     CONFIG_FILE_NAME = 'config.json'
+    LOG_FILE_NAME = 'log'
 
     NAME_KEY = 'name'
     LOGDIR_KEY = 'logdir'
@@ -60,7 +61,7 @@ class Experiment(object):
 
     def __init__(self, config):
         """Initializes a new experiment instance."""
-        
+
         self._logdir = config[self.LOGDIR_KEY]
         self._train_files = config[self.TRAIN_FILES_KEY]
         self._train_steps = config[self.TRAIN_STEPS_KEY]
@@ -76,7 +77,7 @@ class Experiment(object):
         t_params[Model.INPUT_PARAMS_PK][ModelInputs.FILES_PK] = self._train_files
         clz = t_params[Model.MODEL_CLASS_PK]
         with tf.device(self._train_dev):
-            t_model = configurable.factory(clz, self._TRAIN, t_params)
+            t_model = configurable.factory(clz, self._TRAIN, t_params, dket.model)
             t_logdir = os.path.join(self._logdir, self._TRAIN)
 
         # build the eval model.
@@ -84,11 +85,16 @@ class Experiment(object):
         e_params[Model.INPUT_PARAMS_PK][ModelInputs.FILES_PK] = self._eval_files
         e_params[Model.INPUT_PARAMS_PK][ModelInputs.EPOCHS_PK] = 1
         with tf.device(self._eval_dev):
-            e_model = configurable.factory(clz, self._EVAL, e_params)
+            e_model = configurable.factory(clz, self._EVAL, e_params, dket.model)
             e_logdir = os.path.join(self._logdir, self._EVAL)
+            e_dumpdir = os.path.join(e_logdir, 'dump') if self._eval_dump else ''
 
-
-        self._eval = None
+        self._eval = Evaluation(
+            model=e_model,
+            logdir=e_logdir,
+            steps=0,
+            metrics=get_metrics(),
+            dumpdir=e_dumpdir)
         self._training = Training(
             model=t_model,
             logdir=t_logdir,
@@ -96,7 +102,7 @@ class Experiment(object):
             checkpoint_every=self._train_ckpt_every,
             metrics=get_metrics(),
             evaluation=self._eval)
-    
+
     def run(self):
         """Runs the experiment."""
         self._training.start()
@@ -117,43 +123,60 @@ class Experiment(object):
             cls.PARAMS_KEY: {}
         }
 
+    @staticmethod
+    def _abs_file_paths(base, patterns):
+        return ','.join([
+            os.path.abspath(
+                os.path.join(base, p))
+            for p in patterns.split(',')])
+
     @classmethod
     def load(cls, logdir, force=False):
         """Load an experiment from logdir containing only a json config file."""
+        if not logdir:
+            raise ValueError('log directory must be specified.')
+        
+        logdir = os.path.abspath(logdir)
         if not os.path.exists(logdir):
             raise FileNotFoundError('The log directory does not exist.')
 
         listdir = os.listdir(logdir)
-        if not listdir:
-            raise IOError('The log directory must contain {}, found empty instead'\
+        if not listdir or cls.CONFIG_FILE_NAME not in listdir:
+            raise IOError('The log directory must contain {}'\
                           .format(cls.CONFIG_FILE_NAME))
 
-        elif len(listdir) > 1:
-            if not force:
-                raise IOError('The log directory must contain only the {} file'\
-                              .format(cls.CONFIG_FILE_NAME))
-            logging.info('cleaning up %s', logdir)
-            for fname in listdir:
-                fpath = os.path.join(logdir, fname)
-                if os.path.isfile(fpath):
-                    os.remove(fpath)
-                else:
-                    shutil.rmtree(fpath)
+        listdir.remove(cls.CONFIG_FILE_NAME)
+        if cls.LOG_FILE_NAME in listdir:
+            listdir.remove(cls.LOG_FILE_NAME)
 
-        elif len(listdir) == 1 and listdir[0] == cls.CONFIG_FILE_NAME:
-            raise IOError('The log directory must contain the {} file'\
+        if listdir and not force:
+            raise IOError('The log directory must contain only the {} file'\
                           .format(cls.CONFIG_FILE_NAME))
 
-        else:
-            pass
+        logging.info('cleaning up %s', logdir)
+        for fname in listdir:
+            fpath = os.path.join(logdir, fname)
+            if os.path.isfile(fpath):
+                os.remove(fpath)
+            else:
+                shutil.rmtree(fpath)
 
+        # Log directory in config files made absolute.
         config = json.load(open(os.path.join(logdir, cls.CONFIG_FILE_NAME)))
         if not config[cls.LOGDIR_KEY]:
             config[cls.LOGDIR_KEY] = logdir
-        if config[cls.LOGDIR_KEY] != logdir:
+        conf_logdir = os.path.join(logdir, config[cls.LOGDIR_KEY])
+        conf_logdir = os.path.abspath(conf_logdir)
+        if conf_logdir != logdir:
             raise RuntimeError(
                 """The configuration log directory is different from the actual one: """
                 """expected {}, found {} instead.""".format(logdir, config[cls.LOGDIR_KEY]))
+        config[cls.LOGDIR_KEY] = conf_logdir
+
+        # Train/Eval file patterns made absolude.
+        config[cls.TRAIN_FILES_KEY] = cls._abs_file_paths(logdir, config[cls.TRAIN_FILES_KEY])
+        config[cls.EVAL_FILES_KEY] = cls._abs_file_paths(logdir, config[cls.EVAL_FILES_KEY])
+        return Experiment(config)
 
 
 class Training(object):
@@ -205,12 +228,12 @@ class Training(object):
             self._model.global_step,
             self._model.train_op,
             self._model.loss_op,
-            self._model.summary,
+            self._model.summary_op,
             self._model.inputs.get(target_key),
             self._model.predictions,
-            self._model.inputs.gey(target_length_key)]
+            self._model.inputs.get(target_length_key)]
 
-        logging.debug('allow soft placement: %s' + str(_SOFT_PLACEMENT))
+        logging.debug('allow soft placement: %s', str(_SOFT_PLACEMENT))
         self._config = tf.ConfigProto(allow_soft_placement=_SOFT_PLACEMENT)
         logging.debug('initializing session instance.')
         self._sess = tf.Session(config=self._config, graph=self._model.graph)
@@ -227,6 +250,7 @@ class Training(object):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(coord=coord)
             # START LOOP.
+            step = None
             try:
                 has_next = True
                 while has_next:
@@ -235,9 +259,6 @@ class Training(object):
                 logging.info('a tf.errors.OutOfRangeError is stopping the loop.')
                 coord.request_stop(ex=oore)
             finally:
-                ckpt = self._save_ckpt(step)
-                if self._eval:
-                    self._eval.start(ckpt)
                 self._writer.flush()
             # END LOOP.
                 logging.info('stopping the loop.')
@@ -260,7 +281,7 @@ class Training(object):
 
         next_step = self._steps == 0 or step < self._steps
         logging.log(HDEBUG, 'next step: %s', str(next_step))
-        return step, False
+        return step, next_step
 
     def _summarize(self, step, loss, summary, metrics, ckpt=None):
         self._writer.add_summary(summary, global_step=step)
@@ -268,7 +289,7 @@ class Training(object):
         message = ', '.join(
             ['global step: {}'.format(step),
              fmt.format(_LOSS_SUMMARY_KEY, loss)] + 
-            [fmt.format(key, value) for key, value in metrics])
+            [fmt.format(key, value) for key, value in metrics.items()])
 
         metrics.update({_LOSS_SUMMARY_KEY: loss})
         summarized = as_summary(metrics)
@@ -311,11 +332,11 @@ class Evaluation(object):
     def _initialize(self):
         logging.debug('initializing the evaluation process.')
         if not os.path.exists(self._logdir):
-            logging.info('creating directory: %s', self._logdir)
+            logging.info('creating log directory: %s', self._logdir)
             os.makedirs(self._logdir)
 
-        if not self._dumpdir and not os.path.exists(self._dumpdir):
-            logging.info('creating directory: %s', self._dumpdir)
+        if self._dumpdir and not os.path.exists(self._dumpdir):
+            logging.info('creating dump directory: %s', self._dumpdir)
             os.makedirs(self._dumpdir)
 
         with self._model.graph.as_default() as graph:
@@ -383,16 +404,17 @@ class Evaluation(object):
         words, targets, predictions = self._sess.run(self._fetches)
 
         tmetrics = {}
-        for key, metric in self._metrics:
+        for key, metric in self._metrics.items():
             logging.debug('accumulating metric: %s.', key)
             tmetrics[key] = metric.compute(targets, predictions)
         tmsg = ', '.join(['{}:{:.2f}'.format(k, v) for k, v in tmetrics.items()])
         logging.debug('evaluation step  %d@%d: %s', self._global_step, self._eval_step, tmsg)
 
+        predictions = np.argmax(predictions, axis=-1)
         self._dump(words, targets, predictions)
 
         self._eval_step += 1
-        return self._steps > 0 and self._eval_step <= self._steps
+        return self._steps == 0 or self._eval_step <= self._steps
 
     def _dump(self, words, targets, predictions):
         """Dump the batch to thee dump file."""
@@ -408,12 +430,12 @@ class Evaluation(object):
         _str = lambda items: ' '.join([str(item) for item in list(items)])
         with open(dumpfile, mode='a') as fdump:
             for ww, tt, pp in zip(words, targets, predictions):
-                fdump.write('\t'.join([_str(ww), str(tt), str(pp)]) + '\n')
+                fdump.write('\t'.join([_str(ww), _str(tt), _str(pp)]) + '\n')
 
     def _summarize(self):
         gmetrics = {}
         for key, metric in self._metrics.items():
-            gmetrics[key] = metric.average
+            gmetrics[key] = metric.average()
         gmsg = ', '.join(['{}:{:.2f}'.format(k, v) for k, v in gmetrics.items()])
         logging.info('evaluation at global step %d: %s', self._global_step, gmsg)
         logging.debug('saving tf summaries.')

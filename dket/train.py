@@ -2,6 +2,7 @@
 
 import abc
 import logging
+import sys
 
 import six
 import tensorflow as tf
@@ -253,7 +254,7 @@ class Optimizer(configurable.Configurable):
             lr_decay_class = self._params[self.LR_DECAY_CLASS_PK]
             lr_decay_params = self._params[self.LR_DECAY_PARAMS_PK]
             lr_decay_fn = configurable.factory(
-                lr_decay_class, self.mode, lr_decay_params)
+                lr_decay_class, self.mode, lr_decay_params, sys.modules[__name__])
             lr = lr_decay_fn(lr, global_step)  # pylitn: disable=I0011,C0103
         return lr
 
@@ -261,7 +262,8 @@ class Optimizer(configurable.Configurable):
         clip_class = self._params[self.CLIP_GRADS_CLASS_PK]
         clip_params = self._params[self.CLIP_GRADS_PARAMS_PK]
         if clip_class:
-            return configurable.factory(clip_class, self.mode, clip_params)
+            return configurable.factory(
+                clip_class, self.mode, clip_params, sys.modules[__name__])
         return None
 
     def minimize(self, loss, variables=None, global_step=None):

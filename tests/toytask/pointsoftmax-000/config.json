@@ -1,0 +1,40 @@
+{
+    "name": "pointsoftmax-000",
+    "logdir": "../pointsoftmax-000",
+    "train.steps": 100,
+    "train.device": "GPU",
+    "train.files": "../dataset-*.rio",
+    "train.checkpoint_every": 50,
+    "eval.files": "../dataset-*.rio",
+    "eval.dump": true,
+    "eval.device": "CPU",
+    "params": {
+        "model.class": "PointingSoftmaxModel",
+        "input.class": "dket.model.ModelInputs",
+        "input.params": {
+            "epochs": 0,
+            "files": "",
+            "seed": null,
+            "batch_size": 200,
+            "shuffle": true
+        },
+        "loss.name": "dket.train.XEntropy",
+        "optimizer.class": "SGD",
+        "optimizer.params": {
+            "lr": 0.1,
+            "lr.decay.class": "",
+            "lr.decay.params": {},
+            "clip.params": {},
+            "clip.class": "",
+            "colocate": true
+        },
+        "input.vocabulary_size": 100,
+        "output.vocabulary_size": 20,
+        "feedback_size": 27,
+        "embedding_size": 128,
+        "attention_size": 128,
+        "hidden_size": 256,
+        "recurrent_cell": "GRU",
+        "parallel_iterations": 10
+    }
+}

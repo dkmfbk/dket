@@ -1,5 +1,6 @@
 *.pyc
 .py3venv
+.vscode/.ropeproject
 dket.egg-info
 tests/toytask/pointsoftmax-000/log
 tests/toytask/pointsoftmax-000/train

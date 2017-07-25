@@ -4,3 +4,6 @@ dket.egg-info
 tests/toytask/pointsoftmax-000/log
 tests/toytask/pointsoftmax-000/train
 tests/toytask/pointsoftmax-000/eval
+experiments/**/log
+experiments/**/eval
+experiments/**/train

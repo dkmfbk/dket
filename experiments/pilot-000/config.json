@@ -1,0 +1,40 @@
+{
+    "name": "pilot-000",
+    "logdir": ".",
+    "train.steps": 1,
+    "train.checkpoint_every": 1,
+    "train.files": "../../datasets/dataset-10k/train.rio",
+    "train.device": "GPU",
+    "eval.files": "../../datasets/dataset-10k/validation.rio",
+    "eval.dump": true,
+    "eval.device": "CPU",
+    "params": {
+        "model.class": "PointingSoftmaxModel",
+        "input.class": "dket.model.ModelInputs",
+        "input.params": {
+            "epochs": 0,
+            "files": "",
+            "batch_size": 200,
+            "shuffle": true,
+            "seed": 23
+        },
+        "loss.name": "dket.train.XEntropy",
+        "optimizer.class": "SGD",
+        "optimizer.params": {
+            "lr": 0.1,
+            "lr.decay.class": "",
+            "lr.decay.params": {},
+            "clip.class": "",
+            "clip.params": {},
+            "colocate": true
+        },
+        "input.vocabulary_size": 5039,
+        "output.vocabulary_size": 16,
+        "feedback_size": 30,
+        "embedding_size": 128,
+        "recurrent_cell": "GRU",
+        "hidden_size": 256,
+        "attention_size": 128,
+        "parallel_iterations": 10
+    }
+}

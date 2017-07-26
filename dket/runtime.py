@@ -260,7 +260,7 @@ class Training(object):
     def _step(self):
         step, _, loss, summary, targets, predictions, lengths = self._sess.run(self._fetches)
 
-        logging.debug('computing donwstream metrics')
+        logging.log(HDEBUG, 'computing donwstream metrics')
         metrics = dict((key, metric.reset().compute(targets, predictions, lengths))
                        for (key, metric) in self._metrics.items())
 
@@ -346,7 +346,7 @@ class Evaluation(object):
             self._model.inputs.get(target_key),
             self._model.predictions]
 
-        logging.debug('allow soft placement: %s' + str(_SOFT_PLACEMENT))
+        logging.debug('allow soft placement: %s', str(_SOFT_PLACEMENT))
         self._config = tf.ConfigProto(allow_soft_placement=_SOFT_PLACEMENT)
         logging.debug('evaluation process initialized.')
 
@@ -394,6 +394,7 @@ class Evaluation(object):
 
     def _step(self):
         words, targets, predictions = self._sess.run(self._fetches)
+        self._eval_step += 1
 
         tmetrics = {}
         for key, metric in self._metrics.items():
@@ -405,7 +406,6 @@ class Evaluation(object):
         predictions = np.argmax(predictions, axis=-1)
         self._dump(words, targets, predictions)
 
-        self._eval_step += 1
         return self._steps == 0 or self._eval_step <= self._steps
 
     def _dump(self, words, targets, predictions):
@@ -417,7 +417,7 @@ class Evaluation(object):
         # initialize the dump file if not existing.
         dumpfile_name = 'dump-' + str(self._global_step) + '.tsv'
         dumpfile = os.path.join(self._dumpdir, dumpfile_name)
-        logging.debug('dumping to: %s', dumpfile)
+        logging.log(HDEBUG, 'dumping to: %s', dumpfile)
 
         _str = lambda items: ' '.join([str(item) for item in list(items)])
         with open(dumpfile, mode='a') as fdump:

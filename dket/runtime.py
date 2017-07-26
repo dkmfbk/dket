@@ -346,10 +346,6 @@ class Evaluation(object):
             self._model.inputs.get(target_key),
             self._model.predictions]
 
-        for key, metric in self._metrics.items():
-            logging.debug('reseting metric %s.', key)
-            metric.reset()
-
         logging.debug('allow soft placement: %s' + str(_SOFT_PLACEMENT))
         self._config = tf.ConfigProto(allow_soft_placement=_SOFT_PLACEMENT)
         logging.debug('evaluation process initialized.')
@@ -357,6 +353,11 @@ class Evaluation(object):
     def start(self, checkpoint):
         """Start the evaluation process."""
         
+        logging.debug('resetting the metrics.')
+        for key, metric in self._metrics.items():
+            logging.debug('reseting metric %s.', key)
+            metric.reset()
+
         logging.debug('initializing session instance.')
         self._sess = tf.Session(config=self._config, graph=self._model.graph)
         with self._sess as sess:
@@ -396,7 +397,7 @@ class Evaluation(object):
 
         tmetrics = {}
         for key, metric in self._metrics.items():
-            logging.debug('accumulating metric: %s.', key)
+            logging.log(HDEBUG, 'accumulating metric: %s.', key)
             tmetrics[key] = metric.compute(targets, predictions)
         tmsg = ', '.join(['{}:{:.2f}'.format(k, v) for k, v in tmetrics.items()])
         logging.debug('evaluation step  %d@%d: %s', self._global_step, self._eval_step, tmsg)

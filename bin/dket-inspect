@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import argparse
+import sys
+
+from dket import analytics
+from dket import logutils
+
+# pylint: disable=C0103,C0301,I0011
+parser = argparse.ArgumentParser(prog='dket-inspect')
+parser.add_argument('--dump', type=str, required=True, help='The .TSV dump file to analyse.')
+parser.add_argument('--vocabulary', type=str, required=True, help='The path for the input vocabulary to be used, one word per line.')
+parser.add_argument('--shortlist', type=str, required=True, help='The path for the shortlist vocabulary to be used, one word per line.')
+parser.add_argument('--smart-pad', action='store_true', help='If true, use a smart padding removing the trailing <EOS> symbols (not implemented).')
+parser.add_argument('--output', type=str, help='The (optional) output file. Default is [DUMP].data.')
+parser.add_argument('--force', action='store_true', help='If set and the [OUTPUT] file already exists, it will be overwritten.')
+parser.add_argument('--log-level', type=str, default='INFO', help='The log level. Defaults to INFO.')
+parser.add_argument('--log-to-stderr', action='store_true', help='If set, the logging activities are dumped to the stderr (otherwise only warnings will be).')
+parser.add_argument('--log-file', type=str, help='The (optional) log file. Default is [OUTPUT].log.')
+# pylint: enable=C0103,C0301,I0011
+ARGS = parser.parse_args()
+
+if __name__ == '__main__':
+    # set up the logging infrastructure.
+    logutils.config(ARGS.log_level, fpath='.log', stderr=ARGS.log_to_stderr)
+    analytics.process(
+        dump_fp=ARGS.dump,
+        vocabulary_fp=ARGS.vocabulary,
+        shortlist_fp=ARGS.shortlist,
+        data_fp=ARGS.output,
+        force=ARGS.force)
+    sys.exit(0)

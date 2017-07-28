@@ -28,12 +28,28 @@
             "clip.params": {},
             "colocate": true
         },
+        "encoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0,
+                "num_layers": 1,
+                "hidden_size": 256
+            }
+        },
+        "decoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0,
+                "num_layers": 1,
+                "hidden_size": 256
+            }
+        },
         "input.vocabulary_size": 5039,
         "output.vocabulary_size": 16,
         "feedback_size": 30,
         "embedding_size": 128,
-        "recurrent_cell": "GRU",
-        "hidden_size": 256,
         "attention_size": 128,
         "parallel_iterations": 10
     }

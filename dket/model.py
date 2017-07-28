@@ -13,6 +13,7 @@ from dket import configurable
 from dket import data
 from dket import ops
 from dket import train
+from dket import rnn
 
 class ModelInputs(configurable.Configurable):
     """Dket model input tensors parser."""
@@ -355,8 +356,14 @@ class PointingSoftmaxModel(Model):
         params = {
             'embedding_size': 128,
             'attention_size': 128,
-            'recurrent_cell': 'GRU',
-            'hidden_size': 256,
+            'encoder': {
+                'cell.type': 'GRUCell',
+                'cell.params': rnn.GRUCell.get_default_params(),
+            },
+            'decoder': {
+                'cell.type': 'GRUCell',
+                'cell.params': rnn.GRUCell.get_default_params(),
+            },
             'feedback_size': 0,
             'parallel_iterations': 10
         }
@@ -380,17 +387,23 @@ class PointingSoftmaxModel(Model):
 
             batch_dim = utils.get_dimension(words, 0)
             with tf.variable_scope('Encoder'):  # pylint: disable=E1129
-                cell = tf.contrib.rnn.GRUCell(self._params['hidden_size'])
-                state = cell.zero_state(batch_dim, tf.float32)
+                encoder_params = self._params['encoder']
+                encoder_cell_type = encoder_params['cell.type']
+                encoder_cell_params = encoder_params['cell.params']
+                encoder_cell = configurable.factory(encoder_cell_type, self._mode, encoder_cell_params, rnn)
+                state = encoder_cell.zero_state(batch_dim, tf.float32)
                 encoder_out, _ = tf.nn.dynamic_rnn(
-                    cell=cell,
+                    cell=encoder_cell,
                     initial_state=state,
                     inputs=inputs,
                     sequence_length=slengths,
                     parallel_iterations=self._params['parallel_iterations'])
 
             with tf.variable_scope('Decoder'):  # pylint: disable=E1129
-                decoder_cell = tf.contrib.rnn.GRUCell(self._params['hidden_size'])
+                decoder_params = self._params['decoder']
+                decoder_cell_type = decoder_params['cell.type']
+                decoder_cell_params = decoder_params['cell.params']
+                decoder_cell = configurable.factory(decoder_cell_type, self._mode, decoder_cell_params, rnn)
                 attention = layers.BahdanauAttention(
                     states=encoder_out,
                     inner_size=self._params['attention_size'],
@@ -400,7 +413,7 @@ class PointingSoftmaxModel(Model):
                     sequence_length=slengths)
                 output = layers.PointingSoftmaxOutput(
                     shortlist_size=self._params[self.OUTPUT_VOC_SIZE_PK],
-                    decoder_out_size=cell.output_size,
+                    decoder_out_size=decoder_cell.output_size,
                     state_size=encoder_out.shape[-1].value,
                     trainable=trainable)
                 

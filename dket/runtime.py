@@ -121,6 +121,7 @@ class Experiment(object):
             cls.EVAL_FILES_KEY: '',
             cls.EVAL_DUMP_KEY: True,
             cls.EVAL_DEVICE_KEY: 'CPU',
+            cls.MODEL_CLASS_KEY: '',
             cls.MODEL_PARAMS_KEY: {}
         }
 

@@ -7,11 +7,11 @@ import tensorflow as tf
 
 from dket import configurable
 
-@six.add_metaclass(abc.ABCMeta)
-class RNNCell(configurable.Configurable, tf.nn.rnn_cell_impl.BasicRNNCell):
+_TRAIN = tf.contrib.learn.ModeKeys.TRAIN
 
-    CELL_TYPE_PK = 'cell.type'
-    CELL_PARAMS_PK = 'cell.params'
+@six.add_metaclass(abc.ABCMeta)
+class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
+
     DROPOUT_INPUT_KEEP_PROB_PK = 'dropout_input.keep_prob'
     DROPOUT_OUTPUT_KEEP_PROB_PK = 'dropout_output.keep_prob'
     NUM_LAYERS_PK = 'num_layers'
@@ -24,12 +24,12 @@ class RNNCell(configurable.Configurable, tf.nn.rnn_cell_impl.BasicRNNCell):
         output_keep_prob = self._params[self.DROPOUT_OUTPUT_KEEP_PROB_PK]
         for _ in range(num_layers):
             cell = self._build_inner_cell()
-            if input_keep_prob < 1.0 or output_keep_prob < 1.0:
+            if input_keep_prob < 1.0 or output_keep_prob < 1.0 and self.mode == _TRAIN:
                 cell = tf.contrib.rnn.DropoutWrapper(
                     cell=cell,
                     input_keep_prob=input_keep_prob,
                     output_keep_prob=output_keep_prob)
-                cells.append(cell)
+            cells.append(cell)
         if len(cells) > 1:
             self._cell = tf.contrib.rnn.MultiRNNCell(cells)
         else:
@@ -60,14 +60,11 @@ class RNNCell(configurable.Configurable, tf.nn.rnn_cell_impl.BasicRNNCell):
     @classmethod
     def get_default_params(cls):
         return {
-            cls.CELL_TYPE_PK: '',
-            cls.CELL_PARAMS_PK: {},
             cls.DROPOUT_INPUT_KEEP_PROB_PK: 1.0,
             cls.DROPOUT_OUTPUT_KEEP_PROB_PK: 1.0,
             cls.NUM_LAYERS_PK: 1,
         }
 
-    @abc.abstractmethod
     def _validate_params(self, params):
         # Input dropout probability must be in [0.0, 1.0], default to 1.0.
         dropout_input_keep_prob = params[self.DROPOUT_INPUT_KEEP_PROB_PK]
@@ -108,6 +105,24 @@ class RNNCell(configurable.Configurable, tf.nn.rnn_cell_impl.BasicRNNCell):
         raise NotImplementedError()
 
 
-# class GRUCell(RNNCell):
+class GRUCell(RNNCell):
+    """GRU recurrent cell."""
 
-#     def __init__(self, mode, params):
+    HIDDEN_SIZE = 'hidden_size'
+
+    @classmethod
+    def get_default_params(cls):
+        params = super(GRUCell, cls).get_default_params()
+        params[cls.HIDDEN_SIZE] = 256
+        return params
+
+    def _validate_params(self, params):
+        params = super(GRUCell, self)._validate_params(params)
+        hidden_size = params[self.HIDDEN_SIZE]
+        if hidden_size <= 0:
+            raise ValueError('{} must be greater than zero.'.format(self.HIDDEN_SIZE))
+        return params
+
+    def _build_inner_cell(self):
+        hidden_size = self._params[self.HIDDEN_SIZE]
+        return tf.contrib.rnn.GRUCell(num_units=hidden_size)

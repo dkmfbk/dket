@@ -1,5 +1,5 @@
 {
-    "name": "pilot-000",
+    "name": "pilot-002",
     "logdir": ".",
     "train.steps": 30000,
     "train.checkpoint_every": 100,

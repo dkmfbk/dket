@@ -46,10 +46,25 @@ def decode_formula(idxs, shortlist, sentence):
 
 def edit_distance(target, prediction):
     """The edit distance score and op codes."""
-    smatch = editdist.SequenceMatcher(a=target, b=prediction)
-    distance = smatch.distance()
-    ops = smatch.get_opcodes()
-    return distance, ops
+    distance_t = editdist.edit_distance(prediction, target)
+    if isinstance(distance_t, tuple):
+        logging.log(
+            HDEBUG, 'edit distance: %s --> picking up the first element: %s',
+            str(distance_t), distance_t[0])
+        distance = distance_t[0]
+    else:
+        distance = distance_t
+
+    bdistance, _, opcodes = editdist.edit_distance_backpointer(prediction, target)
+    if distance != bdistance:
+        logging.warning('Edit distance: ' + str(distance) + ' (' + str(distance_t) + ')')
+        logging.warning('Edit distance backpointed: ' + str(bdistance))
+        logging.warning('TARGET: %s', str(target))
+        logging.warning('PREDICTION: %s', str(prediction))
+        for opcode in opcodes:
+            logging.warning(serialize_diff_op(opcode, target, prediction))
+    return bdistance, opcodes
+
 
 def serialize_diff_op(diff_op, target, prediction):
     """Applies a diff op for editing one sequence into another."""
@@ -57,6 +72,7 @@ def serialize_diff_op(diff_op, target, prediction):
     tag, i1, i2, j1, j2 = tuple(diff_op)  # pylint: disable=C0103
     serialized = fmt.format(tag, i1, i2, j1, j2, target[i1:i2], prediction[j1:j2])
     return serialized
+
 
 TAB = '\t'
 BLANK = ' '
@@ -80,14 +96,16 @@ def parse(tsv_line):
     prediction = [int(item) for item in prediction.split(BLANK)]
     return sentence, target, prediction
 
+
 class _NoIndent(object):
 
     def __init__(self, value):
         self.value = value
 
+
 class _NoIndentEncoder(json.JSONEncoder):
 
-    def default(self, o):
+    def default(self, o):  # pylint: disable=E0202
         if isinstance(o, _NoIndent):
             return str(o.value)
         else:
@@ -113,6 +131,7 @@ def convert(tsv_line, vocabulary, shortlist):
     example[PREDICTION] = _NoIndent(prediction)
 
     distance, ops = edit_distance(target, prediction)
+
     ed_data = collections.OrderedDict()
     ed_data[EDIT_SCORE] = distance
     ed_data[EDIT_DIFF_OPS] = [serialize_diff_op(op, target, prediction) for op in ops]
@@ -126,9 +145,6 @@ def convert(tsv_line, vocabulary, shortlist):
     return json.dumps(data, indent=2, separators=(',', ': '), cls=_NoIndentEncoder)
 
 
-def _serialize(data):
-    """Serialize the output result of a conversion operation."""
-    
 def process(dump_fp, vocabulary_fp, shortlist_fp, data_fp=None, force=False):
     """Process a dump file."""
     if not dump_fp:

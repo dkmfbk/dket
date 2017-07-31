@@ -1,5 +1,5 @@
 {
-    "name": "pilot-001",
+    "name": "pilot-004",
     "logdir": ".",
     "train.steps": 20000,
     "train.checkpoint_every": 100,
@@ -31,18 +31,18 @@
         "encoder": {
             "cell.type": "GRUCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
-                "num_layers": 1,
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 2,
                 "hidden_size": 256
             }
         },
         "decoder": {
             "cell.type": "GRUCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
-                "num_layers": 1,
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 2,
                 "hidden_size": 256
             }
         },

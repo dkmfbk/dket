@@ -24,11 +24,12 @@ class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
         output_keep_prob = self._params[self.DROPOUT_OUTPUT_KEEP_PROB_PK]
         for _ in range(num_layers):
             cell = self._build_inner_cell()
-            if input_keep_prob < 1.0 or output_keep_prob < 1.0 and self.mode == _TRAIN:
-                cell = tf.contrib.rnn.DropoutWrapper(
-                    cell=cell,
-                    input_keep_prob=input_keep_prob,
-                    output_keep_prob=output_keep_prob)
+            if self.mode == _TRAIN:
+                if input_keep_prob < 1.0 or output_keep_prob < 1.0:
+                    cell = tf.contrib.rnn.DropoutWrapper(
+                        cell=cell,
+                        input_keep_prob=input_keep_prob,
+                        output_keep_prob=output_keep_prob)
             cells.append(cell)
         if len(cells) > 1:
             self._cell = tf.contrib.rnn.MultiRNNCell(cells)

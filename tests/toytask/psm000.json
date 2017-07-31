@@ -29,21 +29,33 @@
             "colocate": true
         },
         "encoder": {
-            "cell.type": "GRUCell",
+            "cell.type": "BasicLSTMCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
+                "num_units": 0,
+                "forget_bias": 1.0,
+                "layer_norm": false,
+                "norm_gain": 1.0,
+                "norm_shift": 0.0,
+                "dropout_keep_prob": 0.8,
+                "dropout_prob_seed": null,
                 "num_layers": 1,
-                "hidden_size": 50
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0
             }
         },
         "decoder": {
-            "cell.type": "GRUCell",
+            "cell.type": "BasicLSTMCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
+                "num_units": 0,
+                "forget_bias": 1.0,
+                "layer_norm": false,
+                "norm_gain": 1.0,
+                "norm_shift": 0.0,
+                "dropout_keep_prob": 0.8,
+                "dropout_prob_seed": null,
                 "num_layers": 1,
-                "hidden_size": 50
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0
             }
         },
         "input.vocabulary_size": 100,

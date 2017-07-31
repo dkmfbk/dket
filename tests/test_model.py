@@ -119,7 +119,7 @@ class TestModel(tf.test.TestCase):
     def _test_default_train(self, mtype): 
         """Default test."""
 
-        tmodel = mtype.create(TRAIN, {})
+        tmodel = mtype(TRAIN, {})
         self.assertIsNone(tmodel.graph)
         self.assertIsNone(tmodel.global_step)
         self.assertIsNone(tmodel.inputs)
@@ -140,7 +140,7 @@ class TestModel(tf.test.TestCase):
     def _test_default_eval(self, mtype):
         """Test the model building in EVAL mode."""
 
-        tmodel = mtype.create(EVAL, {})
+        tmodel = mtype(EVAL, {})
         self.assertIsNone(tmodel.graph)
         self.assertIsNone(tmodel.global_step)
         self.assertIsNone(tmodel.inputs)
@@ -160,7 +160,7 @@ class TestModel(tf.test.TestCase):
 
     def _test_default_infer(self, mtype):
         """Test the model building in EVAL mode."""
-        tmodel = mtype.create(INFER, {})
+        tmodel = mtype(INFER, {})
         self.assertIsNone(tmodel.graph)
         self.assertIsNone(tmodel.global_step)
         self.assertIsNone(tmodel.inputs)

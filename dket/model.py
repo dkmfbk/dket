@@ -359,11 +359,11 @@ class PointingSoftmaxModel(Model):
             ('attention_size', 128),
             ('encoder', OrderedDict([
                 ('cell.type', 'GRUCell'),
-                ('cell.params', rnn.GRUCell.get_default_params()),
+                ('cell.params', OrderedDict()),
             ])),
             ('decoder', OrderedDict([
                 ('cell.type', 'GRUCell'),
-                ('cell.params', rnn.GRUCell.get_default_params()),
+                ('cell.params', OrderedDict()),
             ])),
             ('feedback_size', 0),
             ('parallel_iterations', 10)

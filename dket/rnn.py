@@ -130,3 +130,51 @@ class GRUCell(RNNCell):
     def _build_inner_cell(self):
         hidden_size = self._params[self.HIDDEN_SIZE]
         return tf.contrib.rnn.GRUCell(num_units=hidden_size)
+
+
+class BasicLSTMCell(RNNCell):
+    """LSTM recurrent cell."""
+
+    NUM_UNITS_PK = 'num_units'
+    FORGET_BIAS_PK = 'forget_bias'
+    LAYER_NORM_PK = 'layer_norm'
+    LAYER_NORM_GAIN_PK = 'norm_gain'
+    LAYER_NORM_SHIFT_PK = 'norm_shift'
+    RECURRENT_DROPOUT_KEEP_PROB = 'dropout_keep_prob'
+    RECURRENT_DROPOUT_PROB_SEED = 'dropout_prob_seed'
+
+
+    @classmethod
+    def get_default_params(cls):
+        params = OrderedDict()
+        params[cls.NUM_UNITS_PK] = 0
+        params[cls.FORGET_BIAS_PK] = 1.0
+        params[cls.LAYER_NORM_PK] = False
+        params[cls.LAYER_NORM_GAIN_PK] = 1.0
+        params[cls.LAYER_NORM_SHIFT_PK] = 0.0
+        params[cls.RECURRENT_DROPOUT_KEEP_PROB] = 1.0
+        params[cls.RECURRENT_DROPOUT_PROB_SEED] = None
+        for key, value in super(BasicLSTMCell, cls).get_default_params().items():
+            params[key] = value
+        return params
+
+    def _validate_params(self, params):
+        params = super(BasicLSTMCell, self)._validate_params(params)
+        if params[self.NUM_LAYERS_PK] <= 0:
+            raise ValueError('{} must be greater than 0.'.format(self.NUM_UNITS_PK))
+        prob = params[self.RECURRENT_DROPOUT_KEEP_PROB]
+        if prob < 0.0 or prob > 1.0:
+            raise ValueError(
+                '{} must be a float between 0.0 and 1.0.'\
+                    .format(self.RECURRENT_DROPOUT_KEEP_PROB))
+        return params
+
+    def _build_inner_cell(self):
+        return tf.contrib.rnn.LayerNormBasicLSTMCell(
+            num_units=self._params[self.NUM_UNITS_PK],
+            forget_bias=self._params[self.FORGET_BIAS_PK],
+            layer_norm=self._params[self.LAYER_NORM_PK],
+            norm_gain=self._params[self.LAYER_NORM_GAIN_PK],
+            norm_shift=self._params[self.LAYER_NORM_SHIFT_PK],
+            dropout_keep_prob=self._params[self.RECURRENT_DROPOUT_KEEP_PROB],
+            dropout_prob_seed=self._params[self.RECURRENT_DROPOUT_PROB_SEED])

@@ -1,6 +1,7 @@
 """Recurrent Neural Networks building blocks."""
 
 import abc
+from collections import OrderedDict
 import six
 
 import tensorflow as tf
@@ -60,11 +61,11 @@ class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.DROPOUT_INPUT_KEEP_PROB_PK: 1.0,
-            cls.DROPOUT_OUTPUT_KEEP_PROB_PK: 1.0,
-            cls.NUM_LAYERS_PK: 1,
-        }
+        return OrderedDict([
+            (cls.NUM_LAYERS_PK, 1),
+            (cls.DROPOUT_INPUT_KEEP_PROB_PK, 1.0),
+            (cls.DROPOUT_OUTPUT_KEEP_PROB_PK, 1.0),
+        ])
 
     def _validate_params(self, params):
         # Input dropout probability must be in [0.0, 1.0], default to 1.0.
@@ -113,8 +114,10 @@ class GRUCell(RNNCell):
 
     @classmethod
     def get_default_params(cls):
-        params = super(GRUCell, cls).get_default_params()
+        params = OrderedDict()
         params[cls.HIDDEN_SIZE] = 256
+        for key, value in super(GRUCell, cls).get_default_params().items():
+            params[key] = value
         return params
 
     def _validate_params(self, params):

@@ -1,6 +1,7 @@
 """Model implementation for the `dket` system."""
 
 import abc
+from collections import OrderedDict
 import logging
 import six
 
@@ -39,13 +40,13 @@ class ModelInputs(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.FILES_PK: '',
-            cls.EPOCHS_PK: 0,
-            cls.BATCH_SIZE_PK: 200,
-            cls.SHUFFLE_PK: True,
-            cls.SEED_PK: None,
-        }
+        return OrderedDict([
+            (cls.FILES_PK, ''),
+            (cls.EPOCHS_PK, 0),
+            (cls.BATCH_SIZE_PK, 200),
+            (cls.SHUFFLE_PK, True),
+            (cls.SEED_PK, None),
+        ])
 
     def _validate_params(self, params):
         logging.debug('validating the paramters.')
@@ -240,15 +241,15 @@ class Model(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.INPUT_CLASS_PK: 'dket.model.ModelInputs',
-            cls.INPUT_PARAMS_PK: ModelInputs.get_default_params(),
-            cls.INPUT_VOC_SIZE_PK: 0,
-            cls.OUTPUT_VOC_SIZE_PK: 0,
-            cls.LOSS_NAME_PK: 'dket.train.XEntropy',
-            cls.OPTIMIZER_CLASS_PK: 'dket.train.SGD',
-            cls.OPTIMIZER_PARAMS_PK: train.SGD.get_default_params()
-        }
+        return OrderedDict([
+            (cls.INPUT_VOC_SIZE_PK, 0),
+            (cls.OUTPUT_VOC_SIZE_PK, 0),
+            (cls.INPUT_CLASS_PK, 'dket.model.ModelInputs'),
+            (cls.INPUT_PARAMS_PK, ModelInputs.get_default_params()),
+            (cls.LOSS_NAME_PK, 'dket.train.XEntropy'),
+            (cls.OPTIMIZER_CLASS_PK, 'dket.train.SGD'),
+            (cls.OPTIMIZER_PARAMS_PK, train.SGD.get_default_params())
+        ])
 
     def _validate_params(self, params):
         return params
@@ -353,20 +354,20 @@ class PointingSoftmaxModel(Model):
     @classmethod
     def get_default_params(cls):
         base = super(PointingSoftmaxModel, cls).get_default_params()
-        params = {
-            'embedding_size': 128,
-            'attention_size': 128,
-            'encoder': {
-                'cell.type': 'GRUCell',
-                'cell.params': rnn.GRUCell.get_default_params(),
-            },
-            'decoder': {
-                'cell.type': 'GRUCell',
-                'cell.params': rnn.GRUCell.get_default_params(),
-            },
-            'feedback_size': 0,
-            'parallel_iterations': 10
-        }
+        params = OrderedDict([
+            ('embedding_size', 128),
+            ('attention_size', 128),
+            ('encoder', OrderedDict([
+                ('cell.type', 'GRUCell'),
+                ('cell.params', rnn.GRUCell.get_default_params()),
+            ])),
+            ('decoder', OrderedDict([
+                ('cell.type', 'GRUCell'),
+                ('cell.params', rnn.GRUCell.get_default_params()),
+            ])),
+            ('feedback_size', 0),
+            ('parallel_iterations', 10)
+        ])
         base.update(params)
         return base
 

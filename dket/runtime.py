@@ -1,6 +1,7 @@
 """Runtime infrastructure for training and evaluating dket models."""
 
 import copy
+from collections import OrderedDict
 import json
 import logging
 import time
@@ -111,19 +112,19 @@ class Experiment(object):
     @classmethod
     def get_default_config(cls):
         """Gets the default configuration settings."""
-        return {
-            cls.NAME_KEY: '',
-            cls.LOGDIR_KEY: '',
-            cls.TRAIN_FILES_KEY: '',
-            cls.TRAIN_STEPS_KEY: 0,
-            cls.TRAIN_CKPT_EVERY_KEY: 1,
-            cls.TRAIN_DEVICE_KEY: 'GPU',
-            cls.EVAL_FILES_KEY: '',
-            cls.EVAL_DUMP_KEY: True,
-            cls.EVAL_DEVICE_KEY: 'CPU',
-            cls.MODEL_CLASS_KEY: '',
-            cls.MODEL_PARAMS_KEY: {}
-        }
+        return OrderedDict([
+            (cls.NAME_KEY, ''),
+            (cls.LOGDIR_KEY, ''),
+            (cls.TRAIN_FILES_KEY, ''),
+            (cls.TRAIN_STEPS_KEY, 0),
+            (cls.TRAIN_CKPT_EVERY_KEY, 1),
+            (cls.TRAIN_DEVICE_KEY, 'GPU'),
+            (cls.EVAL_FILES_KEY, ''),
+            (cls.EVAL_DUMP_KEY, True),
+            (cls.EVAL_DEVICE_KEY, 'CPU'),
+            (cls.MODEL_CLASS_KEY, ''),
+            (cls.MODEL_PARAMS_KEY, OrderedDict)
+        ])
 
     @staticmethod
     def _abs_file_paths(base, patterns):

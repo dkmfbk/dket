@@ -156,8 +156,10 @@ class Experiment(object):
         if not os.path.isabs(logdir):
             logging.info('trying to build an absolute path for logdir %s', logdir)
             logdir = os.path.abspath(os.path.join(basedir, logdir))
-            logdir = os.path.join(logdir, name)
-
+        
+        logdir = os.path.join(logdir, name)
+        logging.info('experiment results will be loggedd to: %s', logdir)
+        
         if os.path.exists(logdir):
             if force:
                 logging.info('removing existing logdir %s and recreating.', logdir)

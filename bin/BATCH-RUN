@@ -1,8 +1,8 @@
 # !/bin/bash
 
 BASEDIR='experiments'
-IDS=(pilot-000)
-STORAGE='STORAGGIO'
+IDS=()
+STORAGE
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";

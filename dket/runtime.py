@@ -134,7 +134,7 @@ class Experiment(object):
             for p in patterns.split(',')])
 
     @classmethod
-    def load(cls, config, force=False):
+    def load(cls, config, logdir=None, force=False):
         """Load an experiment from logdir containing only a json config file."""
         if not config:
             raise ValueError('Experiment configuration must be specified.')
@@ -143,9 +143,21 @@ class Experiment(object):
         config = json.load(open(config))
         
         name = config[cls.NAME_KEY]
+
+        if logdir:
+            logging.warning('overwriting logdir with %s', logdir)
+            config[cls.LOGDIR_KEY] = logdir
+
         logdir = config[cls.LOGDIR_KEY]
-        logdir = os.path.abspath(os.path.join(basedir, logdir))
-        logdir = os.path.join(logdir, name)
+        if not logdir:
+            logging.warning('no logdir set, assuming %s', basedir)
+            logdir = basedir
+
+        if not os.path.isabs(logdir):
+            logging.info('trying to build an absolute path for logdir %s', logdir)
+            logdir = os.path.abspath(os.path.join(basedir, logdir))
+            logdir = os.path.join(logdir, name)
+
         if os.path.exists(logdir):
             if force:
                 logging.info('removing existing logdir %s and recreating.', logdir)

@@ -1,10 +1,10 @@
 {
     "name": "pointsoftmax-000",
     "logdir": ".",
-    "train.steps": 100,
-    "train.device": "GPU",
+    "train.steps": 20,
+    "train.checkpoint_every": 5,
     "train.files": "./dataset-*.rio",
-    "train.checkpoint_every": 10,
+    "train.device": "GPU",
     "eval.files": "./dataset-*.rio",
     "eval.dump": true,
     "eval.device": "CPU",
@@ -12,11 +12,11 @@
     "model.params": {
         "input.class": "dket.model.ModelInputs",
         "input.params": {
-            "epochs": 0,
-            "files": "",
+            "shuffle": true,
             "seed": null,
-            "batch_size": 20,
-            "shuffle": true
+            "files": "",
+            "epochs": 0,
+            "batch_size": 200
         },
         "loss.name": "dket.train.XEntropy",
         "optimizer.class": "SGD",
@@ -24,17 +24,45 @@
             "lr": 0.1,
             "lr.decay.class": "",
             "lr.decay.params": {},
-            "clip.params": {},
             "clip.class": "",
+            "clip.params": {},
             "colocate": true
+        },
+        "encoder": {
+            "cell.type": "BasicLSTMCell",
+            "cell.params": {
+                "num_units": 0,
+                "forget_bias": 1.0,
+                "layer_norm": false,
+                "norm_gain": 1.0,
+                "norm_shift": 0.0,
+                "dropout_keep_prob": 0.8,
+                "dropout_prob_seed": null,
+                "num_layers": 1,
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0
+            }
+        },
+        "decoder": {
+            "cell.type": "BasicLSTMCell",
+            "cell.params": {
+                "num_units": 0,
+                "forget_bias": 1.0,
+                "layer_norm": false,
+                "norm_gain": 1.0,
+                "norm_shift": 0.0,
+                "dropout_keep_prob": 0.8,
+                "dropout_prob_seed": null,
+                "num_layers": 1,
+                "dropout_input.keep_prob": 1.0,
+                "dropout_output.keep_prob": 1.0
+            }
         },
         "input.vocabulary_size": 100,
         "output.vocabulary_size": 20,
+        "embedding_size": 30,
+        "attention_size": 30,
         "feedback_size": 27,
-        "embedding_size": 128,
-        "attention_size": 128,
-        "hidden_size": 256,
-        "recurrent_cell": "GRU",
         "parallel_iterations": 10
     }
 }

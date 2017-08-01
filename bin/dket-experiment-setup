@@ -63,7 +63,7 @@ def main():
                 .format(fname))
 
     if ARGS.clone_from:
-        reference = json.load(open(os.path.join(ARGS.clone_from, CFG)))
+        reference = json.load(open(ARGS.clone_from))
         config = clone(
             reference=reference,
             name=ARGS.name or fname,

@@ -1,6 +1,7 @@
 """Model implementation for the `dket` system."""
 
 import abc
+from collections import OrderedDict
 import logging
 import six
 
@@ -13,6 +14,7 @@ from dket import configurable
 from dket import data
 from dket import ops
 from dket import train
+from dket import rnn
 
 class ModelInputs(configurable.Configurable):
     """Dket model input tensors parser."""
@@ -38,13 +40,13 @@ class ModelInputs(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.FILES_PK: '',
-            cls.EPOCHS_PK: 0,
-            cls.BATCH_SIZE_PK: 200,
-            cls.SHUFFLE_PK: True,
-            cls.SEED_PK: None,
-        }
+        return OrderedDict([
+            (cls.FILES_PK, ''),
+            (cls.EPOCHS_PK, 0),
+            (cls.BATCH_SIZE_PK, 200),
+            (cls.SHUFFLE_PK, True),
+            (cls.SEED_PK, None),
+        ])
 
     def _validate_params(self, params):
         logging.debug('validating the paramters.')
@@ -239,15 +241,15 @@ class Model(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.INPUT_CLASS_PK: 'dket.model.ModelInputs',
-            cls.INPUT_PARAMS_PK: ModelInputs.get_default_params(),
-            cls.INPUT_VOC_SIZE_PK: 0,
-            cls.OUTPUT_VOC_SIZE_PK: 0,
-            cls.LOSS_NAME_PK: 'dket.train.XEntropy',
-            cls.OPTIMIZER_CLASS_PK: 'dket.train.SGD',
-            cls.OPTIMIZER_PARAMS_PK: train.SGD.get_default_params()
-        }
+        return OrderedDict([
+            (cls.INPUT_VOC_SIZE_PK, 0),
+            (cls.OUTPUT_VOC_SIZE_PK, 0),
+            (cls.INPUT_CLASS_PK, 'dket.model.ModelInputs'),
+            (cls.INPUT_PARAMS_PK, ModelInputs.get_default_params()),
+            (cls.LOSS_NAME_PK, 'dket.train.XEntropy'),
+            (cls.OPTIMIZER_CLASS_PK, 'dket.train.SGD'),
+            (cls.OPTIMIZER_PARAMS_PK, train.SGD.get_default_params())
+        ])
 
     def _validate_params(self, params):
         return params
@@ -352,14 +354,20 @@ class PointingSoftmaxModel(Model):
     @classmethod
     def get_default_params(cls):
         base = super(PointingSoftmaxModel, cls).get_default_params()
-        params = {
-            'embedding_size': 128,
-            'attention_size': 128,
-            'recurrent_cell': 'GRU',
-            'hidden_size': 256,
-            'feedback_size': 0,
-            'parallel_iterations': 10
-        }
+        params = OrderedDict([
+            ('embedding_size', 128),
+            ('attention_size', 128),
+            ('encoder', OrderedDict([
+                ('cell.type', 'GRUCell'),
+                ('cell.params', OrderedDict()),
+            ])),
+            ('decoder', OrderedDict([
+                ('cell.type', 'GRUCell'),
+                ('cell.params', OrderedDict()),
+            ])),
+            ('feedback_size', 0),
+            ('parallel_iterations', 10)
+        ])
         base.update(params)
         return base
 
@@ -380,17 +388,23 @@ class PointingSoftmaxModel(Model):
 
             batch_dim = utils.get_dimension(words, 0)
             with tf.variable_scope('Encoder'):  # pylint: disable=E1129
-                cell = tf.contrib.rnn.GRUCell(self._params['hidden_size'])
-                state = cell.zero_state(batch_dim, tf.float32)
+                encoder_params = self._params['encoder']
+                encoder_cell_type = encoder_params['cell.type']
+                encoder_cell_params = encoder_params['cell.params']
+                encoder_cell = configurable.factory(encoder_cell_type, self._mode, encoder_cell_params, rnn)
+                state = encoder_cell.zero_state(batch_dim, tf.float32)
                 encoder_out, _ = tf.nn.dynamic_rnn(
-                    cell=cell,
+                    cell=encoder_cell,
                     initial_state=state,
                     inputs=inputs,
                     sequence_length=slengths,
                     parallel_iterations=self._params['parallel_iterations'])
 
             with tf.variable_scope('Decoder'):  # pylint: disable=E1129
-                decoder_cell = tf.contrib.rnn.GRUCell(self._params['hidden_size'])
+                decoder_params = self._params['decoder']
+                decoder_cell_type = decoder_params['cell.type']
+                decoder_cell_params = decoder_params['cell.params']
+                decoder_cell = configurable.factory(decoder_cell_type, self._mode, decoder_cell_params, rnn)
                 attention = layers.BahdanauAttention(
                     states=encoder_out,
                     inner_size=self._params['attention_size'],
@@ -400,7 +414,7 @@ class PointingSoftmaxModel(Model):
                     sequence_length=slengths)
                 output = layers.PointingSoftmaxOutput(
                     shortlist_size=self._params[self.OUTPUT_VOC_SIZE_PK],
-                    decoder_out_size=cell.output_size,
+                    decoder_out_size=decoder_cell.output_size,
                     state_size=encoder_out.shape[-1].value,
                     trainable=trainable)
                 

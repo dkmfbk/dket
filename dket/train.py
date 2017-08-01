@@ -1,8 +1,10 @@
 """Training utilities."""
 
 import abc
+from collections import OrderedDict
 import logging
 import sys
+
 
 import six
 import tensorflow as tf
@@ -85,11 +87,11 @@ class ExponentialLRDecayFn(LRDecayFn):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.DECAY_STEPS_PK: 1000,
-            cls.DECAY_RATE_PK: 0.96,
-            cls.STAIRCASE_PK: True,
-        }
+        return OrderedDict([
+            (cls.DECAY_STEPS_PK, 1000),
+            (cls.DECAY_RATE_PK, 0.96),
+            (cls.STAIRCASE_PK, True),
+        ])
 
     def _validate_params(self, params):
         decay_steps = params[self.DECAY_STEPS_PK]
@@ -151,10 +153,10 @@ class GradClipByValueFn(GradClipFn):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            cls.MIN_VALUE_PK: -5.0,
-            cls.MAX_VALUE_PK: 5.0
-        }
+        return OrderedDict([
+            (cls.MIN_VALUE_PK, -5.0),
+            (cls.MAX_VALUE_PK, 5.0)
+        ])
 
     def _validate_params(self, params):
         min_value = params[self.MIN_VALUE_PK]
@@ -231,14 +233,14 @@ class Optimizer(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return {
-            'lr': 0.1,
-            'lr.decay.class': '',
-            'lr.decay.params': {},
-            'clip.class': '',
-            'clip.params': {},
-            'colocate': True,
-        }
+        return OrderedDict([
+            (cls.LR_PK, 0.1),
+            (cls.LR_DECAY_CLASS_PK, ''),
+            (cls.LR_DECAY_PARAMS_PK, OrderedDict()),
+            (cls.CLIP_GRADS_CLASS_PK, ''),
+            (cls.CLIP_GRADS_PARAMS_PK, OrderedDict()),
+            (cls.COLOCATE_PK, True)
+        ])
 
     @abc.abstractmethod
     def _validate_params(self, params):

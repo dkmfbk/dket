@@ -89,15 +89,17 @@ class TestOptimizer(tf.test.TestCase):
         clip.side_effect = _clip
 
         clzs = set([decay_clz, clip_clz])
-        def _factory(clz, mode, params):
+        def _factory(clz, mode, params, module):
             self.assertEqual(mode, TRAIN)
             self.assertIn(clz, clzs)
             clzs.remove(clz)
             if clz == decay_clz:
                 self.assertEqual(decay_params, params)
+                self.assertEqual(train, module)
                 return decay
             if clz == clip_clz:
                 self.assertEqual(clip_params, params)
+                self.assertEqual(train, module)
                 return clip
         factory.side_effect = _factory
 

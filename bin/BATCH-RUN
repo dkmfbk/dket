@@ -1,0 +1,36 @@
+# !/bin/bash
+
+BASEDIR='experiments'
+IDS=(pilot-000)
+STORAGE='STORAGGIO'
+
+if [ -z ${STORAGE+x} ]; then
+    echo "no storage set.";
+    echo "please, set it to the same of basedir `$BASEDIR` if you want the storage to be ignored."
+    exit 1
+fi
+
+for ID in "${IDS[@]}"
+do
+    CONFIG=$(pwd)/$BASEDIR/$ID'.json'
+    LOGDIR=$(pwd)/$BASEDIR
+    ./bin/dket-experiment-run --config $CONFIG\
+        --log-level DEBUG\
+        --log-to-stderr --force\
+        --logdir $LOGDIR
+    DUMP=$LOGDIR/$ID/eval/dump
+    echo 'compressing and removing dumps.'
+    tar -zcvf $DUMP.tar.gz $DUMP
+    gvfs-trash $DUMP
+
+    if [ "$STORAGE" = "$BASEDIR" ]; then
+        echo "storage is the same of basedir (no storage). ";
+    else
+        echo "STORAGE IS $(pwd)/$STORAGE"
+        cp $CONFIG $(pwd)/$STORAGE
+        mv $CONFIG'.log' $(pwd)/$STORAGE
+        mv $(pwd)/$BASEDIR/$ID $(pwd)/$STORAGE
+    fi
+
+done
+echo 'done'

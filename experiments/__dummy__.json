@@ -1,5 +1,5 @@
 {
-    "name": "DUMMY-EXP",
+    "name": "__dummy__",
     "logdir": ".",
     "train.steps": 3,
     "train.checkpoint_every": 1,

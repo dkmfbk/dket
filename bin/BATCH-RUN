@@ -11,35 +11,33 @@ if [ -z ${STORAGE+x} ]; then
     exit 1
 fi
 
+source .py3venv/bin/activate
 for ID in "${IDS[@]}"
 do
 
     BASEDIR=`cd $BASEDIR; pwd`
     STORAGE=`cd $STORAGE; pwd`
-    
+
     CONFIG=$BASEDIR/$ID'.json'
     LOGDIR=$BASEDIR
-    /bin/dket-experiment-run --config $CONFIG\
+    ./bin/dket-experiment-run --config $CONFIG\
         --log-level DEBUG\
         --log-to-stderr --force\
         --logdir $LOGDIR
-    
+
     if [ "$STORAGE" = "$BASEDIR" ]; then
         echo "storage is the same of basedir (no storage). ";
     else
-        echo "STORAGE IS $STORAGE"
-    	echo 'compressing and removing dumps.'
-	cd $LOGDIR/$ID/eval
-	echo $(pwd)
+	    cd $LOGDIR/$ID/eval
         tar -zcvf dump.tar.gz dump
     	gvfs-trash dump
-	cd $BASE
-	echo $(pwd)
-	echo 'cleaning up $BASEDIR/$ID'
+    	cd $BASE
+
         cp $CONFIG $STORAGE
         mv $CONFIG'.log' $STORAGE
         mv $BASEDIR/$ID $STORAGE
     fi
 
 done
+deactivate
 echo 'done'

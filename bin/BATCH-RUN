@@ -2,8 +2,8 @@
 
 BASE=$(pwd)
 BASEDIR='experiments'
-IDS=(pilot-006)
-STORAGE='/home/petrucci/data'
+IDS=(__dummy__)
+STORAGE
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";

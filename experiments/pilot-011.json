@@ -1,0 +1,56 @@
+{
+    "name": "pilot-011",
+    "logdir": ".",
+    "train.checkpoint_every": 100,
+    "eval.files": "../datasets/20k/validation.rio",
+    "train.files": "../datasets/20k/train.rio",
+    "model.params": {
+        "embedding_size": 256,
+        "encoder": {
+            "cell.params": {
+                "num_layers": 4,
+                "hidden_size": 512,
+                "dropout_output.keep_prob": 0.8,
+                "dropout_input.keep_prob": 0.8
+            },
+            "cell.type": "GRUCell"
+        },
+        "input.params": {
+            "shuffle": true,
+            "batch_size": 200,
+            "seed": 23,
+            "files": "",
+            "epochs": 0
+        },
+        "parallel_iterations": 10,
+        "output.vocabulary_size": 16,
+        "decoder": {
+            "cell.params": {
+                "num_layers": 4,
+                "hidden_size": 512,
+                "dropout_output.keep_prob": 0.8,
+                "dropout_input.keep_prob": 0.8
+            },
+            "cell.type": "GRUCell"
+        },
+        "loss.name": "dket.train.XEntropy",
+        "input.vocabulary_size": 5039,
+        "input.class": "dket.model.ModelInputs",
+        "feedback_size": 30,
+        "attention_size": 256,
+        "optimizer.params": {
+            "colocate": true,
+            "lr": 0.1,
+            "clip.params": {},
+            "lr.decay.params": {},
+            "lr.decay.class": "",
+            "clip.class": ""
+        },
+        "optimizer.class": "SGD"
+    },
+    "model.class": "PointingSoftmaxModel",
+    "train.device": "GPU",
+    "eval.device": "CPU",
+    "train.steps": 20000,
+    "eval.dump": true
+}

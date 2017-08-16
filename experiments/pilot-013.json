@@ -37,7 +37,7 @@
                 "dropout_input.keep_prob": 0.8,
                 "num_layers": 3,
                 "dropout_output.keep_prob": 0.8,
-                "hidden_size": 512
+                "hidden_size": 1024
             },
             "cell.type": "GRUCell"
         },

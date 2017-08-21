@@ -27,8 +27,19 @@ def load_vocabulary(fpath):
 
 
 def decode_sentence(idxs, vocabulary):
-    """Decode a list of words indexes into a sentence."""
-    return [vocabulary.word(idx) for idx in idxs]
+    """Decode a list of words indexes into a sentence.
+    
+    If a word is <UNK> it is decoded with <UNK>@[pos] where
+    `pos` is the 0-based position of the word within the sentence.
+    """
+    words = []
+    for pos, idx in enumerate(idxs):
+        word = vocabulary.word(idx)
+        if word == lvoc.UNKVocabulary.UNK:
+            word = word + '@' + str(pos)
+        words.append(word)
+    return words
+
 
 
 def decode_formula(idxs, shortlist, sentence):

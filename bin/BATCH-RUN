@@ -1,7 +1,8 @@
-# !/bin/bash
+# !/usr/bin/env bash
 
+BASE=$(pwd)
 BASEDIR='experiments'
-IDS=()
+IDS=(__dummy__)
 STORAGE
 
 if [ -z ${STORAGE+x} ]; then
@@ -10,27 +11,33 @@ if [ -z ${STORAGE+x} ]; then
     exit 1
 fi
 
+source .py3venv/bin/activate
 for ID in "${IDS[@]}"
 do
-    CONFIG=$(pwd)/$BASEDIR/$ID'.json'
-    LOGDIR=$(pwd)/$BASEDIR
+
+    BASEDIR=`cd $BASEDIR; pwd`
+    STORAGE=`cd $STORAGE; pwd`
+
+    CONFIG=$BASEDIR/$ID'.json'
+    LOGDIR=$BASEDIR
     ./bin/dket-experiment-run --config $CONFIG\
         --log-level DEBUG\
         --log-to-stderr --force\
         --logdir $LOGDIR
-    DUMP=$LOGDIR/$ID/eval/dump
-    echo 'compressing and removing dumps.'
-    tar -zcvf $DUMP.tar.gz $DUMP
-    gvfs-trash $DUMP
 
     if [ "$STORAGE" = "$BASEDIR" ]; then
         echo "storage is the same of basedir (no storage). ";
     else
-        echo "STORAGE IS $(pwd)/$STORAGE"
-        cp $CONFIG $(pwd)/$STORAGE
-        mv $CONFIG'.log' $(pwd)/$STORAGE
-        mv $(pwd)/$BASEDIR/$ID $(pwd)/$STORAGE
+	    cd $LOGDIR/$ID/eval
+        tar -zcvf dump.tar.gz dump
+    	gvfs-trash dump
+    	cd $BASE
+
+        cp $CONFIG $STORAGE
+        mv $CONFIG'.log' $STORAGE
+        mv $BASEDIR/$ID $STORAGE
     fi
 
 done
+deactivate
 echo 'done'

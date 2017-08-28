@@ -46,8 +46,8 @@
                 "hidden_size": 256
             }
         },
-        "input.vocabulary_size": 5040,
-        "output.vocabulary_size": 17,
+        "input.vocabulary_size": 5164,
+        "output.vocabulary_size": 18,
         "feedback_size": 30,
         "embedding_size": 128,
         "attention_size": 128,

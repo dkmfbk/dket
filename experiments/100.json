@@ -1,56 +1,56 @@
 {
-    "model.class": "PointingSoftmaxModel",
-    "train.steps": 20000,
     "name": "pilot-012",
+    "logdir": ".",
+    "train.steps": 20000,
+    "train.checkpoint_every": 100,
+    "train.files": "../datasets/20k.NN10.JJ05.VB05/train.rio",
     "train.device": "GPU",
-    "eval.files": "../datasets/20k/validation.rio",
-    "model.params": {
-        "feedback_size": 30,
-        "optimizer.params": {
-            "clip.class": "",
-            "lr": 0.2,
-            "clip.params": {},
-            "lr.decay.class": "",
-            "colocate": true,
-            "lr.decay.params": {}
-        },
-        "decoder": {
-            "cell.params": {
-                "num_layers": 3,
-                "dropout_output.keep_prob": 0.8,
-                "hidden_size": 512,
-                "dropout_input.keep_prob": 0.8
-            },
-            "cell.type": "GRUCell"
-        },
-        "input.class": "dket.model.ModelInputs",
-        "input.vocabulary_size": 5040,
-        "embedding_size": 256,
-        "input.params": {
-            "files": "",
-            "shuffle": true,
-            "seed": 23,
-            "batch_size": 200,
-            "epochs": 0
-        },
-        "optimizer.class": "SGD",
-        "parallel_iterations": 10,
-        "attention_size": 256,
-        "encoder": {
-            "cell.params": {
-                "num_layers": 3,
-                "dropout_output.keep_prob": 0.8,
-                "hidden_size": 512,
-                "dropout_input.keep_prob": 0.8
-            },
-            "cell.type": "GRUCell"
-        },
-        "loss.name": "dket.train.XEntropy",
-        "output.vocabulary_size": 17
-    },
+    "eval.files": "../datasets/20k.NN10.JJ05.VB05/validation.rio",
     "eval.device": "CPU",
     "eval.dump": true,
-    "train.checkpoint_every": 100,
-    "logdir": ".",
-    "train.files": "../datasets/20k/train.rio"
+    "model.class": "PointingSoftmaxModel",
+    "model.params": {
+        "input.class": "dket.model.ModelInputs",
+        "input.params": {
+            "epochs": 0,
+            "files": "",
+            "batch_size": 200,
+            "shuffle": true,
+            "seed": 23
+        },
+        "loss.name": "dket.train.XEntropy",
+        "optimizer.class": "SGD",
+        "optimizer.params": {
+            "lr": 0.2,
+            "lr.decay.class": "",
+            "lr.decay.params": {},
+            "clip.class": "",
+            "clip.params": {},
+            "colocate": true
+        },
+        "encoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
+            }
+        },
+        "decoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
+            }
+        },
+        "input.vocabulary_size": 5164,
+        "output.vocabulary_size": 18,
+        "feedback_size": 30,
+        "embedding_size": 256,
+        "attention_size": 256,
+        "parallel_iterations": 10
+    }
 }

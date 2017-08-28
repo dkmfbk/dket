@@ -1,7 +1,7 @@
 {
     "model.class": "PointingSoftmaxModel",
     "train.steps": 20000,
-    "name": "pilot-012",
+    "name": "012",
     "train.device": "GPU",
     "eval.files": "../datasets/20k/validation.rio",
     "model.params": {

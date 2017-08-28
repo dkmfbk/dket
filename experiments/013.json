@@ -49,7 +49,7 @@
             "shuffle": true
         }
     },
-    "name": "pilot-013",
+    "name": "013",
     "train.steps": 20000,
     "train.checkpoint_every": 100,
     "eval.files": "../datasets/20k/validation.rio"

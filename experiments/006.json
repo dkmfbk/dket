@@ -45,7 +45,7 @@
         }
     },
     "model.class": "PointingSoftmaxModel",
-    "name": "pilot-006",
+    "name": "006",
     "eval.device": "CPU",
     "train.files": "../datasets/20k/train.rio",
     "eval.files": "../datasets/20k/validation.rio",

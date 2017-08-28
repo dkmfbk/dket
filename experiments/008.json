@@ -2,7 +2,7 @@
     "model.class": "PointingSoftmaxModel",
     "eval.files": "../datasets/20k/validation.rio",
     "train.files": "../datasets/20k/train.rio",
-    "name": "pilot-008",
+    "name": "008",
     "train.checkpoint_every": 100,
     "train.steps": 30000,
     "logdir": ".",

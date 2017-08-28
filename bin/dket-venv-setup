@@ -24,7 +24,7 @@ echo 'creating virtual env...'
 virtualenv $VENV_DIR --python=$PYTHON
 source $VENV_DIR/bin/activate
 echo 'installing tensorflow version: '$TF_VERSION
-pip install $TF_VERSION
+pip install $TF_VERSION==1.2.0
 pip install -r $REQUIREMENTS --process-dependency-links
 echo 'removing dket.egg-info directory'
 rm -rf dket.egg-info

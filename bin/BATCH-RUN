@@ -2,8 +2,8 @@
 
 BASE=$(pwd)
 BASEDIR='experiments'
-IDS=(__dummy__)
-STORAGE
+IDS=(012 100)
+STORAGE='/home/petrucci/storage'
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";
@@ -28,10 +28,10 @@ do
     if [ "$STORAGE" = "$BASEDIR" ]; then
         echo "storage is the same of basedir (no storage). ";
     else
-	    cd $LOGDIR/$ID/eval
+	cd $LOGDIR/$ID/eval
         tar -zcvf dump.tar.gz dump
-    	gvfs-trash dump
-    	cd $BASE
+	gvfs-trash dump
+        cd $BASE
 
         cp $CONFIG $STORAGE
         mv $CONFIG'.log' $STORAGE

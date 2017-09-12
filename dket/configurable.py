@@ -29,12 +29,12 @@ def merge(default, params):
         # If the default param value is None, issue a
         # warning and overwrite it with the actual value.
         if dvalue is None:
-            warnings.warn('default value for key {} is `None`'.format(key))
+            warnings.warn('default value for key `{}` is `None`'.format(key))
             merged[key] = value
             continue
 
         if value is None:
-            warnings.warn('default value for key {} is `None`'.format(key))
+            warnings.warn('default value for key `{}` is `None`'.format(key))
             merged[key] = value
             continue
 

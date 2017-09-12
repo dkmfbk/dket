@@ -1,11 +1,11 @@
 {
-    "name": "pilot-012",
+    "name": "03-open-voc-refset",
     "logdir": ".",
     "train.steps": 20000,
     "train.checkpoint_every": 100,
-    "train.files": "../datasets/20k.NN10.JJ05.VB05/train.rio",
+    "train.files": "../datasets/20k.NN10.JJ05.VB05-refset/train.rio",
     "train.device": "GPU",
-    "eval.files": "../datasets/20k.NN10.JJ05.VB05/validation.rio",
+    "eval.files": "../datasets/20k.NN10.JJ05.VB05-refset/validation.rio",
     "eval.device": "CPU",
     "eval.dump": true,
     "model.class": "PointingSoftmaxModel",
@@ -47,7 +47,7 @@
             }
         },
         "input.vocabulary_size": 5164,
-        "output.vocabulary_size": 18,
+        "output.vocabulary_size": 19,
         "feedback_size": 30,
         "embedding_size": 256,
         "attention_size": 256,

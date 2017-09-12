@@ -200,7 +200,7 @@ def read_from_files(file_patterns, shuffle=True, num_epochs=None, seed=None):
 def inputs(file_patterns, batch_size, shuffle=True, num_epochs=None, seed=None):
     """Build the input pipeline."""
     tensors = read_from_files(file_patterns, shuffle, num_epochs, seed)
-    tensors = linput.shuffle_batch(tensors, batch_size, seed=seed)
+    tensors = linput.shuffle_batch(tensors, batch_size, seed=seed, allow_smaller_final_batch=True)
     tensors = {
         WORDS_KEY: tf.cast(tensors[0], tf.int32, name=WORDS_KEY),
         SENTENCE_LENGTH_KEY: tf.cast(tensors[1], tf.int32, name=SENTENCE_LENGTH_KEY),

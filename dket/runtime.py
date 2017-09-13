@@ -139,10 +139,14 @@ class Experiment(object):
         if not config:
             raise ValueError('Experiment configuration must be specified.')
 
-        basedir, _ = tuple(os.path.split(config)) 
+        basedir, _ = tuple(os.path.split(config))
+        fname = os.path.splitext(os.path.basename(config))[0]
         config = json.load(open(config))
         
         name = config[cls.NAME_KEY]
+        if name != fname:
+            logging.warning('Found name %s for file %s; unsing %s.', name, fname, fname)
+            name = fname
 
         if logdir:
             logging.warning('overwriting logdir with %s', logdir)

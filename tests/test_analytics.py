@@ -40,5 +40,33 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(decoded_act, decoded_exp)
 
 
+    def test_unpad(self):
+        """Test the unpadding of a sequence."""
+        data = [
+            ([1, 2, 3, 4, 0, 0, 0], [1, 2, 3, 4, 0]),
+            ([1, 2, 3, 4, 5, 6, 7], [1, 2, 3, 4, 5, 6, 7]),
+            ([1, 2, 3, 4, 5, 6, 0], [1, 2, 3, 4, 5, 6, 0])
+        ]
+        padding = 0
+        for sequence, expected in data:
+            self.assertEqual(expected, analytics.unpad(sequence, padding))
+
+
+    def test_same_length(self):
+        """Test the same length function."""
+
+        data = [
+            ([], [], [], []),
+            ([0], [0], [0], [0]),
+            ([1, 2, 3, 4, 0], [1, 0, 0], [1, 2, 3, 4, 0], [1, 0, 0, 0, 0]),
+            ([1, 0, 0], [1, 2, 3, 4, 0], [1, 0, 0, 0, 0], [1, 2, 3, 4, 0]),
+        ]
+        for datum in data:
+            first, second, exp_first, exp_second = tuple(datum)
+            act_first, act_second = analytics.samelength(first, second)
+            self.assertEqual(exp_first, act_first)
+            self.assertEqual(exp_second, act_second)
+
+
 if __name__ == '__main__':
     unittest.main()

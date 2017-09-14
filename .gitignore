@@ -8,3 +8,5 @@ tests/toytask/pointsoftmax-000/eval
 experiments/**/*.log
 experiments/**/eval
 experiments/**/train
+DUMP
+.log

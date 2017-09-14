@@ -19,7 +19,7 @@
         "**/*.pyc": true,
         "**/__pycache__": true,
         ".py3venv": true,
-        "DUMP": true,
         ".vscode": true
-    }
+    },
+"editor.minimap.enabled": false
 }

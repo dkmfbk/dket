@@ -251,9 +251,9 @@ def process(dump_fp, vocabulary_fp, shortlist_fp, data_fp=None, force=False, equ
         fout.write('# VOCABULARY: ' + str(vocabulary_fp) + '\n')
         fout.write('# SHORTLIST: ' + str(shortlist_fp) + '\n')
         fout.write('#\n')
-        fout.write('# AVG. PER-FORMULA ACCURACY: {:.2f}'.format(pfacc) + '\n')
-        fout.write('# AVG. EDIT DISTANCE: {:.2f}'.format(avgedists) + '\n')
-        fout.write('# AVG. PER-TOKEN ACCURACY: {:.2f}'.format(accuracy) + '\n')
+        fout.write('# AVG. PER-FORMULA ACCURACY: {:.5f}'.format(pfacc) + '\n')
+        fout.write('# AVG. EDIT DISTANCE: {:.5f}'.format(avgedists) + '\n')
+        fout.write('# AVG. PER-TOKEN ACCURACY: {:.5f}'.format(accuracy) + '\n')
         fout.write('#\n')
         partial = 0.0
         fout.write('# ED\t#\t%\t% INC\n')

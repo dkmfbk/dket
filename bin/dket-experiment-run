@@ -4,6 +4,8 @@ import argparse
 import logging
 import os
 import sys
+import time
+import datetime
 
 from dket import logutils
 from dket import runtime
@@ -39,7 +41,12 @@ if __name__ == '__main__':
     logging.debug('--log-to-stderr: %s', str(ARGS.log_to_stderr))
     CONFIG = os.path.abspath(ARGS.config)
     try:
+        START = time.time()
         runtime.Experiment.load(CONFIG, logdir=ARGS.logdir, force=ARGS.force).run()
+        END = time.time()
+        ELAPSED = END - START
+        ELAPSED = datetime.timedelta(seconds=ELAPSED)
+        logging.info('Total running time: %s', str(ELAPSED))
     except Exception as ex:  # pylint: disable=W0703
         logging.exception(str(ex))
         sys.exit(1)

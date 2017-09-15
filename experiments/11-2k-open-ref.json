@@ -1,7 +1,7 @@
 {
     "name": "11-2k-open-ref",
     "logdir": ".",
-    "train.steps": 1000,
+    "train.steps": 2000,
     "train.checkpoint_every": 50,
     "train.files": "../datasets/2k-open-ref/train.rio",
     "train.device": "GPU",

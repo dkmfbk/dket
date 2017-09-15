@@ -1,7 +1,7 @@
 {
     "name": "15-5k-open-ref-10-36-53",
     "logdir": ".",
-    "train.steps": 2500,
+    "train.steps": 5000,
     "train.checkpoint_every": 50,
     "train.files": "../datasets/5k-open-ref-10-36-53/train.rio",
     "train.device": "GPU",

@@ -1,8 +1,8 @@
 {
     "name": "__dummy__",
     "logdir": ".",
-    "train.steps": 30,
-    "train.checkpoint_every": 10,
+    "train.steps": 3,
+    "train.checkpoint_every": 1,
     "train.files": "../datasets/20k-open-ref/train.rio",
     "train.device": "GPU",
     "eval.files": "../datasets/20k-open-ref/validation.rio",

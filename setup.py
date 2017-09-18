@@ -14,7 +14,7 @@ setup(name='dket',
           'editdistance==0.3.1',
           'liteflow==0.1.0',
           'six==1.10.0',
-          'edit-distance==1.0.0'
+          'edit-distance==1.0.1'
           
       ],
       dependency_links=[

@@ -90,8 +90,10 @@ class ModelInputs(configurable.Configurable):
         if params[self.SHUFFLE_PK] is None:
             logging.debug('applying automating shuffling policy.')
             params[self.SHUFFLE_PK] = self._mode == tf.contrib.learn.ModeKeys.TRAIN
+        if not self._mode == tf.contrib.learn.ModeKeys.TRAIN:
+            logging.info('unseting dataset shuffling.')
+            params[self.SHUFFLE_PK] = False
         logging.debug('shuffle: %s', str(params[self.SHUFFLE_PK]))
-
         # The random seed must be an integer or `None`.
         logging.debug('seed: %s', str(params[self.SEED_PK]))
 

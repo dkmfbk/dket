@@ -3,9 +3,9 @@
     "logdir": ".",
     "train.steps": 3,
     "train.checkpoint_every": 1,
-    "train.files": "../datasets/20k.NN10.JJ05.VB05-refset-ext/train.rio",
+    "train.files": "../datasets/20k-open-ref/train.rio",
     "train.device": "GPU",
-    "eval.files": "../datasets/20k.NN10.JJ05.VB05-refset-ext/validation.rio",
+    "eval.files": "../datasets/20k-open-ref/validation.rio",
     "eval.dump": true,
     "eval.device": "CPU",
     "model.class": "PointingSoftmaxModel",
@@ -46,7 +46,7 @@
                 "hidden_size": 256
             }
         },
-        "input.vocabulary_size": 5164,
+        "input.vocabulary_size": 5157,
         "output.vocabulary_size": 19,
         "feedback_size": 30,
         "embedding_size": 128,

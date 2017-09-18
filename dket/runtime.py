@@ -139,10 +139,14 @@ class Experiment(object):
         if not config:
             raise ValueError('Experiment configuration must be specified.')
 
-        basedir, _ = tuple(os.path.split(config)) 
+        basedir, _ = tuple(os.path.split(config))
+        fname = os.path.splitext(os.path.basename(config))[0]
         config = json.load(open(config))
         
         name = config[cls.NAME_KEY]
+        if name != fname:
+            logging.warning('Found name %s for file %s; unsing %s.', name, fname, fname)
+            name = fname
 
         if logdir:
             logging.warning('overwriting logdir with %s', logdir)
@@ -292,7 +296,7 @@ class Training(object):
 
     def _summarize(self, step, loss, summary, metrics, ckpt=None):
         self._writer.add_summary(summary, global_step=step)
-        fmt = '{}: {:.2f}'
+        fmt = '{}: {:.5f}'
         message = ', '.join(
             ['global step: {}'.format(step),
              fmt.format(_LOSS_SUMMARY_KEY, loss)] + 
@@ -444,7 +448,7 @@ class Evaluation(object):
         gmetrics = {}
         for key, metric in self._metrics.items():
             gmetrics[key] = metric.average()
-        gmsg = ', '.join(['{}:{:.2f}'.format(k, v) for k, v in gmetrics.items()])
+        gmsg = ', '.join(['{}:{:.5f}'.format(k, v) for k, v in gmetrics.items()])
         logging.info('evaluation at global step %d: %s', self._global_step, gmsg)
         logging.debug('saving tf summaries.')
         self._writer.add_summary(as_summary(gmetrics), global_step=self._global_step)

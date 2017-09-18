@@ -20,5 +20,6 @@
         "**/__pycache__": true,
         ".py3venv": true,
         ".vscode": true
-    }
+    },
+"editor.minimap.enabled": false
 }

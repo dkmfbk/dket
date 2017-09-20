@@ -233,14 +233,7 @@ class Optimizer(configurable.Configurable):
 
     @classmethod
     def get_default_params(cls):
-        return OrderedDict([
-            (cls.LR_PK, 0.1),
-            (cls.LR_DECAY_CLASS_PK, ''),
-            (cls.LR_DECAY_PARAMS_PK, OrderedDict()),
-            (cls.CLIP_GRADS_CLASS_PK, ''),
-            (cls.CLIP_GRADS_PARAMS_PK, OrderedDict()),
-            (cls.COLOCATE_PK, True)
-        ])
+        return OrderedDict()
 
     @abc.abstractmethod
     def _validate_params(self, params):
@@ -251,13 +244,13 @@ class Optimizer(configurable.Configurable):
         raise NotImplementedError()
 
     def _build_lr(self, global_step):
-        lr = self._params[self.LR_PK]  # pylitn: disable=I0011,C0103
+        lr = self._params[self.LR_PK]  # pylint: disable=I0011,C0103
         if self._params[self.LR_DECAY_CLASS_PK]:
             lr_decay_class = self._params[self.LR_DECAY_CLASS_PK]
             lr_decay_params = self._params[self.LR_DECAY_PARAMS_PK]
             lr_decay_fn = configurable.factory(
                 lr_decay_class, self.mode, lr_decay_params, sys.modules[__name__])
-            lr = lr_decay_fn(lr, global_step)  # pylitn: disable=I0011,C0103
+            lr = lr_decay_fn(lr, global_step)  # pylint: disable=I0011,C0103
         return lr
 
     def _build_clip_fn(self):
@@ -299,8 +292,53 @@ class Optimizer(configurable.Configurable):
 class SGD(Optimizer):
     """Stochastic gradient descent optimizer."""
 
+    @classmethod
+    def get_default_params(cls):
+        return OrderedDict([
+            (cls.LR_PK, 0.1),
+            (cls.LR_DECAY_CLASS_PK, ''),
+            (cls.LR_DECAY_PARAMS_PK, OrderedDict()),
+            (cls.CLIP_GRADS_CLASS_PK, ''),
+            (cls.CLIP_GRADS_PARAMS_PK, OrderedDict()),
+            (cls.COLOCATE_PK, True)
+        ])
+
     def _validate_params(self, params):
         return params
 
     def _build_optimizer(self):
         return tf.train.GradientDescentOptimizer(self._lr)
+
+
+class Adadelta(Optimizer):
+    """AdaDelta optimizer."""
+
+    RHO_PK = 'rho'
+    EPSILON_PK = 'epsilon'
+
+    @classmethod
+    def get_default_params(cls):
+        return OrderedDict([
+            (cls.LR_PK, 0.001),
+            (cls.RHO_PK, 0.95),
+            (cls.EPSILON_PK, 1e-08),
+            (cls.LR_DECAY_CLASS_PK, ''),
+            (cls.LR_DECAY_PARAMS_PK, OrderedDict()),
+            (cls.CLIP_GRADS_CLASS_PK, ''),
+            (cls.CLIP_GRADS_PARAMS_PK, OrderedDict()),
+            (cls.COLOCATE_PK, True)
+        ])
+
+    def _validate_params(self, params):
+        return params
+
+    def _build_optimizer(self):
+        rho = self._params[self.RHO_PK]
+        epsilon = self._params[self.EPSILON_PK]
+        optimizer = tf.train.AdadeltaOptimizer(
+            learning_rate=self._lr,
+            rho=rho,
+            epsilon=epsilon,
+            use_locking=False,
+            name="Adadelta")
+        return optimizer

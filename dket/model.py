@@ -250,7 +250,7 @@ class Model(configurable.Configurable):
             (cls.INPUT_PARAMS_PK, ModelInputs.get_default_params()),
             (cls.LOSS_NAME_PK, 'dket.train.XEntropy'),
             (cls.OPTIMIZER_CLASS_PK, 'dket.train.SGD'),
-            (cls.OPTIMIZER_PARAMS_PK, train.SGD.get_default_params())
+            (cls.OPTIMIZER_PARAMS_PK, train.Optimizer.get_default_params())
         ])
 
     def _validate_params(self, params):

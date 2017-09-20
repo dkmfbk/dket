@@ -1,13 +1,13 @@
 {
-    "name": "__dummy__",
+    "name": "147",
     "logdir": ".",
-    "train.steps": 3,
-    "train.checkpoint_every": 1,
-    "train.files": "../datasets/20k-open-ref/train.rio",
+    "train.steps": 20000,
+    "train.checkpoint_every": 100,
+    "train.files": "../datasets/20k-open-ref-extL/train.rio",
     "train.device": "GPU",
-    "eval.files": "../datasets/20k-open-ref/validation.rio",
-    "eval.dump": true,
+    "eval.files": "../datasets/20k-open-ref-extL/validation.rio",
     "eval.device": "CPU",
+    "eval.dump": true,
     "model.class": "PointingSoftmaxModel",
     "model.params": {
         "input.class": "dket.model.ModelInputs",
@@ -22,7 +22,7 @@
         "optimizer.class": "Adadelta",
         "optimizer.params": {
             "lr": 0.1,
-            "rho": 0.95,
+            "rho": 0.9,
             "epsilon": 1e-08,
             "lr.decay.class": "",
             "lr.decay.params": {},
@@ -50,11 +50,11 @@
                 "num_units": 256
             }
         },
-        "input.vocabulary_size": 5157,
+        "input.vocabulary_size": 5168,
         "output.vocabulary_size": 19,
         "feedback_size": 30,
-        "embedding_size": 128,
-        "attention_size": 128,
+        "embedding_size": 256,
+        "attention_size": 256,
         "parallel_iterations": 10
     }
 }

@@ -3,7 +3,6 @@
 import collections
 import json
 import logging
-import operator
 import os
 
 import edit_distance as editdist
@@ -73,6 +72,7 @@ def serialize_diff_op(diff_op, target, prediction):
 
 TAB = '\t'
 BLANK = ' '
+ID_KEY = '_ID'
 EXAMPLE = 'example'
 DUMP = 'dump'
 SENTENCE = 'sentence'
@@ -153,7 +153,7 @@ def samelength(first, second, padding=None):
     return first, (second + ([padding] * (len(first) - len(second))))
 
 
-def convert(tsv_line, vocabulary, shortlist, equals=False):
+def convert(tsv_line, id_, vocabulary, shortlist, equals=False):
     """Returns a serialized json object with the analytics for the TSV dump line."""
     sentence, target, prediction = parse(tsv_line)
 
@@ -192,6 +192,7 @@ def convert(tsv_line, vocabulary, shortlist, equals=False):
     ed_data[EDIT_DIFF_OPS] = [serialize_diff_op(op, target, prediction) for op in ops]
 
     data = collections.OrderedDict()
+    data[ID_KEY] = id_
     data[EXAMPLE] = example
     data[DUMP] = dump
     data[ACCURACY] = round(accuracy, 3)
@@ -199,32 +200,33 @@ def convert(tsv_line, vocabulary, shortlist, equals=False):
     data[TOKENS_TOT] = tokens_tot
     data[EDIT_DISTANCE] = ed_data
     return data
-#    return json.dumps(data, indent=2, separators=(',', ': '), cls=_NoIndentEncoder)
 
 
-def process(dump_fp, vocabulary_fp, shortlist_fp, data_fp=None, force=False, equals=False):
+def create_report(dump_fp, vocabulary_fp, shortlist_fp, report_fp=None, force=False, equals=False):
     """Process a dump file."""
     if not dump_fp:
         raise ValueError('A dump file must be provided.')
 
     if not os.path.exists(dump_fp):
-        raise FileNotFoundError('The dump file {} does not exist.'.format(data_fp))
+        raise FileNotFoundError('The dump file {} does not exist.'.format(report_fp))
 
-    if not data_fp:
-        data_fp = dump_fp + '.data'
+    if not report_fp:
+        report_fp = dump_fp + '.data'
 
-    if os.path.exists(data_fp) and not force:
-        raise FileExistsError('The output file {} already exist.'.format(data_fp))
+    if os.path.exists(report_fp) and not force:
+        raise FileExistsError('The output file {} already exist.'.format(report_fp))
 
     vocabulary = load_vocabulary(vocabulary_fp)
     shortlist = load_vocabulary(shortlist_fp)
 
     # Collect all the data as dictionary objects
     data = []
+    id_ = 0
     for tsv_line in open(dump_fp):
         tsv_line = tsv_line.replace('\n', '')
         if tsv_line:
-            data.append(convert(tsv_line, vocabulary, shortlist, equals=equals))
+            id_ += 1
+            data.append(convert(tsv_line, id_, vocabulary, shortlist, equals=equals))
     data = sorted(data, key=lambda datum: datum[EDIT_DISTANCE][EDIT_SCORE])
     correct = [datum for datum in data if datum[EDIT_DISTANCE][EDIT_SCORE] == 0]
     edists = [datum[EDIT_DISTANCE][EDIT_SCORE] for datum in data]
@@ -245,7 +247,7 @@ def process(dump_fp, vocabulary_fp, shortlist_fp, data_fp=None, force=False, equ
         tokens_ok += datum[TOKENS_OK]
     accuracy = 0.0 if tokens_tot == 0 else (tokens_ok * 1.0) / tokens_tot
 
-    with open(data_fp, 'w') as fout:
+    with open(report_fp, 'w') as fout:
         fout.write('# ANALYTICS\n')
         fout.write('# SOURCE: ' + str(dump_fp) + '\n')
         fout.write('# VOCABULARY: ' + str(vocabulary_fp) + '\n')
@@ -257,11 +259,101 @@ def process(dump_fp, vocabulary_fp, shortlist_fp, data_fp=None, force=False, equ
         fout.write('#\n')
         partial = 0.0
         fout.write('# ED\t#\t%\t% INC\n')
-        for ed, count in tuples:
+        for edist, count in tuples:
             partial += count * 1.0
             fout.write("# {}\t{}\t{:.2f}\t{:.2f}\n".format(
-                ed, count, count * 1.0 / len(data) * 100, (partial / len(data)) * 100))
+                edist, count, count * 1.0 / len(data) * 100, (partial / len(data)) * 100))
         fout.write(ITEM_SEP)
         for datum in data:
             line = json.dumps(datum, indent=2, separators=(',', ': '), cls=_NoIndentEncoder)
             fout.write(line + ITEM_SEP)
+
+
+def read_report(report_fp):
+    """Read a report and returns a list of data objects."""
+    items = open(report_fp).read().split(ITEM_SEP)[1:]
+    items = [item for item in items if len(item.strip()) > 0]
+    data = [json.loads(item) for item in items]
+    return data
+
+
+def sentence_similarity(xdatum, ydatum):
+    """Sentence similarity."""
+    xsentence = xdatum[EXAMPLE][SENTENCE].split()
+    ysentence = ydatum[EXAMPLE][SENTENCE].split()
+    if len(xsentence) != len(ysentence):
+        return 0.0
+
+    eqs = [int(x == y) for x, y in zip(xsentence, ysentence)]
+    score = sum(eqs) * 1.0 / len(xsentence)
+    return score
+
+
+def _key_fn(datum):
+    tidx = datum[DUMP][TARGET + IDX]
+    tidx = tidx.replace('[', '').replace(']', '').replace(',', '').split()
+    tidx = [int(item) for item in tidx]
+    while tidx[-1] == 0:
+        tidx = tidx[:-1]
+    key = tuple(tidx)
+    return key
+
+
+def alignment(datum, data):
+    """Try to align a dump datum to another from a list."""
+    _sim = lambda x,y: sentence_similarity(x, y)
+    key = _key_fn(datum)
+    hyps = [x for x in data if key == _key_fn(x)]
+    if len(hyps) > 1:
+        hyps = sorted(hyps, key=lambda x: _sim(datum, x), reverse=True)
+        print('WARNING: {} items found for datum {}, resolved to: {}'
+            .format(len(hyps), datum[ID_KEY], hyps[0][EXAMPLE][SENTENCE]))
+    if not hyps:
+        print('WARNING: 0 items found for datum {}: {}'.format(datum[ID_KEY], datum[EXAMPLE][SENTENCE]))
+        return None
+    return hyps[0]
+
+
+def merge(old, new):
+    """Merge two example data."""
+    merged = collections.OrderedDict()
+    merged[SENTENCE] = old[EXAMPLE][SENTENCE]
+    merged[TARGET] = old[EXAMPLE][TARGET]
+    edit_dist = collections.OrderedDict()
+    edit_dist_old = collections.OrderedDict()
+    edit_dist_old[PREDICTION] = old[EXAMPLE][PREDICTION]
+    edit_dist_old[EDIT_SCORE] = old[EDIT_DISTANCE][EDIT_SCORE]
+    edit_dist_old[EDIT_DIFF_OPS] = old[EDIT_DISTANCE][EDIT_DIFF_OPS]
+    edit_dist['delta'] = None
+    edit_dist['old'] = edit_dist_old
+    edit_dist_new = None
+    if new:
+        edit_dist_new = collections.OrderedDict()
+        edit_dist_new[PREDICTION] = new[EXAMPLE][PREDICTION]
+        edit_dist_new[EDIT_SCORE] = new[EDIT_DISTANCE][EDIT_SCORE]
+        edit_dist_new[EDIT_DIFF_OPS] = new[EDIT_DISTANCE][EDIT_DIFF_OPS]
+        edit_dist['delta'] = edit_dist_old[EDIT_SCORE] - edit_dist_new[EDIT_SCORE]
+    edit_dist['new'] = edit_dist_new
+    merged[EDIT_DISTANCE] = edit_dist
+    return merged
+
+
+def compare(old_fp, new_fp, output_fp=None):
+    """Compare two reports."""
+    ldata = read_report(old_fp)
+    rdata = read_report(new_fp)
+    merged, missing = [], []
+    for m in [merge(old, alignment(old, rdata)) for old in ldata]:
+        if m[EDIT_DISTANCE]['new']:
+            merged.append(m)
+        else:
+            missing.append(m)
+    merged = sorted(merged, key=lambda x: x[EDIT_DISTANCE]['delta'], reverse=True)
+
+    if not output_fp:
+        return
+
+    with open(output_fp, 'w') as fout:
+        for m in merged:
+            fout.write(json.dumps(m, indent=2, separators=(',', ': ')))
+            fout.write(ITEM_SEP)

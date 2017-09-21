@@ -23,10 +23,10 @@ ARGS = parser.parse_args()
 if __name__ == '__main__':
     # set up the logging infrastructure.
     logutils.config(ARGS.log_level, fpath='.log', stderr=ARGS.log_to_stderr)
-    analytics.process(
+    analytics.create_report(
         dump_fp=ARGS.dump,
         vocabulary_fp=ARGS.vocabulary,
         shortlist_fp=ARGS.shortlist,
-        data_fp=ARGS.output,
+        report_fp=ARGS.output,
         force=ARGS.force)
     sys.exit(0)

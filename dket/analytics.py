@@ -227,6 +227,11 @@ def create_report(dump_fp, vocabulary_fp, shortlist_fp, report_fp=None, force=Fa
         if tsv_line:
             id_ += 1
             data.append(convert(tsv_line, id_, vocabulary, shortlist, equals=equals))
+    dump_report(data, report_fp)
+
+
+def dump_report(data, report_fp):
+    """create the header report and write it to a file."""
     data = sorted(data, key=lambda datum: datum[EDIT_DISTANCE][EDIT_SCORE])
     correct = [datum for datum in data if datum[EDIT_DISTANCE][EDIT_SCORE] == 0]
     edists = [datum[EDIT_DISTANCE][EDIT_SCORE] for datum in data]
@@ -249,9 +254,6 @@ def create_report(dump_fp, vocabulary_fp, shortlist_fp, report_fp=None, force=Fa
 
     with open(report_fp, 'w') as fout:
         fout.write('# ANALYTICS\n')
-        fout.write('# SOURCE: ' + str(dump_fp) + '\n')
-        fout.write('# VOCABULARY: ' + str(vocabulary_fp) + '\n')
-        fout.write('# SHORTLIST: ' + str(shortlist_fp) + '\n')
         fout.write('#\n')
         fout.write('# AVG. PER-FORMULA ACCURACY: {:.5f}'.format(pfacc) + '\n')
         fout.write('# AVG. EDIT DISTANCE: {:.5f}'.format(avgedists) + '\n')
@@ -267,6 +269,13 @@ def create_report(dump_fp, vocabulary_fp, shortlist_fp, report_fp=None, force=Fa
         for datum in data:
             line = json.dumps(datum, indent=2, separators=(',', ': '), cls=_NoIndentEncoder)
             fout.write(line + ITEM_SEP)
+
+
+def recompute_summary(in_report_fp, out_report_fp=None):
+    """Recompute the report."""
+    if not out_report_fp:
+        out_report_fp = in_report_fp
+    dump_report(read_report(in_report_fp), out_report_fp)
 
 
 def read_report(report_fp):
@@ -357,3 +366,4 @@ def compare(old_fp, new_fp, output_fp=None):
         for m in merged:
             fout.write(json.dumps(m, indent=2, separators=(',', ': ')))
             fout.write(ITEM_SEP)
+

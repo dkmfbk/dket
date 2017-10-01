@@ -28,9 +28,9 @@ do
     if [ "$STORAGE" = "$BASEDIR" ]; then
         echo "storage is the same of basedir (no storage). ";
     else
-	cd $LOGDIR/$ID/eval
+	    cd $LOGDIR/$ID/eval
         tar -zcvf dump.tar.gz dump
-	gvfs-trash dump
+	    rm -rf dump
         cd $BASE
 
         cp $CONFIG $STORAGE

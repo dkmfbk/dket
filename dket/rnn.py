@@ -24,7 +24,7 @@ class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
         input_keep_prob = self._params[self.DROPOUT_INPUT_KEEP_PROB_PK]
         output_keep_prob = self._params[self.DROPOUT_OUTPUT_KEEP_PROB_PK]
         for _ in range(num_layers):
-            cell = self._build_inner_cell()
+            cell = self._build_inner_cell(mode=mode)
             if self.mode == _TRAIN:
                 if input_keep_prob < 1.0 or output_keep_prob < 1.0:
                     cell = tf.contrib.rnn.DropoutWrapper(
@@ -45,20 +45,22 @@ class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
     # RNNCell implementation.
     @property
     def state_size(self):
+        """The cell state size."""
         return self.cell.state_size
 
     @property
     def output_size(self):
+        """The cell output size."""
         return self.cell.output_size
         
     def zero_state(self, batch_size, dtype):
+        """The cell zero state."""
         return self.cell.zero_state(batch_size, dtype)
 
     def __call__(self, inputs, state, scope=None):
         # pylint: disable=E1102,I0011
         return self.cell(inputs, state, scope=scope)
-    # RNNCell implementation.
-
+    
     @classmethod
     def get_default_params(cls):
         return OrderedDict([
@@ -102,7 +104,7 @@ class RNNCell(configurable.Configurable, tf.contrib.rnn.RNNCell):
         return params
 
     @abc.abstractmethod
-    def _build_inner_cell(self):
+    def _build_inner_cell(self, mode=tf.contrib.learn.ModeKeys.TRAIN):
         """Build the inner cell."""
         raise NotImplementedError()
 
@@ -127,12 +129,12 @@ class GRUCell(RNNCell):
             raise ValueError('{} must be greater than zero.'.format(self.HIDDEN_SIZE))
         return params
 
-    def _build_inner_cell(self):
+    def _build_inner_cell(self, mode=tf.contrib.learn.ModeKeys.TRAIN):
         hidden_size = self._params[self.HIDDEN_SIZE]
         return tf.contrib.rnn.GRUCell(num_units=hidden_size)
 
 
-class BasicLSTMCell(RNNCell):
+class LSTMCell(RNNCell):
     """LSTM recurrent cell."""
 
     NUM_UNITS_PK = 'num_units'
@@ -154,12 +156,12 @@ class BasicLSTMCell(RNNCell):
         params[cls.LAYER_NORM_SHIFT_PK] = 0.0
         params[cls.RECURRENT_DROPOUT_KEEP_PROB] = 1.0
         params[cls.RECURRENT_DROPOUT_PROB_SEED] = None
-        for key, value in super(BasicLSTMCell, cls).get_default_params().items():
+        for key, value in super(LSTMCell, cls).get_default_params().items():
             params[key] = value
         return params
 
     def _validate_params(self, params):
-        params = super(BasicLSTMCell, self)._validate_params(params)
+        params = super(LSTMCell, self)._validate_params(params)
         if params[self.NUM_LAYERS_PK] <= 0:
             raise ValueError('{} must be greater than 0.'.format(self.NUM_UNITS_PK))
         prob = params[self.RECURRENT_DROPOUT_KEEP_PROB]
@@ -169,12 +171,15 @@ class BasicLSTMCell(RNNCell):
                     .format(self.RECURRENT_DROPOUT_KEEP_PROB))
         return params
 
-    def _build_inner_cell(self):
+    def _build_inner_cell(self, mode=tf.contrib.learn.ModeKeys.TRAIN):
+        dropout_keep_prob = self._params[self.RECURRENT_DROPOUT_KEEP_PROB]
+        if mode != tf.contrib.learn.ModeKeys.TRAIN:
+            dropout_keep_prob = 1.0
         return tf.contrib.rnn.LayerNormBasicLSTMCell(
             num_units=self._params[self.NUM_UNITS_PK],
             forget_bias=self._params[self.FORGET_BIAS_PK],
             layer_norm=self._params[self.LAYER_NORM_PK],
             norm_gain=self._params[self.LAYER_NORM_GAIN_PK],
             norm_shift=self._params[self.LAYER_NORM_SHIFT_PK],
-            dropout_keep_prob=self._params[self.RECURRENT_DROPOUT_KEEP_PROB],
+            dropout_keep_prob=dropout_keep_prob,
             dropout_prob_seed=self._params[self.RECURRENT_DROPOUT_PROB_SEED])

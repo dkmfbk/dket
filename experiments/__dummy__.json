@@ -19,9 +19,11 @@
             "seed": 23
         },
         "loss.name": "dket.train.XEntropy",
-        "optimizer.class": "SGD",
+        "optimizer.class": "Adadelta",
         "optimizer.params": {
             "lr": 0.1,
+            "rho": 0.95,
+            "epsilon": 1e-08,
             "lr.decay.class": "",
             "lr.decay.params": {},
             "clip.class": "",
@@ -29,21 +31,23 @@
             "colocate": true
         },
         "encoder": {
-            "cell.type": "GRUCell",
+            "cell.type": "LSTMCell",
             "cell.params": {
                 "dropout_input.keep_prob": 1.0,
                 "dropout_output.keep_prob": 1.0,
+                "layer_norm": true,
                 "num_layers": 1,
-                "hidden_size": 256
+                "num_units": 256
             }
         },
         "decoder": {
-            "cell.type": "GRUCell",
+            "cell.type": "LSTMCell",
             "cell.params": {
                 "dropout_input.keep_prob": 1.0,
                 "dropout_output.keep_prob": 1.0,
+                "layer_norm": true,
                 "num_layers": 1,
-                "hidden_size": 256
+                "num_units": 256
             }
         },
         "input.vocabulary_size": 5157,

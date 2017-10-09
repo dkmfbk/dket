@@ -4,7 +4,7 @@ doesn't rely on hand-crafted rules and it is trained in an end-to-end fashion. T
 some preliminary investigation and results can be found in this [paper](https://link.springer.com/chapter/10.1007/978-3-319-49004-5_31).
 
 ## Installation
-The best way to install and use the `DKET` package is to clone the git repository, and set up the proper virtual environment. Once cloned the repository, just move into the directoty and run the proper script to create and setp the proper Python 3 virtual environment.
+The best way to install and use the `DKET` package is to clone the git repository, and set up the proper virtual environment. Once cloned the repository, just move into the directory and run the proper script to create and setup the proper Python 3 virtual environment.
 
     :~$ git clone git@github.com:dkmfbk/dket.git
     :~$ cd dket

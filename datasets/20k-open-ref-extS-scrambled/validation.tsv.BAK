@@ -1,7 +1,0 @@
-a/DT odontoid/JJ cell/NN is/VBZ any/DT property/NN that/WDT is/VBZ not/RB a/DT useful/JJ tissue/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ ! LOC#10 LOC#11 <EOS>
-the/DT lifetime/NN embryo/NN is/VBZ the/DT vegetarian/JJ total/JJ pizza/NN of/IN a/DT life/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 LOC#8 LOC#10 <EOS>
-entity/NN is/VBZ a/DT total/JJ lifetime/NN that/WDT typically/RB observe/VB office/NN and/CC is/VBZ mesodermal/JJ ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 ^ E LOC#7 . ( LOC#8 ) ^ LOC#11 <EOS>
-a/DT sensor/NN or/CC a/DT pizza/NN is/VBZ a/DT cell/NN that/WDT contain/VB significant/JJ middle/JJ battery/NN in/IN a/DT national/JJ or/CC regional/JJ sensor/NN ./. <EOS>/<EOS>	LOC#1 U LOC#4 := LOC#7 ^ E LOC#9 . ( LOC#10 LOC#11 LOC#12 LOC#13 LOC#15 LOC#18 U LOC#10 LOC#11 LOC#12 LOC#13 LOC#15 LOC#18 LOC#17 LOC#18 ) <EOS>
-the/DT useful/JJ system/NN is/VBZ a/DT orthodentine/NN of/IN the/DT public/JJ system/NN pizza/NN of/IN the/DT secretary/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#8 LOC#9 LOC#10 LOC#11 LOC#13 <EOS>
-the/DT germ/NN government/NN is/VBZ the/DT non-vegetarian/JJ acellular/JJ minister/NN of/IN a/DT tubule/NN or/CC interest/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 LOC#8 LOC#10 U LOC#5 LOC#6 LOC#7 LOC#8 LOC#12 <EOS>
-a/DT battery/NN is/VBZ any/DT life/NN that/WDT can/MD hold/VB some/DT layer/NN of/IN a/DT politician/NN of/IN feature/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 ^ >= 0 LOC#7 . ( LOC#9 LOC#10 LOC#12 LOC#13 LOC#14 ) <EOS>

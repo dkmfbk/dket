@@ -4,6 +4,7 @@ BASE=$(pwd)
 BASEDIR='experiments'
 IDS=(__dummy__)
 STORAGE
+CLEANUP=true
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";
@@ -14,29 +15,39 @@ fi
 source .py3venv/bin/activate
 for ID in "${IDS[@]}"
 do
-
-    BASEDIR=`cd $BASEDIR; pwd`
-    STORAGE=`cd $STORAGE; pwd`
-
-    CONFIG=$BASEDIR/$ID'.json'
-    LOGDIR=$BASEDIR
-    ./bin/dket-experiment-run --config $CONFIG\
-        --log-level DEBUG\
-        --log-to-stderr --force\
-        --logdir $LOGDIR
-
-    if [ "$STORAGE" = "$BASEDIR" ]; then
-        echo "storage is the same of basedir (no storage). ";
-    else
-	    cd $LOGDIR/$ID/eval
-        tar -zcvf dump.tar.gz dump
-	    rm -rf dump
-        cd $BASE
-
-        cp $CONFIG $STORAGE
-        mv $CONFIG'.log' $STORAGE
-        mv $BASEDIR/$ID $STORAGE
+  
+  BASEDIR=`cd $BASEDIR; pwd`
+  STORAGE=`cd $STORAGE; pwd`
+  
+  CONFIG=$BASEDIR/$ID'.json'
+  LOGDIR=$BASEDIR
+  ./bin/dket-experiment-run --config $CONFIG\
+    --log-level DEBUG\
+    --log-to-stderr --force\
+    --logdir $LOGDIR
+  
+  if [ "$STORAGE" = "$BASEDIR" ]; then
+    echo "storage is the same of basedir (no storage). ";
+    if [ "$CLEANUP" = true ]; then
+      echo "cleaning up the checkpoints and keeping only the eval dump."
+      cd $LOGDIR/$ID/eval
+      tar -zcvf dump.tar.gz dump
+      mv dump.tar.gz ../../$ID.dump.tar.gz
+      cd ../..
+      rm -rf $ID
+      cd ../
+      echo "back to $(pwd)"
     fi
+  else
+    cd $LOGDIR/$ID/eval
+    tar -zcvf dump.tar.gz dump
+    rm -rf dump
+    cd $BASE
+    
+    cp $CONFIG $STORAGE
+    mv $CONFIG'.log' $STORAGE
+    mv $BASEDIR/$ID $STORAGE
+  fi
 
 done
 deactivate

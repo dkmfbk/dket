@@ -1,0 +1,425 @@
+a/DT stimulus/NN is/VBZ a/DT event/NN in/IN the/DT real/JJ world/NN that/WDT trigger/VB the/DT sensor/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#7 LOC#8 ^ E LOC#10 . ( LOC#12 ) <EOS>
+integument/NN is/VBZ the/DT surface/NN structure/NN that/WDT is/VBZ the/DT outer/JJ protective/JJ covering/NN of/IN the/DT body/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 ^ LOC#8 LOC#9 LOC#10 LOC#11 LOC#13 <EOS>
+a/DT sensing/VBG device/NN is/VBZ a/DT device/NN that/WDT implement/VB sensing/VBG ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+the/DT sensor/NN datum/NN sheet/NN is/VBZ a/DT object/NN that/WDT record/VB property/NN of/IN a/DT sensor/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#8 . ( LOC#9 LOC#10 LOC#12 ) <EOS>
+a/DT direct/JJ ossification/NN is/VBZ a/DT ossification/NN that/WDT do/VBZ not/RB require/VB the/DT replacement/NN of/IN pre-existing/JJ tissue/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ ! E LOC#9 . ( LOC#11 LOC#12 LOC#13 LOC#14 ) <EOS>
+a/DT solid/JJ compound/NN organ/NN is/VBZ a/DT compound/NN organ/NN that/WDT do/VBZ not/RB contain/VB macroscopic/JJ anatomical/JJ space/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ ! E LOC#11 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+a/DT vector/NN is/VBZ a/DT organism/NN that/WDT carry/VB or/CC transmit/VB a/DT pathogen/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E ( LOC#6 U LOC#8 ) . ( LOC#10 ) <EOS>
+a/DT rock/NN dassie/NN is/VBZ a/DT animal/NN that/WDT eat/VBP grass/NN and/CC broad-leafed/JJ plant/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 . ( LOC#8 ) ^ E LOC#7 . ( LOC#10 LOC#11 ) <EOS>
+lion/NN are/VBP animal/NN that/WDT eat/VBP only/RB herbivore/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ A LOC#4 . ( LOC#6 ) <EOS>
+caprina/NN pizza/NN have/VB a/DT very/RB high-calorie/JJ content/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := E LOC#2 LOC#6 . ( LOC#4 LOC#5 LOC#6 ) <EOS>
+a/DT interesting/JJ pizza/NN is/VBZ a/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD topping/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= LOC#10 LOC#7 LOC#11 . ( LOC#11 ) <EOS>
+spicy/NN topping/VBG is/VBZ any/DT topping/VBG that/DT have/VB a/DT hot/JJ spiciness/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 ^ E LOC#6 LOC#9 . ( LOC#8 LOC#9 ) <EOS>
+a/DT survival/NN property/NN is/VBZ a/DT identifiable/JJ characteristic/NN that/WDT represent/VB the/DT extent/NN of/IN the/DT sensor/NN useful/JJ life/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 . ( LOC#10 LOC#11 LOC#13 LOC#14 LOC#15 ) <EOS>
+a/DT device/NN is/VBZ a/DT physical/JJ piece/NN of/IN technology/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 <EOS>
+a/DT device/NN is/VBZ a/DT system/NN in/IN a/DT box/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#7 <EOS>
+a/DT feature/NN is/VBZ a/DT abstraction/NN of/IN real/JJ world/NN phenomenon/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 LOC#8 <EOS>
+organism/NN subdivision/NN is/VBZ a/DT anatomical/JJ structure/NN that/WDT is/VBZ a/DT primary/JJ subdivision/NN of/IN whole/JJ organism/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 ^ LOC#9 LOC#10 LOC#11 LOC#12 LOC#13 <EOS>
+vehicle/NN are/VBP non-living/JJ means/NN of/IN transportation/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 LOC#5 <EOS>
+a/DT observation/NN value/NN is/VBZ the/DT value/NN of/IN the/DT result/NN of/IN a/DT observation/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#8 LOC#9 LOC#11 <EOS>
+datum/NN are/VBP fact/NN that/WDT result/VBP from/IN measurement/NN or/CC observation/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ E LOC#4 LOC#5 . ( LOC#6 U LOC#8 ) <EOS>
+tree/NN are/VBP a/DT type/NN of/IN plant/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 <EOS>
+frutti/NN di/FW mare/NN typically/RB lack/VB cheese/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := E LOC#4 . ( LOC#5 ) <EOS>
+a/DT non-mineralized/JJ hyaline/NN cartilage/NN tissue/NN is/VBZ a/DT hyaline/NN cartilage/NN tissue/NN that/WDT is/VBZ not/RB mineralized/VBN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 LOC#8 LOC#9 ^ ! LOC#13 <EOS>
+a/DT meaty/JJ pizza/NN is/VBZ any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD topping/VBG of/IN meat/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= LOC#10 LOC#7 LOC#11 . ( LOC#13 ) <EOS>
+a/DT property/NN is/VBZ a/DT observable/JJ quality/NN of/IN a/DT event/NN or/CC object/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#8 U LOC#4 LOC#5 LOC#6 LOC#10 <EOS>
+herbivore/NN are/VBP exactly/RB those/DT animal/NN that/WDT eat/VBP only/RB plant/NN or/CC part/NN of/IN plant/NN ./. <EOS>/<EOS>	LOC#0 := LOC#4 ^ A LOC#6 . ( LOC#8 U E LOC#10 LOC#11 . ( LOC#12 ) ) <EOS>
+a/DT gonochoristic/JJ organism/NN is/VBZ a/DT multi-cellular/JJ organism/NN that/WDT have/VB male/JJ and/CC female/JJ sex/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 LOC#12 . ( LOC#9 LOC#12 ) ^ E LOC#8 LOC#12 . ( LOC#11 LOC#12 ) <EOS>
+carnivore/NN are/VBP exactly/RB those/DT animal/NN that/WDT eat/VBP also/RB animal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#4 ^ E LOC#6 . ( LOC#8 ) <EOS>
+a/DT american/JJ hot/JJ pizza/NN is/VBZ a/DT type/NN of/IN american/JJ pizza/NN that/WDT have/VB jalapeno/JJ pepper/NN on/IN it/PRP ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#8 LOC#9 ^ E LOC#11 LOC#14 . ( LOC#12 LOC#13 ) <EOS>
+a/DT output/NN is/VBZ any/DT information/NN that/WDT is/VBZ reported/VBN from/IN a/DT process/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#7 LOC#8 . ( LOC#10 ) <EOS>
+a/DT cell/NN space/NN is/VBZ a/DT anatomical/JJ space/NN that/WDT is/VBZ part/NN of/IN a/DT cell/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 ) <EOS>
+a/DT male/JJ organism/NN is/VBZ a/DT gonochoristic/JJ organism/NN that/WDT can/MD produce/VB male/JJ gamete/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ >= 0 LOC#9 . ( LOC#10 LOC#11 ) <EOS>
+giraffe/NN are/VBP herbivore/NN ,/, and/CC they/PRP eat/VBP only/RB leaf/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ A LOC#6 . ( LOC#8 ) <EOS>
+a/DT american/JJ pizza/NN is/VBZ a/DT pizza/NN that/WDT have/VB topping/NN of/IN pepperoni/NN ,/, mozzarella/NN and/CC tomato/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 LOC#8 . ( LOC#10 ) ^ E LOC#7 LOC#8 . ( LOC#12 ) ^ E LOC#7 LOC#8 . ( LOC#14 ) <EOS>
+a/DT sensor/NN is/VBZ any/DT entity/NN that/WDT can/MD follow/VB a/DT sensing/VBG method/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 ^ >= 0 LOC#7 . ( LOC#9 LOC#10 ) <EOS>
+anal/JJ fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT anal/JJ fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 LOC#13 ) <EOS>
+caudal/JJ fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT caudal/JJ fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 LOC#13 ) <EOS>
+axial/JJ ossicle/NN is/VBZ a/DT ossicle/NN that/WDT is/VBZ part/NN of/IN the/DT axial/JJ skeleton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 ^ E LOC#7 LOC#8 . ( LOC#10 LOC#11 ) <EOS>
+craniofacial/JJ skeleton/NN is/VBZ a/DT cranial/JJ skeleton/NN derived/VBN from/IN neural/JJ crest/NN cell/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 ^ E LOC#6 LOC#7 . ( LOC#8 LOC#9 LOC#10 ) <EOS>
+branch/NN are/VBP part/NN of/IN tree/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 ) <EOS>
+leaf/NN are/VBP part/NN of/IN branch/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 ) <EOS>
+pectoral/JJ fin/NN is/VBZ a/DT paired/JJ fin/NN that/WDT is/VBZ located/JJ in/IN the/DT thoracic/JJ region/NN of/IN the/DT body/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 LOC#13 LOC#15 ) <EOS>
+intramembranous/JJ ossification/NN is/VBZ a/DT direct/JJ ossification/NN that/WDT occur/VB within/IN mesenchyme/NN or/CC a/DT accumulation/NN of/IN relatively/RB unspecialized/JJ cell/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 ^ E LOC#7 LOC#8 . ( LOC#9 U LOC#12 LOC#13 LOC#14 LOC#15 LOC#16 ) <EOS>
+a/DT spicy/JJ pizza/NN is/VBZ any/DT pizza/NN that/WDT have/VB a/DT topping/VBG that/DT is/VBZ spicy/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#4 LOC#5 ^ E LOC#7 LOC#9 . ( LOC#12 LOC#9 ) <EOS>
+a/DT currency/NN is/VBZ a/DT unit/NN of/IN exchange/NN ,/, facilitating/VBG the/DT transfer/NN of/IN goods/NN and/CC service/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 ^ E LOC#8 . ( LOC#10 LOC#11 LOC#12 ) ^ E LOC#8 . ( LOC#10 LOC#11 LOC#14 ) <EOS>
+a/DT vegetarian/JJ pizza/NN is/VBZ any/DT pizza/NN that/IN only/RB have/VB vegetarian/JJ topping/NN or/CC no/DT topping/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#10 . ( LOC#9 LOC#13 ) U ! E LOC#8 LOC#13 . ( T ) <EOS>
+a/DT real/JJ italian/JJ pizza/NN is/VBZ a/DT type/NN of/IN pizza/NN that/WDT must/MD only/RB have/VB thin/JJ and/CC crispy/JJ basis/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#8 ^ A LOC#12 . ( LOC#13 LOC#16 ^ LOC#15 LOC#16 ) <EOS>
+a/DT juvenile/JJ is/VBZ a/DT young/JJ fish/NN or/CC animal/NN that/WDT have/VB not/RB reached/VBN sexual/JJ maturity/NN ./. <EOS>/<EOS>	LOC#1 := ( LOC#4 LOC#5 U LOC#4 LOC#7 ) ^ ! E LOC#9 LOC#11 . ( LOC#12 LOC#13 ) <EOS>
+biosphere/NN is/VBZ the/DT portion/NN of/IN earth/NN and/CC its/PRP$ atmosphere/NN that/WDT can/MD support/VB life/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 LOC#5 ^ LOC#3 LOC#4 LOC#7 LOC#8 ^ >= 0 LOC#11 . ( LOC#12 ) <EOS>
+a/DT tetraploid/NN is/VBZ cell/NN or/CC organism/NN having/VBG NUM/CD set/NN of/IN chromosome/NN ./. <EOS>/<EOS>	LOC#1 := ( LOC#3 U LOC#5 ) ^ = LOC#7 LOC#6 LOC#10 . ( LOC#8 ) <EOS>
+sensing/VBG is/VBZ a/DT process/NN that/WDT result/VB in/IN the/DT estimation/NN ,/, or/CC calculation/NN ,/, of/IN the/DT value/NN of/IN a/DT phenomenon/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#8 LOC#13 LOC#15 LOC#16 LOC#18 U LOC#11 LOC#16 LOC#15 LOC#16 LOC#18 ) <EOS>
+a/DT island/NN or/CC isle/NN is/VBZ any/DT piece/NN of/IN land/NN that/WDT is/VBZ completely/RB surrounded/VBN by/IN water/NN ./. <EOS>/<EOS>	LOC#1 U LOC#3 := LOC#6 LOC#7 LOC#8 ^ A LOC#12 LOC#13 . ( LOC#14 ) <EOS>
+tasty/JJ plant/NN are/VBP plant/NN eaten/VBD both/CC by/IN herbivore/NN and/CC carnivore/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#3 ^ E LOC#4 LOC#6 . ( LOC#7 ) ^ E LOC#4 LOC#6 . ( LOC#9 ) <EOS>
+tasty/JJ plant/NN are/VBP eaten/VBN both/CC by/IN herbivore/NN and/CC carnivore/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#1 ^ E LOC#3 LOC#5 . ( LOC#6 ) ^ E LOC#3 LOC#5 . ( LOC#8 ) <EOS>
+axial/JJ skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN of/IN the/DT central/JJ body/NN axis/NN including/VBG the/DT cranium/NN ,/, vertebra/NN ,/, notochord/NN ,/, rib/NN ,/, and/CC sternum/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 LOC#6 LOC#8 LOC#9 LOC#10 ^ E LOC#11 . ( LOC#13 ) ^ E LOC#11 . ( LOC#15 ) ^ E LOC#11 . ( LOC#17 ) ^ E LOC#11 . ( LOC#19 ) ^ E LOC#11 . ( LOC#22 ) <EOS>
+carnivorous/JJ plant/NN are/VBP plant/NN that/IN eat/VB animal/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+an/DT endochondral/JJ bone/NN is/VBZ a/DT replacement/NN bone/NN that/WDT form/VB within/IN the/DT cartilage/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 . LOC#11 <EOS>
+the/DT anal/JJ fin/NN skeleton/NN is/VBZ a/DT median/JJ fin/NN skeleton/NN that/WDT is/VBZ located/VBN posterior/RB to/TO the/DT anus/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#11 LOC#12 LOC#13 . ( LOC#15 ) <EOS>
+the/DT dorsal/NN fin/NN skeleton/NN is/VBZ a/DT median/JJ fin/NN skeleton/NN located/VBN on/IN the/DT dorsal/JJ surface/NN of/IN the/DT organism/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 LOC#16 ) <EOS>
+the/DT vertebral/JJ element/NN is/VBZ a/DT skeletal/JJ element/NN that/IN form/VB around/IN the/DT notochord/NN and/CC is/VBZ part/NN of/IN the/DT vertebral/JJ column/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 . ( LOC#11 ) ^ E LOC#14 LOC#15 . ( LOC#17 LOC#18 ) <EOS>
+the/DT free/JJ limb/NN skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN that/WDT is/VBZ part/NN of/IN the/DT limb/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ E LOC#10 LOC#11 . ( LOC#13 ) <EOS>
+the/DT zeugopodial/JJ skeleton/NN is/VBZ the/DT section/NN of/IN the/DT forelimb/NN skeleton/NN located/VBN between/IN the/DT stylopodium/NN and/CC the/DT autopodium/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := E LOC#5 LOC#6 . ( LOC#8 LOC#9 ) ^ E LOC#10 LOC#11 . ( LOC#13 ^ LOC#16 ) <EOS>
+the/DT autopodial/JJ skeleton/NN is/VBZ the/DT distal/JJ section/NN of/IN the/DT limb/NN skeleton/NN ,/, consisting/VBG of/IN the/DT anterior/JJ autopodium/NN or/CC posterior/JJ autopodium/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := E LOC#5 LOC#6 LOC#7 . ( LOC#9 LOC#10 ) ^ E LOC#12 LOC#13 . ( LOC#15 LOC#16 U LOC#18 LOC#19 ) <EOS>
+a/DT cheesey/NN pizza/NN is/VBZ any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD cheese/NN topping/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= LOC#10 LOC#7 LOC#12 . ( LOC#11 LOC#12 ) <EOS>
+any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD cheese/NN topping/NN is/VBZ an/DT cheesey/JJ pizza/NN ./. <EOS>/<EOS>	LOC#11 LOC#12 := LOC#12 ^ >= LOC#6 LOC#3 LOC#8 . ( LOC#7 LOC#8 ) <EOS>
+any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD topping/NN is/VBZ an/DT interesting/JJ pizza/NN ./. <EOS>/<EOS>	LOC#10 LOC#11 := LOC#11 ^ >= LOC#6 LOC#3 LOC#7 . ( T ) <EOS>
+any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD meat/NN topping/NN is/VBZ a/DT meaty/JJ pizza/NN ./. <EOS>/<EOS>	LOC#11 LOC#12 := LOC#12 ^ >= LOC#10 LOC#3 LOC#8 . ( LOC#7 LOC#8 ) <EOS>
+a/DT named/VBN pizza/NN is/VBZ a/DT pizza/NN that/WDT can/MD be/VB found/VBN on/IN a/DT pizza/NN menu/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+the/DT perichordal/JJ tissue/NN is/VBZ derived/VBN from/IN cell/NN surrounding/VBG the/DT notochord/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#4 LOC#5 ( LOC#6 ^ E LOC#7 . ( LOC#9 ) ) <EOS>
+the/DT odontoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB dentine/NN matrix/NN ,/, is/VBZ derived/VBN from/IN the/DT odontogenic/JJ papilla/NN ,/, and/CC develop/VB from/IN a/DT preodontoblast/NN cell/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 LOC#9 ) ^ E LOC#12 LOC#13 . ( LOC#15 LOC#16 ) ^ E LOC#19 LOC#20 . ( LOC#22 LOC#23 ) <EOS>
+the/DT odontoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB dentine/NN matrix/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 LOC#9 ) <EOS>
+the/DT odontoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT is/VBZ derived/VBN from/IN the/DT odontogenic/JJ papilla/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 ) <EOS>
+the/DT odontocyte/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB dentine/NN matrix/NN and/CC is/VBZ derived/VBN from/IN odontogenic/JJ papilla/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 LOC#9 ) ^ E LOC#12 LOC#13 . ( LOC#14 LOC#15 ) <EOS>
+the/DT odontocyte/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB dentine/NN matrix/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 LOC#9 ) <EOS>
+the/DT odontocyte/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT is/VBZ derived/VBN from/IN odontogenic/JJ papilla/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#10 LOC#11 ) <EOS>
+a/DT migratory/JJ neural/JJ crest/NN cell/NN is/VBZ a/DT cell/NN that/WDT is/VBZ derived/VBN from/IN the/DT specialized/JJ ectoderm/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 ) <EOS>
+a/DT craniofacial/JJ skeleton/NN is/VBZ a/DT cranial/JJ skeleton/NN derived/VBN from/IN neural/JJ crest/NN cell/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#7 LOC#8 . ( LOC#9 LOC#10 LOC#11 ) <EOS>
+integumentary/JJ skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN that/WDT is/VBZ part/NN of/IN the/DT extra-oral/JJ dermal/JJ skeletal/NN system/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT postcranial/JJ axial/JJ skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN of/IN the/DT central/JJ body/NN axis/VB that/WDT includes/VB vertebra/NN ,/, notochord/NN ,/, rib/NN ,/, and/CC sternum/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 LOC#10 LOC#11 LOC#12 ^ E LOC#14 . ( LOC#15 U LOC#17 U LOC#19 U LOC#22 ) <EOS>
+a/DT non-terminally/RB differentiated/VBN odontoblast/NN is/VBZ an/DT odontoblast/NN that/WDT is/VBZ located/VBN in/IN the/DT odontogenic/JJ papilla/NN and/CC dentine/NN tissue/NN ,/, and/CC transform/VB from/IN a/DT odontoblast/NN cell/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 U LOC#15 LOC#16 ) ^ E LOC#19 LOC#20 . ( LOC#22 LOC#23 ) <EOS>
+the/DT hypertrophic/JJ chondrocyte/NN is/VBZ a/DT chondrocyte/NN that/WDT is/VBZ terminally/RB differentiated/VBN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( T ) <EOS>
+the/DT hypertrophic/JJ chondrocyte/NN is/VBZ a/DT chondrocyte/NN that/WDT produce/VB type/JJ X/NN collagen/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 . ( LOC#8 LOC#9 LOC#10 ) <EOS>
+the/DT periarticular/JJ chondrocyte/NN is/VBZ a/DT chondrocyte/NN that/WDT is/VBZ located/VBN on/IN a/DT joint/JJ surface/NN and/CC that/DT is/VBZ part/NN of/IN articular/JJ cartilage/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 ) ^ E LOC#16 LOC#17 . ( LOC#18 LOC#19 ) <EOS>
+vasodentine/NN is/VBZ the/DT dentine/NN tissue/NN that/WDT lack/VB dentine/NN tubule/NN and/CC that/DT is/VBZ penetrated/VBN by/IN blood/NN capillary/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 ^ E LOC#6 . ( LOC#7 LOC#8 ) ^ E LOC#12 LOC#13 . ( LOC#14 LOC#15 ) <EOS>
+the/DT columnar/NN chondrocyte/NN is/VBZ a/DT chondrocyte/NN that/WDT is/VBZ linearly/RB arranged/VBN with/IN other/JJ columnar/NN chondrocytes/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+a/DT mineralized/JJ bone/NN tissue/NN is/VBZ a/DT bone/NN tissue/NN that/WDT is/VBZ mineralized/VBN with/IN hydroxyapatite/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ E LOC#10 LOC#11 . ( LOC#12 ) <EOS>
+a/DT cellular/JJ bone/NN tissue/NN is/VBZ a/DT mineralized/JJ bone/NN tissue/NN that/WDT always/RB include/VB non-terminally/RB differentiated/JJ osteoblast/NN and/CC osteocyte/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#11 . ( LOC#12 LOC#13 LOC#14 U LOC#16 ) <EOS>
+the/DT acellular/JJ bone/NN tissue/NN is/VBZ a/DT mineralized/JJ bone/NN tissue/NN that/WDT have/VB terminally/RB differentiated/VBN osteoblast/NN but/CC lack/VB osteocyte/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#10 LOC#11 LOC#12 LOC#13 . ( T ) ^ E LOC#15 . ( LOC#16 ) <EOS>
+the/DT pectoral/JJ appendage/NN is/VBZ the/DT anterior/JJ paired/JJ appendage/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 <EOS>
+the/DT pelvic/JJ appendage/NN is/VBZ a/DT posterior/JJ paired/JJ appendage/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 <EOS>
+a/DT ossified/JJ tendon/NN is/VBZ a/DT sesamoid/NN that/WDT develop/VB within/IN a/DT tendon/NN and/CC is/VBZ distal/JJ to/TO an/DT articulation/NN or/CC joint/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 LOC#8 . ( LOC#10 ) ^ E LOC#13 LOC#14 . ( LOC#16 U LOC#18 ) <EOS>
+a/DT ossified/JJ tendon/NN is/VBZ a/DT sesamoid/NN that/WDT develop/VB within/IN a/DT tendon/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 LOC#8 . ( LOC#10 ) <EOS>
+a/DT replacement/NN element/NN is/VBZ a/DT skeletal/JJ element/NN that/WDT form/VB as/IN a/DT replacement/NN or/CC substitution/NN of/IN another/DT element/NN or/CC tissue/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#11 LOC#16 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#14 LOC#16 U LOC#13 LOC#14 LOC#16 U LOC#11 LOC#14 LOC#18 U LOC#13 LOC#14 LOC#18 ) <EOS>
+a/DT ligamentous/JJ replacement/NN element/NN is/VBZ a/DT replacement/NN element/NN that/WDT form/VB as/IN a/DT replacement/NN of/IN a/DT ligament/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#15 ) <EOS>
+the/DT pectoral/JJ fin/NN skeleton/NN is/VBZ a/DT paired/JJ fin/NN skeleton/NN that/IN consists/VB of/IN the/DT supporting/VBG endochondral/JJ proximal/NN and/CC distal/JJ radial/NN and/CC the/DT dermal/JJ fin/NN ray/NN or/CC lepidotrichia/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 LOC#15 U LOC#17 LOC#18 U LOC#21 LOC#22 LOC#23 U LOC#21 LOC#22 LOC#25 ) <EOS>
+the/DT pectoral/JJ fin/NN skeleton/NN is/VBZ a/DT paired/JJ fin/NN skeleton/NN that/WDT is/VBZ located/VBN in/IN the/DT thoracic/JJ region/NN of/IN the/DT body/NN and/CC articulate/VB with/IN the/DT scapula/NN and/CC the/DT coracoid/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#11 LOC#12 . ( LOC#14 LOC#15 LOC#16 LOC#18 ) ^ E LOC#20 LOC#21 . ( LOC#23 ) ^ E LOC#20 LOC#21 . ( LOC#26 ) <EOS>
+ossified/VBN ligament/NN are/VBP sesamoid/NN that/IN develop/VB within/IN a/DT ligament/NN ,/, distal/NN to/TO an/DT articulation/NN or/CC joint/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#8 ) ^ E LOC#10 LOC#11 . ( LOC#13 U LOC#15 ) <EOS>
+a/DT paired/JJ fin/NN skeleton/NN is/VBZ a/DT skeletal/JJ system/NN that/WDT consists/VB of/IN the/DT paired/JJ fin/NN (/( pectoral/JJ or/CC pelvic/JJ fin/NN )/) ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+a/DT pectoral/JJ fin/NN skeleton/NN is/VBZ a/DT paired/JJ fin/NN skeleton/NN that/IN consists/VB of/IN the/DT supporting/VBG endochondral/JJ proximal/NN and/CC distal/JJ radial/NN and/CC the/DT dermal/JJ fin/NN ray/NN or/CC lepidotrichia/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 LOC#18 ^ LOC#17 LOC#18 ^ ( LOC#21 LOC#22 LOC#23 U LOC#21 LOC#22 LOC#25 ) ) <EOS>
+the/DT pectoral/JJ fin/NN skeleton/NN is/VBZ located/VBN in/IN the/DT thoracic/JJ region/NN of/IN the/DT body/NN and/CC articulates/VB with/IN the/DT scapula/NN and/CC coracoid/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := E LOC#5 LOC#6 . ( LOC#8 LOC#9 LOC#10 LOC#12 ) ^ E LOC#14 LOC#15 . ( LOC#17 ^ LOC#19 ) <EOS>
+the/DT pelvic/JJ fin/NN skeleton/NN is/VBZ a/DT paired/JJ fin/NN skeleton/NN located/VBN in/IN the/DT abdominal/JJ position/NN that/IN consists/VB of/IN supporting/VBG endochondral/JJ radial/NN and/CC dermal/JJ fin/NN ray/NN or/CC lepidotrichia/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) ^ E LOC#15 LOC#16 . ( LOC#17 LOC#18 LOC#19 ^ ( LOC#21 LOC#22 LOC#23 U LOC#21 LOC#22 LOC#25 ) ) <EOS>
+a/DT ossified/JJ ligament/NN is/VBZ a/DT sesamoid/NN that/WDT develop/VB within/IN a/DT ligament/NN ,/, distal/NN to/TO an/DT articulation/NN or/CC joint/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#7 LOC#8 . ( LOC#10 ) ^ E LOC#12 LOC#13 . ( LOC#15 U LOC#17 ) <EOS>
+an/DT interclavicle/NN is/VBZ a/DT dermal/JJ bone/NN of/IN pectoral/JJ girdle/NN that/WDT is/VBZ median/JJ and/CC ventral/JJ in/IN position/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 LOC#8 ^ E LOC#11 LOC#14 . ( LOC#15 ) ^ E LOC#13 LOC#14 . ( LOC#15 ) <EOS>
+a/DT paired/JJ fin/NN skeleton/NN is/VBZ a/DT skeletal/JJ system/NN that/WDT consists/VB of/IN the/DT paired/JJ fin/NN (/( pectoral/JJ or/CC pelvic/JJ fin/NN )/) ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+a/DT median/JJ fin/NN skeleton/NN is/VBZ a/DT postcranial/JJ axial/JJ skeleton/NN that/WDT is/VBZ unpaired/JJ and/CC located/VBN on/IN the/DT sagittal/JJ plane/NN of/IN the/DT organism/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#11 . ( T ) ^ E LOC#13 LOC#14 . ( LOC#16 LOC#17 LOC#18 LOC#19 LOC#20 ) <EOS>
+the/DT scapular/NN complex/NN is/VBZ a/DT skeletal/JJ subdivision/NN of/IN dermal/JJ bone/NN that/WDT may/MD include/VB the/DT anterolateral/JJ plate/NN ,/, the/DT spinal/JJ process/NN ,/, and/CC anteroventral/JJ plate/NN (/( av/NN )/) and/CC other/JJ dermal/JJ bone/NN that/WDT are/VBP part/NN of/IN the/DT pectoral/JJ girdle/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 LOC#8 LOC#9 ^ E LOC#12 . ( LOC#14 LOC#15 U LOC#20 LOC#21 LOC#22 U LOC#28 LOC#29 U ( LOC#35 LOC#36 ^ E LOC#39 LOC#40 . ( LOC#42 LOC#43 ) ) <EOS>
+the/DT vertebral/JJ column/NN is/VBZ the/DT anatomical/JJ cluster/NN that/WDT consists/VB of/IN vertebra/NN of/IN the/DT body/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 . ( LOC#10 LOC#11 LOC#13 ) <EOS>
+the/DT fin/NN skeleton/NN is/VBZ the/DT skeletal/JJ subdivision/NN that/WDT is/VBZ part/NN of/IN the/DT paired/JJ fin/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+the/DT limb/NN skeleton/NN is/VBZ the/DT skeletal/JJ subdivision/NN that/WDT is/VBZ part/NN of/IN the/DT paired/JJ limb/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+the/DT girdle/NN skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN that/WDT is/VBZ part/NN of/IN the/DT appendage/NN girdle/NN region/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT perichordal/NN bone/NN is/VBZ the/DT bone/NN element/NN that/WDT is/VBZ adjacent/JJ to/TO the/DT notochord/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 ) <EOS>
+the/DT perichondral/JJ bone/NN is/VBZ the/DT bone/NN element/NN that/WDT is/VBZ located/VBN on/IN the/DT surface/NN of/IN a/DT cartilage/NN element/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#15 LOC#16 ) <EOS>
+the/DT acropodial/JJ skeleton/NN is/VBZ a/DT endochondral/JJ terminal/JJ bone/NN that/WDT is/VBZ located/VBN at/IN the/DT distalmost/JJ end/NN of/IN the/DT autopodium/NN ,/, consisting/VBG of/IN the/DT phalanx/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 LOC#15 LOC#17 ) ^ E LOC#19 LOC#20 . ( LOC#22 ) <EOS>
+an/DT integumentary/JJ papilla/NN is/VBZ an/DT odontogenic/JJ papilla/NN that/WDT is/VBZ located/VBN in/IN the/DT integument/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 ) <EOS>
+the/DT oropharyngeal/JJ papilla/NN is/VBZ an/DT odontogenic/JJ papilla/NN located/VBN along/IN the/DT jaw/NN or/CC pharyngeal/JJ skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#7 LOC#8 . ( LOC#10 U LOC#12 LOC#13 ) <EOS>
+the/DT bone/NN element/NN is/VBZ a/DT skeletal/JJ element/NN that/WDT is/VBZ composed/VBN of/IN bone/NN tissue/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#11 LOC#12 ) <EOS>
+an/DT osteoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB osteoid/JJ ,/, is/VBZ capable/JJ of/IN producing/VBG mineralized/VBN matrix/NN ,/, is/VBZ located/VBN adjacent/JJ to/TO or/CC within/IN osteoid/JJ tissue/NN ,/, and/CC arises/NN from/IN the/DT transformation/NN of/IN a/DT preosteoblast/NN cell/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 ) ^ E LOC#13 . ( LOC#14 LOC#15 ) ^ E ( LOC#18 LOC#19 LOC#20 ^ LOC#18 LOC#22 ) . ( LOC#23 LOC#24 ) ^ E LOC#27 LOC#28 . ( LOC#30 LOC#31 LOC#33 LOC#34 ) <EOS>
+an/DT osteoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT secretes/VB osteoid/PRP ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+an/DT osteoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT is/VBZ located/VBN adjacent/JJ to/TO or/CC within/IN osteoid/JJ tissue/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E ( LOC#8 LOC#9 LOC#10 ^ LOC#8 LOC#12 ) . ( LOC#13 LOC#14 ) <EOS>
+a/DT cementoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT produce/VB cementum/NN ,/, is/VBZ part/NN of/IN the/DT odontogenic/JJ papilla/NN ,/, and/CC develop/VB from/IN a/DT precementoblast/NN cell/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 ) ^ E LOC#17 LOC#18 . ( LOC#20 LOC#21 ) ^ E LOC#24 LOC#25 . ( LOC#27 LOC#28 ) <EOS>
+the/DT caudal/NN fin/NN skeleton/NN is/VBZ a/DT median/JJ fin/NN skeleton/NN supporting/VBG the/DT caudal/NN fin/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#9 . ( LOC#11 LOC#12 ) <EOS>
+the/DT pelvic/JJ fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT pelvic/JJ fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT caudal/NN fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT caudal/NN fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT pectoral/JJ fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT pectoral/JJ fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT anal/JJ fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT anal/JJ fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT dorsal/NN fin/NN lepidotrichium/NN is/VBZ a/DT lepidotrichium/NN that/WDT is/VBZ part/NN of/IN the/DT dorsal/NN fin/NN skeleton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+the/DT embryonic/JJ cell/NN is/VBZ a/DT cell/NN of/IN the/DT embryo/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 LOC#8 <EOS>
+the/DT fin/NN is/VBZ a/DT surface/NN structure/NN involved/VBN in/IN locomotion/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#6 LOC#7 . ( LOC#8 ) <EOS>
+the/DT median/JJ fin/NN is/VBZ an/DT unpaired/JJ fin/NN that/WDT is/VBZ located/VBN in/IN the/DT sagittal/JJ plane/NN of/IN the/DT organism/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 LOC#14 LOC#16 ) <EOS>
+the/DT anal/JJ fin/NN is/VBZ a/DT median/JJ fin/NN that/WDT is/VBZ located/VBN posterior/RB to/TO the/DT anus/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 LOC#11 . ( LOC#13 ) <EOS>
+the/DT dorsal/NN fin/NN is/VBZ a/DT median/JJ fin/NN located/VBN on/IN the/DT dorsal/JJ surface/NN of/IN the/DT organism/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#7 LOC#8 . ( LOC#10 LOC#11 LOC#12 LOC#14 ) <EOS>
+the/DT caudal/NN fin/NN is/VBZ the/DT most/RBS posterior/JJ median/JJ fin/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#7 LOC#8 <EOS>
+the/DT articular/JJ system/NN is/VBZ an/DT anatomical/JJ system/NN that/WDT consists/VB of/IN all/PDT the/DT joint/NN of/IN the/DT body/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 . ( LOC#12 LOC#13 LOC#15 ) <EOS>
+the/DT vertebral/JJ centrum/NN is/VBZ a/DT skeletal/JJ element/NN that/WDT surround/VB the/DT notochord/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ E LOC#8 . ( LOC#10 ) <EOS>
+a/DT two-dimensional/JJ region/NN is/VBZ a/DT spatial/JJ region/NN that/WDT have/VB NUM/CD dimension/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 = LOC#9 LOC#8 LOC#10 . ( T ) <EOS>
+a/DT three-dimensional/JJ region/NN is/VBZ a/DT spatial/JJ region/NN that/WDT have/VB NUM/CD dimension/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 = LOC#9 LOC#8 LOC#10 . ( T ) <EOS>
+an/DT authority/NN operation/NN is/VBZ an/DT operation/NN or/CC activity/NN initiated/VBN by/IN the/DT authority/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := ( LOC#5 U LOC#7 ) ^ E LOC#8 LOC#9 . ( LOC#11 ) ^ >= 0 LOC#14 . ( LOC#15 ) <EOS>
+a/DT crowd/NN is/VBZ a/DT major/JJ gathering/NN of/IN people/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 ^ >= 0 LOC#10 . ( LOC#11 ) <EOS>
+a/DT public/JJ event/NN is/VBZ an/DT organized/JJ event/NN which/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 ^ >= 0 LOC#9 . ( LOC#10 ) <EOS>
+an/DT agricultural/JJ show/NN or/CC event/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 U LOC#1 LOC#4 := >= 0 LOC#9 . ( LOC#10 ) <EOS>
+an/DT air/NN show/NN or/CC other/JJ areonautical/JJ event/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 U LOC#5 LOC#6 := >= 0 LOC#11 . ( LOC#12 ) <EOS>
+an/DT athletics/NN meeting/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT baseball/NN game/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT basketball/NN game/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT bicycle/NN race/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#7 . ( LOC#8 ) <EOS>
+a/DT boat/NN race/NN or/CC regatta/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#9 . ( LOC#10 ) <EOS>
+a/DT boat/NN show/NN is/VBZ something/NN which/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#7 . ( LOC#8 ) <EOS>
+a/DT bull/NN fight/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT commercial/JJ event/NN is/VBZ an/DT event/NN which/WDT could/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT concert/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ >= 0 LOC#7 . ( LOC#8 ) <EOS>
+a/DT cultural/JJ event/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+an/DT exhibition/NN is/VBZ a/DT major/JJ display/NN or/CC trade/NN show/VBP that/IN can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 := ( LOC#4 LOC#5 U LOC#4 LOC#7 LOC#8 ) ^ >= LOC#11 . ( LOC#12 ) <EOS>
+a/DT football/NN match/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT motor/NN show/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT motor/NN sport/NN race/NN meeting/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 ^ >= 0 LOC#10 . ( LOC#11 ) <EOS>
+a/DT parade/NN is/VBZ a/DT formal/JJ display/NN or/CC organized/VBN procession/NN which/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 := ( LOC#4 LOC#5 U LOC#7 LOC#8 ) ^ >= 0 LOC#11 . ( LOC#12 ) <EOS>
+a/DT procession/NN or/CC an/DT organized/VBN procession/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 U LOC#4 LOC#5 := >= 0 LOC#10 . ( LOC#11 ) <EOS>
+a/DT race/NN meeting/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#7 . ( LOC#8 ) <EOS>
+a/DT rugby/NN match/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT tennis/NN tournament/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= 0 LOC#8 . ( LOC#9 ) <EOS>
+a/DT water/NN sport/NN meeting/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ >= 0 LOC#9 . ( LOC#10 ) <EOS>
+a/DT winter/NN sport/NN meeting/NN or/CC event/NN is/VBZ an/DT event/NN that/WDT could/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 U LOC#1 LOC#2 LOC#5 := LOC#8 ^ >= 0 LOC#11 . ( LOC#12 ) <EOS>
+hail/NN are/VBP falling/VBG ice/NN pellet/NN or/CC frozen/JJ rain/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 LOC#5 LOC#6 LOC#7 <EOS>
+heavy/JJ frost/NN is/VBZ a/DT thick/JJ coating/NN of/IN frost/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 <EOS>
+shower/NN are/VBP light/JJ rain/NN or/CC intermittent/NN rain/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 U LOC#5 LOC#6 <EOS>
+animal/NN on/IN the/DT infrastructure/NN may/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#3 := >= 0 LOC#5 . ( LOC#6 ) <EOS>
+herd/NN of/IN animal/NN on/IN the/DT infrastructure/NN may/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 LOC#3 LOC#5 := >= 0 LOC#7 . ( LOC#8 ) <EOS>
+large/JJ animal/NN on/IN the/DT infrastructure/NN may/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 LOC#4 := >= 0 LOC#6 . ( LOC#7 ) <EOS>
+mud/NN slide/NN may/MD obstruct/VB transport/NN infrastructure/NN ./. <EOS>/<EOS>	LOC#0 := >= 0 LOC#3 . ( LOC#4 LOC#5 ) <EOS>
+rockfalls/NN may/MD obstruct/VB transport/NN infrastructure/NN ./. <EOS>/<EOS>	LOC#0 := >= 0 LOC#2 . ( LOC#3 LOC#4 ) <EOS>
+a/DT damaged/VBN bridge/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+a/DT damaged/VBN crash/NN barrier/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#5 . ( LOC#6 LOC#7 ) <EOS>
+a/DT damaged/VBN flyover/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+a/DT damaged/VBN gantry/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+a/DT damaged/VBN road/NN surface/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#5 . ( LOC#6 LOC#7 ) <EOS>
+a/DT damaged/VBN tunnel/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+a/DT damaged/VBN viaduct/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= 0 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+a/DT broken/JJ down/RP vehicle/NN (/( s/PRP )/) may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := >= 0 LOC#8 . ( LOC#9 LOC#10 ) <EOS>
+a/DT product/NN is/VBZ everything/NN that/WDT is/VBZ produced/VBN by/IN an/DT event/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+an/DT adaptor/NN is/VBZ a/DT user/NN that/WDT produce/VB an/DT adaptation/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 . ( LOC#8 ) <EOS>
+an/DT action/NN is/VBZ the/DT exercise/NN of/IN a/DT right/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#7 <EOS>
+a/DT measurement/JJ unit/NN label/NN is/VBZ a/DT datum/NN item/NN label/NN that/WDT denotes/VB a/DT unit/NN of/IN measure/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 ^ E LOC#10 . ( LOC#12 LOC#13 LOC#14 ) <EOS>
+a/DT dichotomous/JJ variable/JJ specification/NN is/VBZ a/DT variable/JJ that/WDT have/VB NUM/CD category/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ = LOC#9 LOC#8 LOC#10 . ( T ) <EOS>
+a/DT kindergarten/NN is/VBZ the/DT location/NN that/WDT is/VBZ used/VBN for/IN pre-school/JJ education/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#7 LOC#8 . ( LOC#9 LOC#10 ) <EOS>
+a/DT school/NN is/VBZ a/DT building/NN or/CC location/NN that/WDT is/VBZ used/VBN for/IN instructional/JJ class/NN ./. <EOS>/<EOS>	LOC#1 := ( LOC#4 U LOC#6 ) ^ E LOC#9 LOC#10 . ( LOC#11 LOC#12 ) <EOS>
+a/DT university/NN or/CC a/DT college/NN is/VBZ an/DT institution/NN of/IN higher/JJR education/NN ./. <EOS>/<EOS>	LOC#1 U LOC#4 := LOC#7 LOC#8 LOC#9 LOC#10 <EOS>
+a/DT ski/NN lift/NN station/NN is/VBZ the/DT start/JJ point/NN of/IN a/DT ski/NN lift/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 LOC#7 LOC#8 LOC#10 LOC#11 <EOS>
+a/DT ski/NN resort/NN is/VBZ a/DT down/RP hill/NN or/CC cross-country/NN ski/NN facility/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 LOC#6 LOC#9 LOC#10 U LOC#8 LOC#9 LOC#10 <EOS>
+a/DT datum/NN collection/NN by/IN censoring/VBG is/VBZ a/DT datum/NN collection/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN generated/VBN from/IN an/DT censoring/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 LOC#8 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 <EOS> LOC#15 ^ E LOC#16 LOC#17 . ( LOC#19 ) ) <EOS>
+a/DT datum/NN collection/NN from/IN survey/NN is/VBZ a/DT datum/NN collection/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN generated/VBN from/IN a/DT survey/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 LOC#8 ^ E LOC#10 LOC#11 . ( LOC#13 LOC#14 <EOS> LOC#15 ^ E LOC#16 LOC#17 . ( LOC#19 ) ) <EOS>
+a/DT datum/NN collection/NN from/IN experiment/NN is/VBZ a/DT datum/NN collection/NN process/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN generated/VBN from/IN an/DT experiment/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 LOC#8 ^ E LOC#11 LOC#12 . ( LOC#14 LOC#15 <EOS> LOC#16 ^ E LOC#17 LOC#18 . ( LOC#20 ) ) <EOS>
+a/DT datum/NN collection/NN from/IN literature/NN is/VBZ a/DT datum/NN collection/NN process/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN from/IN the/DT literature/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 LOC#4 := LOC#7 LOC#8 LOC#9 ^ E LOC#11 LOC#12 . ( LOC#14 LOC#15 LOC#16 LOC#17 LOC#19 ) <EOS>
+an/DT employee/NN is/VBZ a/DT person/NN that/WDT work/VB for/IN a/DT company/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+a/DT team/NN is/VBZ a/DT group/NN of/IN employee/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 <EOS>
+each/DT employee/NN is/VBZ part/NN of/IN a/DT team/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#3 LOC#4 . ( LOC#6 ) <EOS>
+a/DT manager/NN is/VBZ an/DT employee/NN that/WDT lead/VB at/IN least/JJS NUM/CD team/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ >= LOC#9 LOC#6 . ( LOC#10 ) <EOS>
+a/DT top/JJ manager/NN is/VBZ a/DT manager/NN that/WDT lead/VB more/JJR than/IN NUM/CD team/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ >= LOC#10 LOC#7 . ( LOC#11 ) <EOS>
+every/DT employee/NN report/NN to/TO at/IN least/JJS NUM/CD manager/NN ./. <EOS>/<EOS>	LOC#1 := >= LOC#6 LOC#2 LOC#3 . ( LOC#7 ) <EOS>
+every/DT employee/NN use/VB a/DT desk/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#2 . ( LOC#4 ) <EOS>
+desk/NN are/VBP piece/NN of/IN funriture/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 <EOS>
+piece/NN of/IN furniture/NN are/VBP artifact/VB that/IN furnish/VB a/DT room/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#4 ^ E LOC#6 . ( LOC#8 ) <EOS>
+room/NN are/VBP part/NN of/IN the/DT building/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+window/NN are/VBP part/NN of/IN a/DT room/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+the/DT door/NN are/VBP part/NN of/IN room/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#3 LOC#4 . ( LOC#5 ) <EOS>
+a/DT team/NN is/VBZ a/DT group/NN of/IN employee/NN that/WDT report/VB to/TO a/DT manager/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 ^ E LOC#8 LOC#9 . ( LOC#11 ) <EOS>
+every/DT team/NN develop/VB at/IN least/JJS NUM/CD leading/VBG project/NN ./. <EOS>/<EOS>	LOC#1 := >= LOC#5 LOC#2 . ( LOC#6 LOC#7 ) <EOS>
+a/DT team/NN follow/VB more/JJR than/IN NUM/CD side/NN project/NN ./. <EOS>/<EOS>	LOC#1 := >= LOC#5 LOC#3 . ( LOC#7 LOC#8 ) <EOS>
+every/DT team/NN develop/VB at/IN most/JJS NUM/CD project/NN ./. <EOS>/<EOS>	LOC#1 := <= LOC#5 LOC#2 . ( LOC#6 ) <EOS>
+a/DT team/NN pursue/VB an/DT goal/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#2 . ( LOC#4 ) <EOS>
+a/DT team/NN implement/VB trimestral/JJ activity/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#2 . ( LOC#3 LOC#4 ) <EOS>
+each/DT project/NN have/VB exactly/RB NUM/CD deadline/NN ./. <EOS>/<EOS>	LOC#1 := = LOC#4 LOC#2 LOC#5 . ( T ) <EOS>
+trimestral/JJ activity/NN are/VBP activity/NN that/WDT take/VB exactly/RB NUM/CD month/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#3 ^ = LOC#7 LOC#5 . ( LOC#8 ) <EOS>
+activity/NN are/VBP part/NN of/IN a/DT process/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 )
+side/NN project/NN are/VBP a/DT type/NN of/IN project/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#6 <EOS>
+task/NN are/VBP part/NN of/IN a/DT project/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+every/DT stakeholder/NN is/VBZ involved/VBN in/IN more/JJR than/IN NUM/CD project/NN ./. <EOS>/<EOS>	LOC#1 := > LOC#7 LOC#3 LOC#4 . ( LOC#8 ) <EOS>
+every/DT project/NN report/VB to/TO at/IN least/JJS NUM/CD and/CC at/IN most/JJS NUM/CD stakeholder/NN ./. <EOS>/<EOS>	LOC#1 := ( >= LOC#6 && <= LOC#10 ) LOC#2 LOC#3 . ( LOC#11 ) <EOS>
+each/DT project/NN have/VB a/DT leader/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#2 LOC#4 . ( T ) <EOS>
+positron/NN are/VBP beta/JJ particle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 <EOS>
+fermion/NN are/VBP part/NN of/IN complex/JJ particle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 LOC#5 ) <EOS>
+lepton/NN are/VBP fermion/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+lepton/NN are/VBP subatomic/JJ particle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 <EOS>
+boson/NN are/VBP subatomic/JJ particle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 <EOS>
+the/DT manganese/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+a/DT carbon/NN atom/NN is/VBZ also/RB a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#6 <EOS>
+the/DT gadolinium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT ununpentium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+nickel/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 <EOS>
+the/DT magnesium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+rubidium/NN atom/NN are/VBP also/RB atom/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#4 <EOS>
+the/DT rhenium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+carbon/NN atom/NN are/VBP a/DT type/NN of/IN atom/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#6 <EOS>
+the/DT unununium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT ununhexium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT neodymium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT lanthanum/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT argon/NN atom/NN are/VBP a/DT type/NN of/IN atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#7 <EOS>
+the/DT thallium/NN atom/NN is/VBZ also/RB a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#6 <EOS>
+the/DT barium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT zirconium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT berkelium/NN atom/NN are/VBP also/RB atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT strontium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT selenium/NN atom/NN is/VBZ a/DT atom/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+the/DT carbon/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+the/DT xenon/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+the/DT silicon/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+the/DT nickel/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+the/DT neon/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+a/DT rhodium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+a/DT arsenic/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+a/DT chlorine/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+a/DT manganese/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT oxygen/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT thallium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT antimony/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT germanium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT scandium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+all/DT chromium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 = LOC#4 LOC#3 LOC#5 . ( T ) <EOS>
+molybdenum/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 = LOC#3 LOC#2 LOC#4 . ( T ) <EOS>
+phosphorus/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 = LOC#3 LOC#2 LOC#4 . ( T ) <EOS>
+iodine/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 = LOC#3 LOC#2 LOC#4 . ( T ) <EOS>
+gallium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 = LOC#3 LOC#2 LOC#4 . ( T ) <EOS>
+radium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 = LOC#3 LOC#2 LOC#4 . ( T ) <EOS>
+carnivor/NN are/VBP a/DT type/NN of/IN animal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 <EOS>
+carnivor/NN are/VBP also/RB animal/NN that/WDT eat/VBZ only/RB animal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ A LOC#5 . ( LOC#7 ) <EOS>
+herbivor/NN are/VBP animal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+a/DT herbivor/NN is/VBZ a/DT animal/NN that/WDT eat/VBZ only/RB plant/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ A LOC#6 . ( LOC#8 ) <EOS>
+every/DT herbivor/NN is/VBZ also/RB a/DT animal/NN that/WDT eat/VBZ only/RB plant/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ A LOC#7 . ( LOC#9 ) <EOS>
+every/DT mammal/NN is/VBZ also/RB a/DT animal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 <EOS>
+every/DT mammal/NN is/VBZ also/RB a/DT animal/NN that/WDT brestfeed/VB puppy/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+mammal/NN are/VBP also/RB animal/NN that/WDT brestfeed/VB puppy/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+all/DT mammal/NN are/VBP animal/NN that/WDT brestfeed/VB puppy/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+all/DT insect/NN are/VBP also/RB small/JJ animal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 <EOS>
+every/DT dolphin/NN is/VBZ also/RB a/DT acquatic/JJ mammal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 LOC#6 <EOS>
+dolphin/NN are/VBP acquatic/JJ mammal/NN that/WDT live/VB in/IN the/DT sea/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 ^ E LOC#5 LOC#6 . ( LOC#8 ) <EOS>
+all/DT dolphin/NN are/VBP acquatic/JJ mammal/NN that/DT have/VB a/DT long/JJ muzzle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 ^ LOC#6 LOC#8 LOC#9 . ( T ) <EOS>
+cow/NN are/VBP also/RB herbivor/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 <EOS>
+cow/NN are/VBP also/RB herbivor/NN that/WDT produce/VB milk/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+cow/NN are/VBP mammal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+every/DT cow/NN is/VBZ a/DT mammal/NN that/DT have/VB NUM/CD long/JJ horn/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ = LOC#7 LOC#6 LOC#8 LOC#9 . ( T ) <EOS>
+cow/NN are/VBP also/RB mammal/NN that/DT have/VB NUM/CD long/JJ horn/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ = LOC#6 LOC#5 LOC#7 LOC#8 . ( T ) <EOS>
+lion/NN are/VBP a/DT type/NN of/IN carnivor/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 <EOS>
+every/DT lion/NN is/VBZ a/DT carnivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 LOC#7 . ( LOC#8 ) <EOS>
+lion/NN are/VBP also/RB carnivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+every/DT lion/NN is/VBZ also/RB a/DT carnivor/NN that/WDT hunt/VB the/DT gazelle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#7 . ( LOC#9 ) <EOS>
+lion/NN are/VBP also/RB carnivor/NN that/WDT hunt/VB gazelle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+all/DT lion/NN are/VBP also/RB carnivor/NN that/WDT hunt/VB the/DT gazelle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 . ( LOC#8 ) <EOS>
+all/DT lion/NN are/VBP mammal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 <EOS>
+all/DT lion/NN are/VBP also/RB mammal/NN that/DT have/VB long/JJ hair/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ LOC#6 LOC#7 LOC#8 . ( T ) <EOS>
+every/DT lion/NN is/VBZ a/DT mammal/NN that/DT have/VB a/DT long/JJ hair/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ LOC#6 LOC#8 LOC#9 . ( T ) <EOS>
+lion/NN are/VBP mammal/NN that/DT have/VB a/DT long/JJ hair/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ LOC#4 LOC#6 LOC#7 . ( T ) <EOS>
+the/DT male/JJ lion/NN have/VB more/JJR than/IN NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= LOC#6 LOC#3 LOC#7 LOC#8 . ( T ) <EOS>
+theE/DT male/JJ lion/NN have/VB at/IN least/JJS NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= LOC#6 LOC#3 LOC#7 LOC#8 . ( T ) <EOS>
+the/DT male/JJ lion/NN have/VB not/RB less/JJR than/IN NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= LOC#7 LOC#3 LOC#8 LOC#9 . ( T ) <EOS>
+a/DT male/JJ lion/NN have/VB not/RB less/JJR than/IN NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := >= LOC#7 LOC#3 LOC#8 LOC#9 . ( T ) <EOS>
+male/JJ lion/NN have/VB not/RB less/JJR than/IN NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := >= LOC#6 LOC#2 LOC#7 LOC#8 . ( T ) <EOS>
+tiger/NN are/VBP carnivor/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+all/DT tiger/NN are/VBP carnivor/NN that/WDT live/VB in/IN asia/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+every/DT tiger/NN is/VBZ also/RB a/DT mammal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 <EOS>
+every/DT tiger/NN is/VBZ also/RB a/DT large/JJ feline/NN that/DT have/VB black/JJ stripe/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 LOC#10 . ( T ) <EOS>
+tiger/NN are/VBP a/DT type/NN of/IN large/JJ feline/NN that/DT have/VB black/JJ stripe/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 LOC#10 . ( T ) <EOS>
+female/JJ tiger/NN have/VB at/IN most/JJS NUM/CD male/JJ mate/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := <= LOC#5 LOC#2 LOC#6 LOC#7 . ( T ) <EOS>
+female/JJ tiger/NN have/VB at/IN most/JJS NUM/CD male/JJ mate/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := <= LOC#5 LOC#2 LOC#6 LOC#7 . ( T ) <EOS>
+gazelle/NN are/VBP also/RB herbivor/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 <EOS>
+every/DT gazelle/NN is/VBZ also/RB a/DT fast/JJ herbivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 LOC#6 ^ E LOC#8 LOC#9 . ( LOC#10 ) <EOS>
+all/DT gazelle/NN are/VBP also/RB fast/JJ herbivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 LOC#8 . ( LOC#9 ) <EOS>
+every/DT gazelle/NN is/VBZ also/RB a/DT mammal/NN that/WDT is/VBZ chased/VBD by/IN lion/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#10 ) <EOS>
+all/DT gazelle/NN are/VBP mammal/NN that/WDT are/VBD chased/VBD by/IN lion/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#6 LOC#7 . ( LOC#8 ) <EOS>
+gazelle/NN are/VBP mammal/NN that/WDT are/VBD chased/VBD by/IN the/DT lion/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ E LOC#5 LOC#6 . ( LOC#8 ) <EOS>
+gazelle/NN are/VBP also/RB mammal/NN that/WDT are/VBD chased/VBD by/IN the/DT lion/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+giraffe/NN are/VBP also/RB herbivor/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 <EOS>
+all/DT giraffe/NN are/VBP herbivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+every/DT giraffe/NN is/VBZ also/RB a/DT mammal/NN that/DT have/VB a/DT long/JJ neck/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ LOC#7 LOC#9 LOC#10 . ( T ) <EOS>
+giraffe/NN are/VBP a/DT type/NN of/IN mammal/NN that/DT have/VB a/DT long/JJ neck/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ LOC#7 LOC#9 LOC#10 . ( T ) <EOS>
+all/DT pachyderm/NN are/VBP also/RB large/JJ animal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 <EOS>
+all/DT elephant/NN are/VBP pachyderm/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 <EOS>
+a/DT elephant/NN is/VBZ a/DT pachyderm/NN that/WDT live/VB in/IN africa/NN or/CC asia/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 LOC#7 . ( LOC#8 U LOC#10 ) <EOS>
+every/DT elephant/NN is/VBZ a/DT pachyderm/NN that/WDT live/VB in/IN africa/NN or/CC asia/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 LOC#7 . ( LOC#8 U LOC#10 ) <EOS>
+elephant/NN are/VBP mammal/NN that/DT have/VB big/JJ trunk/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ LOC#4 LOC#5 LOC#6 . ( T ) <EOS>
+a/DT elephant/NN is/VBZ also/RB a/DT mammal/NN that/DT have/VB a/DT big/JJ trunk/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ LOC#7 LOC#9 LOC#10 . ( T ) <EOS>
+elephant/NN are/VBP also/RB mammal/NN that/DT have/VB a/DT big/JJ trunk/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ LOC#5 LOC#7 LOC#8 . ( T ) <EOS>
+elephant/NN are/VBP pachyderm/NN that/DT have/VB exactly/RB NUM/CD large/JJ ear/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ = LOC#6 LOC#4 LOC#7 LOC#8 . ( T ) <EOS>
+all/DT elephant/NN are/VBP also/RB pachyderm/NN that/DT have/VB exactly/RB NUM/CD large/JJ ear/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ = LOC#8 LOC#6 LOC#9 LOC#10 . ( T ) <EOS>
+every/DT elephant/NN is/VBZ also/RB a/DT pachyderm/NN that/DT have/VB NUM/CD large/JJ ear/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ = LOC#8 LOC#7 LOC#9 LOC#10 . ( T ) <EOS>
+all/DT elephant/NN are/VBP pachyderm/NN that/DT have/VB NUM/CD large/JJ ear/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ = LOC#6 LOC#5 LOC#7 LOC#8 . ( T ) <EOS>
+rhinoceros/NN are/VBP a/DT type/NN of/IN pachyderm/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 <EOS>
+rhinoceros/NN are/VBP also/RB pachyderm/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+all/DT rhinoceros/NN are/VBP pachyderm/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+a/DT rhinoceros/NN is/VBZ a/DT mammal/NN that/DT have/VB exactly/RB NUM/CD horn/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ = LOC#8 LOC#6 LOC#9 . ( T ) <EOS>
+every/DT rhinoceros/NN is/VBZ a/DT mammal/NN that/DT have/VB exactly/RB NUM/CD horn/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ = LOC#8 LOC#6 LOC#9 . ( T ) <EOS>
+every/DT rhinoceros/NN is/VBZ also/RB a/DT mammal/NN that/DT have/VB exactly/RB NUM/CD horn/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ = LOC#9 LOC#7 LOC#10 . ( T ) <EOS>
+rhinoceros/NN are/VBP a/DT type/NN of/IN mammal/NN that/DT have/VB NUM/CD horn/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ = LOC#8 LOC#7 LOC#9 . ( T ) <EOS>
+a/DT cat/NN is/VBZ a/DT animal/NN that/WDT is/VBZ chased/VBD by/IN dog/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#7 LOC#8 . ( LOC#9 ) <EOS>
+a/DT cat/NN is/VBZ also/RB a/DT animal/NN that/WDT is/VBZ chased/VBD by/IN dog/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#10 ) <EOS>
+a/DT cat/NN is/VBZ also/RB a/DT animal/NN that/WDT is/VBZ chased/VBD by/IN the/DT dog/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 ) <EOS>
+all/DT cat/NN are/VBP animal/NN that/WDT are/VBD chased/VBD by/IN dog/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#6 LOC#7 . ( LOC#8 ) <EOS>
+cat/NN are/VBP also/RB animal/NN that/WDT are/VBD chased/VBD by/IN a/DT dog/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+all/DT cat/NN are/VBP mammal/NN that/WDT chase/VB mouse/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+all/DT cat/NN are/VBP also/RB mammal/NN that/WDT chase/VB mouse/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 . ( LOC#7 ) <EOS>
+cat/NN are/VBP a/DT type/NN of/IN mammal/NN that/WDT chase/VB a/DT mouse/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ E LOC#7 . ( LOC#9 ) <EOS>
+cat/NN are/VBP also/RB mammal/NN that/WDT chase/VB the/DT mouse/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 . ( LOC#7 ) <EOS>
+cat/NN are/VBP a/DT type/NN of/IN mammal/NN that/WDT chase/VB the/DT mouse/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ E LOC#7 . ( LOC#9 ) <EOS>
+dog/NN are/VBP a/DT type/NN of/IN animal/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 <EOS>
+all/DT mouse/NN are/VBP also/RB small/JJ animal/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 <EOS>
+a/DT mouse/NN is/VBZ a/DT animal/NN that/WDT is/VBZ chased/VBD only/RB by/IN cat/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ A LOC#7 LOC#9 . ( LOC#10 ) <EOS>
+every/DT mouse/NN is/VBZ also/RB a/DT animal/NN that/WDT is/VBZ chased/VBD only/RB by/IN cat/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ A LOC#8 LOC#10 . ( LOC#11 ) <EOS>
+every/DT mouse/NN is/VBZ also/RB a/DT animal/NN that/WDT is/VBZ chased/VBD only/RB by/IN the/DT cat/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ A LOC#8 LOC#10 . ( LOC#12 ) <EOS>
+mouse/NN are/VBP also/RB animal/NN that/WDT are/VBD chased/VBD only/RB by/IN cat/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ A LOC#6 LOC#8 . ( LOC#9 ) <EOS>
+all/DT mouse/NN are/VBP also/RB animal/NN that/WDT are/VBD chased/VBD only/RB by/IN the/DT cat/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ A LOC#7 LOC#9 . ( LOC#11 ) <EOS>
+a/DT bee/NN is/VBZ also/RB a/DT insect/NN that/WDT produce/VB honey/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+bee/NN are/VBP also/RB insect/NN that/WDT live/VB in/IN hive/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#7 ) <EOS>
+bee/NN are/VBP insect/NN that/WDT live/VB in/IN the/DT hive/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ E LOC#4 LOC#5 . ( LOC#7 ) <EOS>
+bee/NN are/VBP also/RB insect/NN that/WDT live/VB in/IN the/DT hive/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 LOC#6 . ( LOC#8 ) <EOS>
+all/DT bee/NN are/VBP also/RB insect/NN that/DT have/VB NUM/CD leg/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ = LOC#7 LOC#6 LOC#8 . ( T ) <EOS>
+a/DT bee/NN have/VB black/JJ stripe/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#2 LOC#3 LOC#4 . ( T ) <EOS>
+vehicle/NN are/VBP mean/NN of/IN transportation/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 <EOS>
+every/DT bycicle/NN is/VBZ a/DT vehicle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 <EOS>
+bycicle/NN are/VBP a/DT type/NN of/IN vehicle/NN that/DT have/VB NUM/CD weel/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ = LOC#8 LOC#7 LOC#9 . ( T ) <EOS>
+a/DT bycicle/NN is/VBZ a/DT mean/NN of/IN transportation/NN that/WDT is/VBZ powered/VBD only/RB by/IN the/DT human/JJ power/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 ^ A LOC#9 LOC#11 . ( LOC#13 LOC#14 ) <EOS>
+bycicle/NN are/VBP mean/NN of/IN transportation/NN that/WDT are/VBP powered/VBD only/RB by/IN human/JJ power/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 ^ A LOC#7 LOC#9 . ( LOC#10 LOC#11 ) <EOS>
+bycicle/NN are/VBP a/DT type/NN of/IN mean/NN of/IN transportation/NN that/WDT are/VBP powered/VBD only/RB by/IN human/JJ power/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 LOC#6 LOC#7 ^ A LOC#10 LOC#12 . ( LOC#13 LOC#14 ) <EOS>
+all/DT bycicle/NN are/VBP mean/NN of/IN transportation/NN that/WDT are/VBP powered/VBD only/RB by/IN the/DT human/JJ power/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 LOC#5 ^ A LOC#8 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+weel/NN are/VBP part/NN of/IN the/DT bycicle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+frame/NN are/VBP part/NN of/IN the/DT bycicle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+handle/NN bar/NN are/VBP part/NN of/IN bycicle/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := E LOC#3 LOC#4 . ( LOC#5 ) <EOS>
+car/NN are/VBP vehicle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+car/NN are/VBP mean/NN of/IN transportation/NN that/WDT are/VBP powered/VBD by/IN fuel/NN or/CC electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 ^ E LOC#7 LOC#8 . ( LOC#9 U LOC#11 LOC#12 ) <EOS>
+a/DT engine/NN is/VBZ also/DT a/DT complex/JJ system/NN that/DT is/VBZ part/NN of/IN car/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#11 ) <EOS>
+a/DT engine/NN is/VBZ a/DT complex/JJ system/NN that/DT is/VBZ part/NN of/IN a/DT car/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 ) <EOS>
+engine/NN are/VBP complex/JJ system/NN that/DT are/VBP part/NN of/IN a/DT car/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 ^ E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+engine/NN are/VBP complex/JJ system/NN that/DT are/VBP part/NN of/IN the/DT car/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 ^ E LOC#6 LOC#7 . ( LOC#9 ) <EOS>
+engine/NN are/VBP also/DT complex/JJ system/NN that/DT are/VBP part/NN of/IN the/DT car/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 ^ E LOC#7 LOC#8 . ( LOC#10 ) <EOS>
+all/DT engine/NN are/VBP complex/JJ system/NN that/DT are/VBP part/NN of/IN the/DT car/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 ^ E LOC#7 LOC#8 . ( LOC#10 ) <EOS>
+gear/NN are/VBP part/NN of/IN engine/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 ) <EOS>
+steering/VBG weel/NN are/VBP part/NN of/IN car/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := E LOC#3 LOC#4 . ( LOC#5 ) <EOS>
+motorcycle/NN are/VBP vehicle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 <EOS>
+weel/NN are/VBP part/NN of/IN the/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+engine/NN are/VBP also/DT complex/JJ energy/NN production/NN system/NN that/DT are/VBP part/NN of/IN motorcycle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 LOC#5 LOC#6 ^ E LOC#9 LOC#10 . ( LOC#11 ) <EOS>
+a/DT engine/NN is/VBZ a/DT complex/JJ energy/NN production/NN system/NN that/DT is/VBZ part/NN of/IN a/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 ^ E LOC#10 LOC#11 . ( LOC#13 ) <EOS>
+every/DT engine/NN is/VBZ also/DT a/DT complex/JJ energy/NN production/NN system/NN that/DT is/VBZ part/NN of/IN a/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 LOC#6 LOC#7 LOC#8 ^ E LOC#11 LOC#12 . ( LOC#14 ) <EOS>
+engine/NN are/VBP complex/JJ energy/NN production/NN system/NN that/DT are/VBP part/NN of/IN a/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 LOC#4 LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 ) <EOS>
+all/DT engine/NN are/VBP also/DT complex/JJ energy/NN production/NN system/NN that/DT are/VBP part/NN of/IN a/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 LOC#7 ^ E LOC#10 LOC#11 . ( LOC#13 ) <EOS>
+saddle/NN are/VBP part/NN of/IN the/DT motorcycle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+frame/NN are/VBP part/NN of/IN motorcycle/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 ) <EOS>
+handle/NN bar/NN are/VBP part/NN of/IN the/DT bycicle/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := E LOC#3 LOC#4 . ( LOC#6 ) <EOS>
+all/DT engine/NN are/VBP also/RB energy/NN production/NN system/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 LOC#6 <EOS>
+engine/NN are/VBP also/RB energy/NN production/NN system/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 LOC#5 <EOS>
+a/DT engine/NN is/VBZ a/DT complex/JJ system/NN that/WDT produce/VB energy/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+engine/NN are/VBP also/RB complex/JJ system/NN that/WDT produce/VB energy/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 LOC#4 ^ E LOC#6 . ( LOC#7 ) <EOS>
+every/DT hammer/NN is/VBZ also/RB a/DT tool/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 <EOS>
+a/DT screwdriver/NN is/VBZ also/RB a/DT tool/NN that/WDT handle/NN screw/NN ./. <EOS>/<EOS>	LOC#1 := LOC#5 ^ E LOC#7 . ( LOC#8 ) <EOS>
+screwdriver/NN are/VBP also/RB tool/NN that/WDT handle/NN screw/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 ^ E LOC#5 . ( LOC#6 ) <EOS>
+all/DT flat/JJ blade/NN screwdriver/NN are/VBP screwdriver/NN that/DT have/VB flat/JJ blade/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#5 ^ E LOC#7 LOC#8 LOC#9 . ( T ) <EOS>
+a/DT flat/JJ blade/NN screwdriver/NN is/VBZ a/DT screwdriver/NN that/DT have/VB a/DT flat/JJ blade/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#8 LOC#10 LOC#11 . ( T ) <EOS>
+flat/JJ blade/NN screwdriver/NN are/VBP also/RB screwdriver/NN that/DT have/VB a/DT flat/JJ blade/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#5 ^ E LOC#7 LOC#9 LOC#10 . ( T ) <EOS>
+flat/JJ blade/NN screwdriver/NN are/VBP a/DT type/NN of/IN screwdriver/NN that/DT have/VB a/DT flat/JJ blade/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#7 ^ E LOC#9 LOC#11 LOC#12 . ( T ) <EOS>
+all/DT cross/NN blade/NN screwdriver/NN are/VBP also/RB screwdriver/NN that/DT have/VB cross/NN blade/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#6 ^ E LOC#8 LOC#9 LOC#10 . ( T ) <EOS>
+cross/NN blade/NN screwdriver/NN are/VBP a/DT type/NN of/IN screwdriver/NN that/DT have/VB cross/NN blade/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 LOC#2 := LOC#7 ^ E LOC#9 LOC#10 LOC#11 . ( T ) <EOS>
+every/DT cross/NN blade/NN screwdriver/NN is/VBZ also/RB a/DT screwdriver/NN that/DT have/VB a/DT cross/NN blade/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 LOC#3 := LOC#7 ^ E LOC#9 LOC#11 LOC#12 . ( T ) <EOS>
+a/DT power/NN screwdriver/NN is/VBZ also/RB a/DT screwdriver/NN that/WDT is/VBZ powered/VBD by/IN electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#11 LOC#12 ) <EOS>
+every/DT power/NN screwdriver/NN is/VBZ a/DT screwdriver/NN that/WDT is/VBZ powered/VBD by/IN electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#10 LOC#11 ) <EOS>
+a/DT power/NN screwdriver/NN is/VBZ also/RB a/DT screwdriver/NN that/WDT is/VBZ powered/VBD by/IN the/DT electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#6 ^ E LOC#9 LOC#10 . ( LOC#12 LOC#13 ) <EOS>
+all/DT power/NN screwdriver/NN are/VBP also/RB screwdriver/NN that/WDT are/VBP powered/VBD by/IN the/DT electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#11 LOC#12 ) <EOS>
+all/DT gardern/NN fork/NN are/VBP tool/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#4 <EOS>
+all/DT drill/NN are/VBP power/NN tool/NN ./. <EOS>/<EOS>	LOC#1 := LOC#3 LOC#4 <EOS>
+all/DT power/NN tool/NN are/VBP tool/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#4 <EOS>
+all/DT rake/NN are/VBP also/RB tool/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 <EOS>
+every/DT saw/NN is/VBZ a/DT tool/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 <EOS>
+all/DT hand/NN tool/NN are/VBP also/RB tool/NN ./. <EOS>/<EOS>	LOC#1 LOC#2 := LOC#5 <EOS>
+clamp/NN are/VBP also/RB tool/NN ./. <EOS>/<EOS>	LOC#0 := LOC#3 <EOS>
+every/DT clamp/NN is/VBZ a/DT tool/NN that/WDT can/MD secure/VB object/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ >= 0 LOC#7 . ( LOC#8 ) <EOS>
+a/DT saw/NN is/VBZ a/DT tool/NN that/DT have/VB a/DT sharp/JJ blade/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 LOC#8 LOC#9 . ( T ) <EOS>
+saw/NN can/MD cut/VB wood/NN ./. <EOS>/<EOS>	LOC#0 := >= 0 LOC#2 . ( LOC#3 ) <EOS>
+scissor/NN are/VBP manual/JJ tool/NN that/DT cut/VB paper/NN or/CC cardboard/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 LOC#3 ^ E LOC#5 . ( LOC#6 U LOC#8 ) <EOS>
+chainsaw/NN are/VB a/DT type/NN of/IN saw/NN that/DT are/VBP powered/VDB by/IN electric/JJ energy/NN ./. <EOS>/<EOS>	LOC#0 := LOC#5 ^ E LOC#8 LOC#9 . ( LOC#10 LOC#11 ) <EOS>
+the/DT handle/NN is/VBZ part/NN of/IN the/DT knife/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#3 LOC#4 . ( LOC#6 ) <EOS>
+a/DT grind/NN is/VBZ part/NN of/IN the/DT blade/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#3 LOC#4 . ( LOC#6 ) <EOS>
+knife/NN have/VB a/DT blade/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#1 LOC#3 . ( T ) <EOS>
+a/DT rake/NN is/VBZ a/DT tool/NN that/WDT collect/VB dead/JJ leaf/NN ./. <EOS>/<EOS>	LOC#1 := LOC#4 ^ E LOC#6 . ( LOC#7 LOC#8 ) <EOS>
+rake/NN are/VB tool/NN that/WDT collect/VB dead/JJ leaf/NN ./. <EOS>/<EOS>	LOC#0 := LOC#2 ^ E LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+rake/NN are/VB used/VBD in/IN farming/VBG activity/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#4 LOC#5 ) <EOS>
+the/DT pole/NN is/VBZ part/NN of/IN the/DT rake/NN ./. <EOS>/<EOS>	LOC#1 := E LOC#3 LOC#4 . ( LOC#6 ) <EOS>
+thoot/NN are/VBP part/NN of/IN the/DT rake/NN ./. <EOS>/<EOS>	LOC#0 := E LOC#2 LOC#3 . ( LOC#5 ) <EOS>
+chainsaw/NN are/VBP used/VBD only/RB by/IN expert/JJ operator/NN ./. <EOS>/<EOS>	LOC#0 := A LOC#2 LOC#4 . ( LOC#5 LOC#6 ) <EOS>
+ray/NN rake/NN are/VBP tool/NN that/WDT are/VBP used/VBD only/RB by/IN expert/JJ farmer/NN ./. <EOS>/<EOS>	LOC#0 LOC#1 := LOC#3 ^ A LOC#6 LOC#8 . ( LOC#9 LOC#10 ) <EOS>

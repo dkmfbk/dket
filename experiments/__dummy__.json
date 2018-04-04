@@ -1,13 +1,13 @@
 {
     "name": "__dummy__",
     "logdir": ".",
-    "train.steps": 3,
-    "train.checkpoint_every": 1,
+    "train.steps": 5,
+    "train.checkpoint_every": 3,
     "train.files": "../datasets/20k-open-ref/train.rio",
     "train.device": "GPU",
     "eval.files": "../datasets/20k-open-ref/validation.rio",
-    "eval.dump": true,
     "eval.device": "CPU",
+    "eval.dump": true,
     "model.class": "PointingSoftmaxModel",
     "model.params": {
         "input.class": "dket.model.ModelInputs",
@@ -19,11 +19,9 @@
             "seed": 23
         },
         "loss.name": "dket.train.XEntropy",
-        "optimizer.class": "Adadelta",
+        "optimizer.class": "SGD",
         "optimizer.params": {
-            "lr": 0.1,
-            "rho": 0.95,
-            "epsilon": 1e-08,
+            "lr": 0.2,
             "lr.decay.class": "",
             "lr.decay.params": {},
             "clip.class": "",
@@ -31,30 +29,28 @@
             "colocate": true
         },
         "encoder": {
-            "cell.type": "LSTMCell",
+            "cell.type": "GRUCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
-                "layer_norm": true,
-                "num_layers": 1,
-                "num_units": 256
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
             }
         },
         "decoder": {
-            "cell.type": "LSTMCell",
+            "cell.type": "GRUCell",
             "cell.params": {
-                "dropout_input.keep_prob": 1.0,
-                "dropout_output.keep_prob": 1.0,
-                "layer_norm": true,
-                "num_layers": 1,
-                "num_units": 256
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
             }
         },
-        "input.vocabulary_size": 5157,
+        "input.vocabulary_size": 5359,
         "output.vocabulary_size": 19,
         "feedback_size": 30,
-        "embedding_size": 128,
-        "attention_size": 128,
+        "embedding_size": 256,
+        "attention_size": 256,
         "parallel_iterations": 10
     }
 }

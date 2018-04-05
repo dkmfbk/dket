@@ -4,7 +4,7 @@ BASE=$(pwd)
 BASEDIR='experiments'
 IDS=(__dummy__)
 STORAGE
-CLEANUP=true
+CLEANUP=''
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";

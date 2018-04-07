@@ -3,8 +3,7 @@
 BASE=$(pwd)
 BASEDIR='experiments'
 IDS=(__dummy__)
-STORAGE
-CLEANUP=''
+STORAGE='/usr/local/google/home/giuliop/Desktop/STORAGGIO/'
 
 if [ -z ${STORAGE+x} ]; then
     echo "no storage set.";
@@ -28,25 +27,17 @@ do
   
   if [ "$STORAGE" = "$BASEDIR" ]; then
     echo "storage is the same of basedir (no storage). ";
-    if [ "$CLEANUP" = true ]; then
-      echo "cleaning up the checkpoints and keeping only the eval dump."
-      cd $LOGDIR/$ID/eval
-      tar -zcvf dump.tar.gz dump
-      mv dump.tar.gz ../../$ID.dump.tar.gz
-      cd ../..
-      rm -rf $ID
-      cd ../
-      echo "back to $(pwd)"
-    fi
   else
     cd $LOGDIR/$ID/eval
     tar -zcvf dump.tar.gz dump
+    mv dump.tar.gz $BASEDIR/$ID.dump.tar.gz
     rm -rf dump
     cd $BASE
     
-    cp $CONFIG $STORAGE
-    mv $CONFIG'.log' $STORAGE
-    mv $BASEDIR/$ID $STORAGE
+    cp --backup=numbered $CONFIG $STORAGE
+    mv --backup=numbered $CONFIG'.log' $STORAGE
+    mv --backup=numbered $BASEDIR/$ID $STORAGE
+    mv --backup=numbered $BASEDIR/$ID.dump.tar.gz $STORAGE
   fi
 
 done

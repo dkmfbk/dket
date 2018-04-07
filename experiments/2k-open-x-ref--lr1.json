@@ -1,5 +1,5 @@
 {
-    "name": "2k-open-x-ref--lr04",
+    "name": "2k-open-x-ref--lr1",
     "logdir": ".",
     "train.steps": 30000,
     "train.checkpoint_every": 100,
@@ -21,7 +21,7 @@
         "loss.name": "dket.train.XEntropy",
         "optimizer.class": "SGD",
         "optimizer.params": {
-            "lr": 0.4,
+            "lr": 1.0,
             "lr.decay.class": "",
             "lr.decay.params": {},
             "clip.class": "",

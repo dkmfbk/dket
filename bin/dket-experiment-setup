@@ -55,8 +55,7 @@ def main():
         raise FileExistsError(
             'File {} already exists: use the --force flag to overwrite.'\
                 .format(fpath))
-    
-    
+
     if not ARGS.name:
         warnings.warn(
             'Missing explicit configuration name: using the file name: {}'\
@@ -102,7 +101,7 @@ def clone(reference, name, model_clz=None,
         t_model = t_model or configurable.resolve(CLZ_MODEL_DEFAULT, model)
         result[runtime.Experiment.MODEL_PARAMS_KEY] = t_model.get_default_params()
         rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
-    
+
     if t_optimizer:
         rparams[model.Model.OPTIMIZER_CLASS_PK] = optimizer_clz
         rparams[model.Model.OPTIMIZER_PARAMS_PK] = t_optimizer.get_default_params()
@@ -111,12 +110,12 @@ def clone(reference, name, model_clz=None,
     if t_lr_decay:
         opt_params[train.Optimizer.LR_DECAY_CLASS_PK] = lr_decay_clz
         opt_params[train.Optimizer.LR_DECAY_PARAMS_PK] = t_lr_decay.get_default_params()
-    
+
     if t_grad_clip:
         opt_params[train.Optimizer.CLIP_GRADS_CLASS_PK] = grad_clip_clz
         opt_params[train.Optimizer.CLIP_GRADS_PARAMS_PK] = t_grad_clip.get_default_params()
     return result
-    
+
 
 def from_scratch(name, model_clz=None, optimizer_clz=None,
                  lr_decay_clz=None, grad_clip_clz=None):
@@ -150,7 +149,7 @@ def from_scratch(name, model_clz=None, optimizer_clz=None,
         t_lr_decay = configurable.resolve(lr_decay_clz, train)
         params[opt_params_key][lr_decay_class_key] = lr_decay_clz
         params[opt_params_key][lr_decay_params_key] = t_lr_decay.get_default_params()
- 
+
     config[runtime.Experiment.MODEL_PARAMS_KEY] = params
     return config
 

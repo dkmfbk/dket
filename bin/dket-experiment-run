@@ -30,7 +30,7 @@ ARGS = parser.parse_args()
 
 
 if __name__ == '__main__':
-    LOG = os.path.abspath(ARGS.config) + '.log' 
+    LOG = os.path.abspath(ARGS.config) + '.log'
     logutils.config(level=ARGS.log_level, fpath=LOG, stderr=ARGS.log_to_stderr)
     logging.info('executing: %s', PATH)
     logging.info('python version: %s', sys.version.replace('\n', ' '))

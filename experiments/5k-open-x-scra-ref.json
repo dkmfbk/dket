@@ -1,5 +1,5 @@
 {
-    "name": "5k-open-ref",
+    "name": "5k-open-x-scra-ref",
     "logdir": ".",
     "train.steps": 20000,
     "train.checkpoint_every": 100,

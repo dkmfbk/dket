@@ -1,7 +1,7 @@
 {
-    "name": "5k-open-ref",
+    "name": "5k-open-ref--lr04",
     "logdir": ".",
-    "train.steps": 20000,
+    "train.steps": 30000,
     "train.checkpoint_every": 100,
     "train.files": "../datasets/5k-open-ref/train.rio",
     "train.device": "GPU",
@@ -21,7 +21,7 @@
         "loss.name": "dket.train.XEntropy",
         "optimizer.class": "SGD",
         "optimizer.params": {
-            "lr": 0.2,
+            "lr": 0.4,
             "lr.decay.class": "",
             "lr.decay.params": {},
             "clip.class": "",

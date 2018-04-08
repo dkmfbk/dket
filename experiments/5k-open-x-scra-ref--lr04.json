@@ -1,11 +1,11 @@
 {
-    "name": "10k-open-ref",
+    "name": "5k-open-x-scra-ref--lr04",
     "logdir": ".",
-    "train.steps": 20000,
+    "train.steps": 30000,
     "train.checkpoint_every": 100,
-    "train.files": "../datasets/10k-open-ref/train.rio",
+    "train.files": "../datasets/5k-open-x-scra-ref/train.rio",
     "train.device": "GPU",
-    "eval.files": "../datasets/10k-open-ref/validation.rio",
+    "eval.files": "../datasets/5k-open-x-scra-ref/validation.rio",
     "eval.device": "CPU",
     "eval.dump": true,
     "model.class": "PointingSoftmaxModel",
@@ -21,7 +21,7 @@
         "loss.name": "dket.train.XEntropy",
         "optimizer.class": "SGD",
         "optimizer.params": {
-            "lr": 0.2,
+            "lr": 0.4,
             "lr.decay.class": "",
             "lr.decay.params": {},
             "clip.class": "",
@@ -46,7 +46,7 @@
                 "hidden_size": 512
             }
         },
-        "input.vocabulary_size": 5359,
+        "input.vocabulary_size": 5376,
         "output.vocabulary_size": 19,
         "feedback_size": 30,
         "embedding_size": 256,

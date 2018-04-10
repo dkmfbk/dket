@@ -1,7 +1,7 @@
 {
     "name": "20k-open-x-scra-ref",
     "logdir": ".",
-    "train.steps": 20000,
+    "train.steps": 30000,
     "train.checkpoint_every": 100,
     "train.files": "../datasets/20k-open-x-scra-ref/train.rio",
     "train.device": "GPU",

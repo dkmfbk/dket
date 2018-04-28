@@ -1,0 +1,56 @@
+{
+    "name": "2k-closed",
+    "logdir": ".",
+    "train.steps": 20000,
+    "train.checkpoint_every": 100,
+    "train.files": "../datasets/2k-closed/train.rio",
+    "train.device": "GPU",
+    "eval.files": "../datasets/2k-closed/validation.rio",
+    "eval.device": "CPU",
+    "eval.dump": true,
+    "model.class": "PointingSoftmaxModel",
+    "model.params": {
+        "input.class": "dket.model.ModelInputs",
+        "input.params": {
+            "epochs": 0,
+            "files": "",
+            "batch_size": 200,
+            "shuffle": true,
+            "seed": 23
+        },
+        "loss.name": "dket.train.XEntropy",
+        "optimizer.class": "SGD",
+        "optimizer.params": {
+            "lr": 0.2,
+            "lr.decay.class": "",
+            "lr.decay.params": {},
+            "clip.class": "",
+            "clip.params": {},
+            "colocate": true
+        },
+        "encoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
+            }
+        },
+        "decoder": {
+            "cell.type": "GRUCell",
+            "cell.params": {
+                "dropout_input.keep_prob": 0.8,
+                "dropout_output.keep_prob": 0.8,
+                "num_layers": 3,
+                "hidden_size": 512
+            }
+        },
+        "input.vocabulary_size": 5358,
+        "output.vocabulary_size": 19,
+        "feedback_size": 30,
+        "embedding_size": 256,
+        "attention_size": 256,
+        "parallel_iterations": 10
+    }
+}

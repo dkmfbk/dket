@@ -1,0 +1,164 @@
+#!/usr/bin/env python
+
+import argparse
+import copy
+import json
+import logging
+import os
+import shutil
+import subprocess
+import warnings
+import sys
+
+from dket import configurable
+from dket import model
+from dket import train
+from dket import runtime
+
+CFG = runtime.Experiment.CONFIG_FILE_NAME
+CLZ_MODEL_DEFAULT = 'PointingSoftmaxModel'
+CLZ_OPTIMIZER_DEFAULT = 'SGD'
+
+# pylint: disable=C0103,C0301,I0011
+parser = argparse.ArgumentParser(prog='dket-experiment-setup')
+parser.add_argument('--name', type=str, help='the experiment name. If not set, the base directory name will be used.')
+parser.add_argument('--config', type=str, required=True, help='The config.json file to be created. To override an existing file, "use the --force, Luke".')
+parser.add_argument('--clone-from', type=str, help='Another config.jsoen file to stem from. The config.json settings file will be cloned for further modification.')
+parser.add_argument('--force', action='store_true', help='If true, erease an already existing config.json file.')
+parser.add_argument('--editor', type=str, help='An editor to be used to edit the newly created config.json file. If empty, no editor will be launched.')
+parser.add_argument('--model', type=str, help='The class name of the model to be used. If passed, overrides the cloned config.')
+parser.add_argument('--optimizer', type=str, help='The class name of the optimizer to be used. If passed, overrides the cloned config.')
+parser.add_argument('--lr-decay', type=str, help='The class name of the learning rate decay function to be used. If passed, overrides the cloned config.')
+parser.add_argument('--grad-clip', type=str, help='The class name of the gradient clipping function to be used. If passed, overrides the cloned config.')
+# pylint: enable=C0103,C0301,I0011
+ARGS = parser.parse_args()
+
+
+def _prepare():
+    logdir = os.path.abspath(ARGS.logdir)
+    if os.path.exists(logdir):
+        if os.listdir(logdir):
+            if not ARGS.force:
+                raise FileExistsError(
+                    'The directory {} already exists and it is not empty.'.format(logdir))
+        logging.warning('Directory % already exists: removing and recreating.', logdir)
+        shutil.rmtree(logdir)
+    os.makedirs(logdir)
+    return logdir
+
+
+def main():
+    """Create the new experiment."""
+    fpath = ARGS.config
+    fname = os.path.splitext(os.path.split(fpath)[1])[0]
+    if os.path.exists(fpath) and not ARGS.force:
+        raise FileExistsError(
+            'File {} already exists: use the --force flag to overwrite.'\
+                .format(fpath))
+
+    if not ARGS.name:
+        warnings.warn(
+            'Missing explicit configuration name: using the file name: {}'\
+                .format(fname))
+
+    if ARGS.clone_from:
+        reference = json.load(open(ARGS.clone_from))
+        config = clone(
+            reference=reference,
+            name=ARGS.name or fname,
+            model_clz=ARGS.model,
+            optimizer_clz=ARGS.optimizer,
+            lr_decay_clz=ARGS.lr_decay,
+            grad_clip_clz=ARGS.grad_clip)
+    else:
+        config = from_scratch(
+            name=ARGS.name or fname,
+            model_clz=ARGS.model,
+            optimizer_clz=ARGS.optimizer,
+            lr_decay_clz=ARGS.lr_decay,
+            grad_clip_clz=ARGS.grad_clip)
+
+    # correct the logdir settings to the `.` path.
+    config[runtime.Experiment.LOGDIR_KEY] = '.'
+    json.dump(config, open(fpath, mode='w'), indent=4, separators=(',', ': '))
+    return fpath
+
+
+def clone(reference, name, model_clz=None,
+          optimizer_clz=None, lr_decay_clz=None,
+          grad_clip_clz=None):
+    """Clone an existing configuration."""
+
+    t_model = configurable.resolve(model_clz, model) if model_clz else None
+    t_optimizer = configurable.resolve(optimizer_clz, train) if optimizer_clz else None
+    t_lr_decay = configurable.resolve(lr_decay_clz, train) if lr_decay_clz else None
+    t_grad_clip = configurable.resolve(grad_clip_clz, train) if grad_clip_clz else None
+
+    result = copy.deepcopy(reference)
+    result[runtime.Experiment.NAME_KEY] = name
+    rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
+    if not rparams:
+        t_model = t_model or configurable.resolve(CLZ_MODEL_DEFAULT, model)
+        result[runtime.Experiment.MODEL_PARAMS_KEY] = t_model.get_default_params()
+        rparams = result[runtime.Experiment.MODEL_PARAMS_KEY]
+
+    if t_optimizer:
+        rparams[model.Model.OPTIMIZER_CLASS_PK] = optimizer_clz
+        rparams[model.Model.OPTIMIZER_PARAMS_PK] = t_optimizer.get_default_params()
+    opt_params = rparams[model.Model.OPTIMIZER_PARAMS_PK]
+
+    if t_lr_decay:
+        opt_params[train.Optimizer.LR_DECAY_CLASS_PK] = lr_decay_clz
+        opt_params[train.Optimizer.LR_DECAY_PARAMS_PK] = t_lr_decay.get_default_params()
+
+    if t_grad_clip:
+        opt_params[train.Optimizer.CLIP_GRADS_CLASS_PK] = grad_clip_clz
+        opt_params[train.Optimizer.CLIP_GRADS_PARAMS_PK] = t_grad_clip.get_default_params()
+    return result
+
+
+def from_scratch(name, model_clz=None, optimizer_clz=None,
+                 lr_decay_clz=None, grad_clip_clz=None):
+    """Build a default configuration experiment."""
+
+    config = runtime.Experiment.get_default_config()
+    config[runtime.Experiment.LOGDIR_KEY] = '.'
+    config[runtime.Experiment.NAME_KEY] = name
+
+    model_clz = model_clz if model_clz else CLZ_MODEL_DEFAULT
+    t_model = configurable.resolve(model_clz, model)
+    params = t_model.get_default_params()
+
+    opt_class_key = model.Model.OPTIMIZER_CLASS_PK
+    opt_params_key = model.Model.OPTIMIZER_PARAMS_PK
+    optimizer_clz = optimizer_clz if optimizer_clz else CLZ_OPTIMIZER_DEFAULT
+    t_optimizer = configurable.resolve(optimizer_clz, train)
+    params[opt_class_key] = optimizer_clz
+    params[opt_params_key] = t_optimizer.get_default_params()
+
+    if grad_clip_clz:
+        grad_clip_class_key = train.Optimizer.CLIP_GRADS_CLASS_PK
+        grad_clip_params_key = train.Optimizer.CLIP_GRADS_PARAMS_PK
+        t_grad_clip = configurable.resolve(grad_clip_clz, train)
+        params[opt_params_key][grad_clip_class_key] = grad_clip_clz
+        params[opt_params_key][grad_clip_params_key] = t_grad_clip.get_default_params()
+
+    if lr_decay_clz:
+        lr_decay_class_key = train.Optimizer.LR_DECAY_CLASS_PK
+        lr_decay_params_key = train.Optimizer.LR_DECAY_PARAMS_PK
+        t_lr_decay = configurable.resolve(lr_decay_clz, train)
+        params[opt_params_key][lr_decay_class_key] = lr_decay_clz
+        params[opt_params_key][lr_decay_params_key] = t_lr_decay.get_default_params()
+
+    config[runtime.Experiment.MODEL_PARAMS_KEY] = params
+    return config
+
+
+if __name__ == '__main__':
+    try:
+        FPATH = main()
+        if ARGS.editor:
+            subprocess.call([ARGS.editor, FPATH])
+    except IOError as ex:
+        sys.stderr.write(str(ex))
+        sys.exit(1)

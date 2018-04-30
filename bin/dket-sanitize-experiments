@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+import os
+import sys
+import json
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--basedir', type=str, required=False, default='experiments', help='The base directory for all the .json experiment files.')
+parser.add_argument('--datasets', type=str, required=False, default='experiments', help='The base directory for all the datasets.')
+ARGS = parser.parse_args()
+
+def fix(fpath):
+  basedir, fname = os.path.split(fpath)
+  name = os.path.splitext(fname)[0]
+  print('fixing {}'.format(fpath))
+  cfg = json.load(open(fpath))
+
+  # FIX NAME
+  if cfg['name'] != name:
+    print('{}: fixing name from {} to {}'.format(fpath, cfg['name'], name))
+    input()
+
+if __name__ == '__main__':
+  basedir = ARGS.basedir
+  files = os.listdir(basedir)
+  for f in files:
+    fix(os.path.join(basedir, f))

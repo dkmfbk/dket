@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+import argparse
+import sys
+
+from dket import analytics
+
+# pylint: disable=C0103,C0301,I0011
+parser = argparse.ArgumentParser(prog='dket-compare-reports')
+parser.add_argument('--left', type=str, required=True, help='The first report.')
+parser.add_argument('--right', type=str, required=True, help='The second report.')
+parser.add_argument('--output', type=str, required=True, help='The output file.')
+# pylint: enable=C0103,C0301,I0011
+ARGS = parser.parse_args()
+
+if __name__ == '__main__':
+  analytics.compare(ARGS.left, ARGS.right, ARGS.output)

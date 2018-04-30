@@ -16,6 +16,8 @@ from dket import ops
 from dket import train
 from dket import rnn
 
+SEED_DEFAULT_VALUE = 23
+
 class ModelInputs(configurable.Configurable):
     """Dket model input tensors parser."""
 
@@ -45,7 +47,7 @@ class ModelInputs(configurable.Configurable):
             (cls.EPOCHS_PK, 0),
             (cls.BATCH_SIZE_PK, 200),
             (cls.SHUFFLE_PK, True),
-            (cls.SEED_PK, None),
+            (cls.SEED_PK, SEED_DEFAULT_VALUE),
         ])
 
     def _validate_params(self, params):
@@ -103,7 +105,7 @@ class ModelInputs(configurable.Configurable):
     def _build_from_files(self):
         tensors = data.inputs(
             file_patterns=self._params[self.FILES_PK].split(','),
-            batch_size=self._params[self.BATCH_SIZE_PK],        
+            batch_size=self._params[self.BATCH_SIZE_PK],
             shuffle=self._params[self.SHUFFLE_PK],
             num_epochs=self._params[self.EPOCHS_PK],
             seed=self._params[self.SEED_PK])
@@ -180,6 +182,7 @@ class Model(configurable.Configurable):
     LOSS_NAME_PK = 'loss.name'
     OPTIMIZER_CLASS_PK = 'optimizer.class'
     OPTIMIZER_PARAMS_PK = 'optimizer.params'
+    SEED_PK = 'seed'
 
     def __init__(self, mode, params):
         super(Model, self).__init__(mode, params)
@@ -192,6 +195,8 @@ class Model(configurable.Configurable):
         self._train_op = None
         self._summary_op = None
         self._metrics = None
+        self._seed = int(params[self.SEED_PK]) if self.SEED_PK in params else None
+        print(params)
 
     @property
     def graph(self):
@@ -215,7 +220,7 @@ class Model(configurable.Configurable):
         A `3D Tensor` of type `tf.float32` and shape `[batch_size, timesteps, num_classes]`
         representing the model output predictions as probability distributions over the
         output symbols.
-        """ 
+        """
         return self._predictions
 
     @property
@@ -241,6 +246,11 @@ class Model(configurable.Configurable):
         """The summary operator."""
         return self._summary_op
 
+    @property
+    def seed(self):
+        """The random seed (None if not set)."""
+        return self._seed
+
     @classmethod
     def get_default_params(cls):
         return OrderedDict([
@@ -250,7 +260,8 @@ class Model(configurable.Configurable):
             (cls.INPUT_PARAMS_PK, ModelInputs.get_default_params()),
             (cls.LOSS_NAME_PK, 'dket.train.XEntropy'),
             (cls.OPTIMIZER_CLASS_PK, 'dket.train.SGD'),
-            (cls.OPTIMIZER_PARAMS_PK, train.Optimizer.get_default_params())
+            (cls.OPTIMIZER_PARAMS_PK, train.Optimizer.get_default_params()),
+            (cls.SEED_PK, SEED_DEFAULT_VALUE)
         ])
 
     def _validate_params(self, params):
@@ -321,6 +332,8 @@ class Model(configurable.Configurable):
                 'The model has already been built.')
         self._graph = graph or tf.Graph()
         with self._graph.as_default() as graph:
+            if self._seed:
+                tf.set_random_seed(self._seed)
             self._global_step = ops.get_or_create_global_step(graph=graph)
             self._build_inputs()
             self._build_graph()
@@ -346,7 +359,7 @@ class PointingSoftmaxModel(Model):
     @property
     def decoder_inputs(self):
         """A `3D Tensor` representing the gold-truth decoder inputs.
-        
+
         *NOTE* if the model is not trainable, this tensor will be `None`
         since the decoder will be fed back with the previous output step
         by step.
@@ -380,6 +393,8 @@ class PointingSoftmaxModel(Model):
         targets = self.inputs.get(self.inputs.FORMULA_KEY)
         flengths = self.inputs.get(self.inputs.FORMULA_LENGTH_KEY)
         with self._graph.as_default():  # pylint: disable=E1129
+            if self._seed:
+                tf.set_random_seed(self._seed)
             with tf.variable_scope('Embedding'):  # pylint: disable=E1129
                 with tf.device('CPU:0'):
                     embedding_size = self._params['embedding_size']

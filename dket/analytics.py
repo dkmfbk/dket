@@ -49,7 +49,12 @@ def decode_formula(idxs, shortlist, sentence):
             formula.append(shortlist.word(idx))
         else:
             pointer = idx - shortlist.size()
-            word = sentence[pointer]
+            if pointer < len(sentence):
+                word = sentence[pointer]
+            else:
+                print('POINTER {} outside the sentence!!!'.format(pointer))
+                print('{} [#{}]'.format(sentence, len(sentence)))
+                word = '###OUTSIDE###'
             formula.append(word)
     return formula
 
@@ -252,6 +257,7 @@ def dump_report(data, report_fp):
         tokens_ok += datum[TOKENS_OK]
     accuracy = 0.0 if tokens_tot == 0 else (tokens_ok * 1.0) / tokens_tot
 
+    print('writing to {}'.format(report_fp))
     with open(report_fp, 'w') as fout:
         fout.write('# ANALYTICS\n')
         fout.write('#\n')
@@ -366,4 +372,3 @@ def compare(old_fp, new_fp, output_fp=None):
         for m in merged:
             fout.write(json.dumps(m, indent=2, separators=(',', ': ')))
             fout.write(ITEM_SEP)
-

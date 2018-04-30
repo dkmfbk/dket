@@ -1,0 +1,45 @@
+# !/usr/bin/env bash
+
+BASE=$(pwd)
+BASEDIR='experiments'
+IDS=(__dummy__)
+STORAGE=''
+
+if [ -z ${STORAGE+x} ]; then
+    echo "no storage set.";
+    echo "please, set it to the same of basedir `$BASEDIR` if you want the storage to be ignored."
+    exit 1
+fi
+
+source .py3venv/bin/activate
+for ID in "${IDS[@]}"
+do
+  
+  BASEDIR=`cd $BASEDIR; pwd`
+  STORAGE=`cd $STORAGE; pwd`
+  
+  CONFIG=$BASEDIR/$ID'.json'
+  LOGDIR=$BASEDIR
+  ./bin/dket-experiment-run --config $CONFIG\
+    --log-level DEBUG\
+    --log-to-stderr --force\
+    --logdir $LOGDIR
+  
+  if [ "$STORAGE" = "$BASEDIR" ]; then
+    echo "storage is the same of basedir (no storage). ";
+  else
+    cd $LOGDIR/$ID/eval
+    tar -zcvf dump.tar.gz dump
+    mv dump.tar.gz $BASEDIR/$ID.dump.tar.gz
+    rm -rf dump
+    cd $BASE
+    
+    cp --backup=numbered $CONFIG $STORAGE
+    mv --backup=numbered $CONFIG'.log' $STORAGE
+    mv --backup=numbered $BASEDIR/$ID $STORAGE
+    mv --backup=numbered $BASEDIR/$ID.dump.tar.gz $STORAGE
+  fi
+
+done
+deactivate
+echo 'done'

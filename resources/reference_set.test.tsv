@@ -1,0 +1,75 @@
+a/DT non-vegetarian/JJ pizza/NN is/VBZ any/DT pizza/NN that/WDT is/VBZ not/RB a/DT vegetarian/JJ pizza/NN ./. <EOS>/<EOS>	non-vegetarian pizza := pizza ^ ! vegetarian pizza <EOS>
+the/DT battery/NN lifetime/NN is/VBZ the/DT total/JJ useful/JJ life/NN of/IN a/DT battery/NN ./. <EOS>/<EOS>	battery lifetime := total useful life of battery <EOS>
+orthodentine/NN is/VBZ a/DT odontoid/JJ tissue/NN that/WDT typically/RB contain/VB tubule/NN and/CC is/VBZ acellular/JJ ./. <EOS>/<EOS>	orthodentine := odontoid tissue ^ E contain . ( tubule ) ^ acellular <EOS>
+the/DT system/NN lifetime/NN is/VBZ the/DT total/JJ useful/JJ life/NN of/IN a/DT sensor/NN or/CC system/NN ./. <EOS>/<EOS>	system lifetime := total useful life of sensor U total useful life of system <EOS>
+the/DT mesodermal/JJ cell/NN is/VBZ a/DT cell/NN of/IN the/DT middle/JJ germ/NN layer/NN of/IN the/DT embryo/NN ./. <EOS>/<EOS>	mesodermal cell := cell of middle germ layer of embryo <EOS>
+a/DT sensor/NN is/VBZ any/DT entity/NN that/WDT can/MD observe/VB some/DT property/NN of/IN a/DT feature/NN of/IN interest/NN ./. <EOS>/<EOS>	sensor := any entity ^ >= 0 observe . ( property of feature of interest ) <EOS>
+a/DT minister/NN or/CC a/DT secretary/NN is/VBZ a/DT politician/NN that/WDT hold/VB significant/JJ public/JJ office/NN in/IN a/DT national/JJ or/CC regional/JJ government/NN ./. <EOS>/<EOS>	minister U secretary := politician ^ E hold . ( significant public office in national government U significant public office in national government regional government ) <EOS>
+an/DT interesting/JJ pizza/NN is/VBZ any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD topping/NN ./. <EOS>/<EOS>	interesting pizza := pizza ^ >= NUM have topping . ( T ) <EOS>
+a/DT meaty/NN pizza/NN is/VBZ any/DT pizza/NN that/WDT have/VB at/IN least/JJS NUM/CD meat/NN topping/NN ./. <EOS>/<EOS>	meaty pizza := pizza ^ >= NUM have topping . ( meat topping ) <EOS>
+the/DT odontoblast/NN is/VBZ a/DT skeletogenic/JJ cell/NN that/WDT develop/VB from/IN a/DT preodontoblast/NN cell/NN ./. <EOS>/<EOS>	odontoblast := skeletogenic cell ^ E develop from . ( preodontoblast cell ) <EOS>
+a/DT migratory/JJ neural/JJ crest/NN cell/NN is/VBZ a/DT cell/NN derived/VBN from/IN the/DT specialized/JJ ectoderm/NN ./. <EOS>/<EOS>	migratory neural crest cell := cell ^ E derived from . ( specialized ectoderm ) <EOS>
+a/DT craniofacial/JJ skeleton/NN is/VBZ a/DT cranial/JJ skeleton/NN that/WDT is/VBZ derived/VBN from/IN neural/JJ crest/NN cell/NN ./. <EOS>/<EOS>	craniofacial skeleton := cranial skeleton ^ E derived from . ( neural crest cell ) <EOS>
+a/DT pelvic/JJ fin/NN is/VBZ a/DT paired/JJ fin/NN located/VBN in/IN the/DT abdominal/JJ position/NN of/IN the/DT body/NN ./. <EOS>/<EOS>	pelvic fin := paired fin ^ E located in . ( abdominal position of body ) <EOS>
+a/DT pelvic/JJ fin/NN skeleton/NN is/VBZ a/DT paired/JJ fin/NN skeleton/NN located/VBN in/IN the/DT abdominal/JJ position/NN that/IN consists/VB of/IN supporting/VBG endochondral/JJ radial/NN and/CC dermal/JJ fin/NN ray/NN or/CC lepidotrichia/NN ./. <EOS>/<EOS>	pelvic fin skeleton := paired fin skeleton ^ E located in . ( abdominal position ) ^ E consists of . ( supporting endochondral radial ^ ( dermal fin ray U dermal fin lepidotrichia ) ) <EOS>
+the/DT odontoid/JJ tissue/NN is/VBZ a/DT skeletal/JJ tissue/NN that/WDT is/VBZ part/NN of/IN the/DT exoskeleton/NN and/CC derived/VBN from/IN an/DT odontogenic/JJ papilla/NN ./. <EOS>/<EOS>	odontoid tissue := skeletal tissue ^ E part of . ( exoskeleton ) ^ E derived from . ( odontogenic papilla ) <EOS>
+an/DT appendicular/JJ skeleton/NN is/VBZ a/DT skeletal/JJ subdivision/NN consisting/VBG of/IN all/PDT the/DT skeletal/JJ element/NN in/IN the/DT pectoral/JJ and/CC pelvic/JJ appendage/NN complex/NN ./. <EOS>/<EOS>	appendicular skeleton := skeletal subdivision ^ E consisting of . ( skeletal element in pectoral appendage complex U skeletal element in pelvic appendage complex ) <EOS>
+a/DT one-dimensional/JJ region/NN is/VBZ a/DT spatial/JJ region/NN that/WDT have/VB NUM/CD dimension/NN ./. <EOS>/<EOS>	one-dimensional region := spatial region = NUM have dimension . ( T ) <EOS>
+a/DT zero-dimensional/JJ region/NN is/VBZ a/DT spatial/JJ region/NN that/WDT have/VB NUM/CD dimension/NN ./. <EOS>/<EOS>	zero-dimensional region := spatial region = NUM have dimension . ( T ) <EOS>
+a/DT demonstration/NN is/VBZ a/DT public/JJ protest/NN that/WDT could/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	demonstration := public protest ^ >= 0 disrupt . ( traffic ) <EOS>
+a/DT ball/NN game/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	ball game := event ^ >= 0 disrupt . ( traffic ) <EOS>
+a/DT boxing/NN tournament/NN is/VBZ an/DT event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	boxing tournament := event ^ >= 0 disrupt . ( traffic ) <EOS>
+a/DT cricket/NN match/NN is/VBZ something/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	cricket match := >= 0 disrupt . ( traffic ) <EOS>
+a/DT show/NN is/VBZ an/DT entertainment/NN event/NN that/WDT can/MD disrupt/VB traffic/NN ./. <EOS>/<EOS>	show := entertainment event ^ >= 0 disrupt . ( traffic ) <EOS>
+landslipes/NN may/MD obstruct/VB transport/NN infrastructure/NN ./. <EOS>/<EOS>	landslipes := >= 0 obstruct . ( transport infrastructure ) <EOS>
+a/DT damaged/VBN gallery/NN may/MD cause/VB traffic/NN disruption/NN ./. <EOS>/<EOS>	damaged gallery := >= 0 cause . ( traffic disruption ) <EOS>
+a/DT fallen/JJ power/NN cable/NN may/MD obstruct/VB the/DT transport/NN infrastructure/NN ./. <EOS>/<EOS>	fallen power cable := >= 0 obstruct . ( transport infrastructure ) <EOS>
+a/DT datum/NN collection/NN by/IN sampling/VBG is/VBZ a/DT datum/NN collection/NN process/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN generated/VBN from/IN a/DT sampling/VBG process/NN ./. <EOS>/<EOS>	datum collection by sampling := datum collection process ^ E result in . ( collection of datum ^ E generated from . ( sampling process ) ) <EOS>
+a/DT datum/NN collection/NN from/IN observation/NN is/VBZ a/DT datum/NN collection/NN process/NN that/WDT result/NN in/IN a/DT collection/NN of/IN datum/NN generated/VBN from/IN observation/NN ./. <EOS>/<EOS>	datum collection from observation := datum collection process ^ E result in . ( collection of datum ^ E generated from . ( observation ) ) <EOS>
+electron/NN are/VBP beta/JJ particle/NN ./. <EOS>/<EOS>	electron := beta particle <EOS>
+boson/NN are/VBP part/NN of/IN complex/JJ particle/NN ./. <EOS>/<EOS>	boson := E part of . ( complex particle ) <EOS>
+quark/NN are/VBP fermion/NN ./. <EOS>/<EOS>	quark := fermion <EOS>
+quark/NN are/VBP subatomic/JJ particle/NN ./. <EOS>/<EOS>	quark := subatomic particle <EOS>
+fermion/NN are/VBP subatomic/JJ particle/NN ./. <EOS>/<EOS>	fermion := subatomic particle <EOS>
+helium/NN atom/NN are/VBP a/DT atom/NN ./. <EOS>/<EOS>	helium atom := atom <EOS>
+the/DT chlorine/NN atom/NN is/VBZ a/DT type/NN of/IN atom/NN ./. <EOS>/<EOS>	chlorine atom := atom <EOS>
+the/DT ununseptium/NN atom/NN is/VBZ a/DT type/NN of/IN atom/NN ./. <EOS>/<EOS>	ununseptium atom := atom <EOS>
+the/DT mercury/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	mercury atom = NUM have proton . ( T ) <EOS>
+a/DT polonium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	polonium atom = NUM have proton . ( T ) <EOS>
+all/DT ununseptium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	ununseptium atom = NUM have proton . ( T ) <EOS>
+all/DT strontium/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	strontium atom = NUM have proton . ( T ) <EOS>
+gold/NN atom/NN have/VB NUM/CB proton/NN ./. <EOS>/<EOS>	gold atom = NUM have proton . ( T ) <EOS>
+carnivor/NN are/VBP animal/NN that/WDT eat/VBZ only/RB animal/NN ./. <EOS>/<EOS>	carnivor := animal ^ A eat . ( animal ) <EOS>
+all/DT mammal/NN are/VBP also/RB animal/NN that/WDT brestfeed/VB puppy/NN ./. <EOS>/<EOS>	mammal := animal ^ E brestfeed . ( puppy ) <EOS>
+acquatic/JJ mammal/NN are/VBP mammal/NN ./. <EOS>/<EOS>	acquatic mammal := mammal <EOS>
+all/DT dolphin/NN are/VBP also/RB acquatic/JJ mammal/NN that/WDT live/VB in/IN the/DT sea/NN ./. <EOS>/<EOS>	dolphin := acquatic mammal ^ E live in . ( sea ) <EOS>
+a/DT dolphin/NN is/VBZ also/RB a/DT acquatic/JJ mammal/NN that/DT have/VB a/DT long/JJ muzzle/NN ./. <EOS>/<EOS>	dolphin := acquatic mammal ^ have long muzzle . ( T ) <EOS>
+cow/NN are/VBP herbivor/NN that/WDT produce/VB milk/NN ./. <EOS>/<EOS>	cow := herbivor ^ E produce . ( milk ) <EOS>
+every/DT lion/NN is/VBZ a/DT carnivor/NN that/WDT hunt/VB gazelle/NN ./. <EOS>/<EOS>	lion := carnivor ^ E hunt . ( gazelle ) <EOS>
+a/DT lion/NN is/VBZ a/DT mammal/NN that/DT have/VB long/JJ hair/NN ./. <EOS>/<EOS>	lion := mammal ^ have long hair . ( T ) <EOS>
+all/DT male/JJ lion/NN have/VB more/JJR than/IN NUM/CD female/JJ mate/NN ./. <EOS>/<EOS>	male lion := >= NUM have female mate . ( T ) <EOS>
+tiger/NN are/VBP carnivor/NN that/WDT live/VB in/IN asia/NN ./. <EOS>/<EOS>	tiger := carnivor ^ E live in . ( asia ) <EOS>
+a/DT giraffe/NN is/VBZ also/RB a/DT herbivor/NN that/WDT live/VB in/IN africa/NN ./. <EOS>/<EOS>	giraffe := herbivor ^ E live in . ( africa ) <EOS>
+all/DT elephant/NN are/VBP mammal/NN that/DT have/VB a/DT big/JJ trunk/NN ./. <EOS>/<EOS>	elephant := mammal ^ have big trunk . ( T ) <EOS>
+all/DT cat/NN are/VBP also/RB small/JJ feline/NN ./. <EOS>/<EOS>	cat := small feline <EOS>
+all/DT cat/NN are/VBP also/RB animal/NN that/WDT are/VBD chased/VBD by/IN a/DT dog/NN ./. <EOS>/<EOS>	cat := animal ^ E chased by . ( dog ) <EOS>
+a/DT cat/NN is/VBZ also/RB a/DT mammal/NN that/WDT chase/VB mouse/NN ./. <EOS>/<EOS>	cat := mammal ^ E chase . ( mouse ) <EOS>
+all/DT mouse/NN are/VBP animal/NN that/WDT are/VBD chased/VBD only/RB by/IN a/DT cat/NN ./. <EOS>/<EOS>	mouse := animal ^ A chased by . ( cat ) <EOS>
+every/DT bee/NN is/VBZ a/DT insect/NN that/WDT produce/VB honey/NN ./. <EOS>/<EOS>	bee := insect ^ E produce . ( honey ) <EOS>
+bee/NN are/VBP insect/NN that/WDT live/VB in/IN hive/NN ./. <EOS>/<EOS>	bee := insect ^ E live in . ( hive ) <EOS>
+all/DT bee/NN are/VBP insect/NN that/DT have/VB NUM/CD leg/NN ./. <EOS>/<EOS>	bee := insect ^ = NUM have leg . ( T ) <EOS>
+a/DT bee/NN have/VB black/JJ stripe/NN ./. <EOS>/<EOS>	bee := E have black stripe . ( T ) <EOS>
+every/DT bycicle/NN is/VBZ a/DT vehicle/NN that/DT have/VB NUM/CD weel/NN ./. <EOS>/<EOS>	bycicle := vehicle ^ = NUM have weel . ( T ) <EOS>
+saddle/NN are/VBP part/NN of/IN the/DT bycicle/NN ./. <EOS>/<EOS>	saddle := E part of . ( bycicle ) <EOS>
+car/NN are/VBP a/DT type/NN of/IN mean/NN of/IN transportation/NN that/WDT are/VBP powered/VBD by/IN fuel/NN or/CC electric/JJ energy/NN ./. <EOS>/<EOS>	car := mean of transportation ^ E powered by . ( fuel U electric energy ) <EOS>
+weel/NN are/VBP part/NN of/IN the/DT car/NN ./. <EOS>/<EOS>	weel := E part of . ( car ) <EOS>
+trunk/NN are/VBP part/NN of/IN car/NN ./. <EOS>/<EOS>	trunk := E part of . ( car ) <EOS>
+every/DT engine/NN is/VBZ a/DT complex/JJ energy/NN production/NN system/NN that/DT is/VBZ part/NN of/IN the/DT motorcycle/NN ./. <EOS>/<EOS>	engine := complex energy production system ^ E part of . ( motorcycle ) <EOS>
+screwdriver/NN are/VBP tool/NN ./. <EOS>/<EOS>	screwdriver := tool <EOS>
+a/DT cross/NN blade/NN screwdriver/NN is/VBZ also/RB a/DT screwdriver/NN that/DT have/VB a/DT cross/NN blade/NN ./. <EOS>/<EOS>	cross blade screwdriver := screwdriver ^ E have cross blade . ( T ) <EOS>
+all/DT scissor/NN are/VBP also/RB tool/NN ./. <EOS>/<EOS>	scissor := tool <EOS>
+clamp/NN are/VBP also/RB tool/NN that/WDT can/MD secure/VB object/NN ./. <EOS>/<EOS>	clamp := tool ^ >= NUM secure . ( object ) <EOS>
+the/DT knife/NN is/VBZ a/DT hand/NN tool/NN that/DT can/MD cut/VB meat/NN and/CC bread/NN ./. <EOS>/<EOS>	knife := hand tool ^ >= NUM cut . ( meat ) ^ >= NUM cut . ( bread ) <EOS>
+the/DT blade/NN is/VBZ part/NN of/IN the/DT knife/NN ./. <EOS>/<EOS>	blade := E part of . ( knife ) <EOS>
+knife/NN have/VB a/DT handle/NN ./. <EOS>/<EOS>	knife := E have handle . ( T ) <EOS>
+the/DT rake/NN is/VBZ a/DT hand/NN tool/NN that/WDT is/VBZ used/VBD by/IN gardener/NN ./. <EOS>/<EOS>	rake := hand tool ^ E used by . ( gardener ) <EOS>

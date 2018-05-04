@@ -31,3 +31,8 @@ folder. To run them, after activating the `.py3venv` virtual environment, just r
 where `<EXP>` is the name of the experimental setting that you want to use. The full options for the `./bin/dket-experiment-run` are available at:
 
     :~$ ./bin/dket-experiment-run --help
+    
+## Resources
+The folder `resources` contains:
+- the manually curated dataset: 500 sentence-formula pairs, 75 used for training (`reference_set.train.tsv`) and 425 used for testing (`reference_set.test.tsv`);
+- the grammar (`grammar.cfg`) used for generating the synthetic datasets.

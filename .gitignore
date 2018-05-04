@@ -10,3 +10,4 @@ experiments/**/train
 DUMP*
 .log
 .vscode
+.DS_Store

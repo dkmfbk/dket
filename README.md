@@ -1,6 +1,6 @@
 # dket: Deep Knowledge Extraction from Text
 The `DKET` project has the goal to devise a Neural Networks based Ontology Learning system that
-doesn't rely on hand-crafted rules and it is trained in an end-to-end fashion. The approach and the experimental evaluation are described in this [paper](https://www.sciencedirect.com/science/article/pii/S1570826818300507).
+doesn't rely on hand-crafted rules and it is trained in an end-to-end fashion. The approach, the datasets, and the experimental evaluation are described in this [paper](https://www.sciencedirect.com/science/article/pii/S1570826818300507).
 
 ## Installation
 The best way to install and use the `DKET` package is to clone the git repository, and set up the proper virtual environment. Once cloned the repository, just move into the directory and run the proper script to create and setup the proper Python 3 virtual environment.

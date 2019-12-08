@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 PYTHON=python3
 VENV_DIR=.py3venv
